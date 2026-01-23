@@ -6038,6 +6038,8 @@ async function performSync() {
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: 'saveData',
+        username: AUTH.user,
+        password: AUTH.pass,
         payload: { 
           units: state.units, 
           settings: { 
@@ -6120,6 +6122,8 @@ async function forceSync() {
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: 'saveData',
+        username: AUTH.user,
+        password: AUTH.pass,
         payload: payload
       })
     });
