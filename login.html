@@ -1,1 +1,587 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#005eb8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Login | MedWard Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #005eb8;
+  --primary-dark: #003087;
+  --primary-light: #e6f0f9;
+  --bg-app: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-input: #f1f5f9;
+  --text-main: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border: #e2e8f0;
+  --success: #059669;
+  --danger: #dc2626;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+body.dark-theme {
+  --primary: #60a5fa;
+  --primary-dark: #93c5fd;
+  --primary-light: #1e3a5f;
+  --bg-app: #0f172a;
+  --bg-surface: #1e293b;
+  --bg-input: #334155;
+  --text-main: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  --border: #334155;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-app);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.theme-toggle:hover {
+  border-color: var(--primary);
+}
+
+.login-container {
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login-logo {
+  width: 80px;
+  height: 80px;
+  background: var(--primary);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  box-shadow: 0 8px 24px rgba(0, 94, 184, 0.25);
+}
+
+.login-logo svg {
+  width: 44px;
+  height: 44px;
+  stroke: #fff;
+  stroke-width: 2.5;
+  fill: none;
+}
+
+.login-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+
+.login-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.login-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 94, 184, 0.1);
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.checkbox-group input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.checkbox-group label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.btn {
+  width: 100%;
+  padding: 14px 24px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 94, 184, 0.3);
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  margin-top: 12px;
+}
+
+.btn-secondary:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.divider span {
+  padding: 0 16px;
+}
+
+.message {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  display: none;
+}
+
+.message.error {
+  display: block;
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+.message.success {
+  display: block;
+  background: #d1fae5;
+  color: #059669;
+  border: 1px solid #6ee7b7;
+}
+
+body.dark-theme .message.error {
+  background: #7f1d1d;
+  border-color: #991b1b;
+}
+
+body.dark-theme .message.success {
+  background: #064e3b;
+  border-color: #065f46;
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 24px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Form States */
+.form-group.error .form-input {
+  border-color: var(--danger);
+}
+
+.form-group .error-text {
+  color: var(--danger);
+  font-size: 0.8rem;
+  margin-top: 6px;
+  display: none;
+}
+
+.form-group.error .error-text {
+  display: block;
+}
+</style>
+</head>
+<body>
+<script>
+// Apply saved theme immediately
+(function() {
+  const theme = localStorage.getItem('MEDWARD_THEME');
+  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.body.classList.add('dark-theme');
+  }
+})();
+</script>
+
+<button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙</button>
+
+<div class="login-container">
+  <div class="login-header">
+    <div class="login-logo">
+      <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+    </div>
+    <h1 class="login-title">MedWard Pro</h1>
+    <p class="login-subtitle">Clinical Ward Management System</p>
+  </div>
+
+  <div class="login-card">
+    <div class="message" id="message"></div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" class="form-input" id="username" placeholder="Enter username" autocomplete="username" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="password" placeholder="Enter password" autocomplete="current-password" required>
+      </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="remember" checked>
+        <label for="remember">Keep me logged in</label>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="loginBtn">
+        <span id="loginText">Sign In</span>
+        <div class="loading-spinner" id="loginSpinner" style="display:none"></div>
+      </button>
+    </form>
+
+    <div class="divider"><span>or</span></div>
+
+    <button class="btn btn-secondary" onclick="showRegister()" id="registerToggle">
+      Create New Account
+    </button>
+
+    <!-- Register Form (hidden by default) -->
+    <form id="registerForm" onsubmit="handleRegister(event)" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Choose Username</label>
+        <input type="text" class="form-input" id="regUsername" placeholder="Choose a username" autocomplete="username" required minlength="3">
+        <div class="error-text">Username must be at least 3 characters</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Create Password</label>
+        <input type="password" class="form-input" id="regPassword" placeholder="Create a password" autocomplete="new-password" required minlength="4">
+        <div class="error-text">Password must be at least 4 characters</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Confirm Password</label>
+        <input type="password" class="form-input" id="regConfirm" placeholder="Confirm password" autocomplete="new-password" required>
+        <div class="error-text">Passwords do not match</div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="registerBtn">
+        <span id="registerText">Create Account</span>
+        <div class="loading-spinner" id="registerSpinner" style="display:none"></div>
+      </button>
+
+      <button type="button" class="btn btn-secondary" onclick="showLogin()">
+        Back to Login
+      </button>
+    </form>
+  </div>
+
+  <div class="login-footer">
+    v16.1 • Multi-User Edition
+  </div>
+</div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbyewF_EjwJeundXYupFZcAjJF7jyMrd38FPDP7DB0zmjmHqAcXHig08Ycn07oW45l4w-A/exec';
+
+// Check if already logged in
+(function() {
+  const user = sessionStorage.getItem('MW_USER') || localStorage.getItem('MW_USER');
+  const pass = sessionStorage.getItem('MW_PASS') || localStorage.getItem('MW_PASS');
+  if (user && pass) {
+    window.location.href = 'index.html';
+  }
+})();
+
+// Theme toggle
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark-theme');
+  localStorage.setItem('MEDWARD_THEME', isDark ? 'dark' : 'light');
+  document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
+}
+
+// Update theme icon on load
+document.getElementById('themeBtn').textContent = document.body.classList.contains('dark-theme') ? '☀️' : '🌙';
+
+// Show/hide forms
+function showRegister() {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('registerToggle').style.display = 'none';
+  document.querySelector('.divider').style.display = 'none';
+  document.getElementById('registerForm').style.display = 'block';
+  document.getElementById('message').className = 'message';
+  document.getElementById('message').textContent = '';
+}
+
+function showLogin() {
+  document.getElementById('registerForm').style.display = 'none';
+  document.getElementById('loginForm').style.display = 'block';
+  document.getElementById('registerToggle').style.display = 'block';
+  document.querySelector('.divider').style.display = 'flex';
+  document.getElementById('message').className = 'message';
+  document.getElementById('message').textContent = '';
+}
+
+// Show message
+function showMessage(text, isError = true) {
+  const msg = document.getElementById('message');
+  msg.textContent = text;
+  msg.className = 'message ' + (isError ? 'error' : 'success');
+}
+
+// Login handler
+async function handleLogin(e) {
+  e.preventDefault();
+  
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const remember = document.getElementById('remember').checked;
+  
+  if (!username || !password) {
+    showMessage('Please enter username and password');
+    return;
+  }
+  
+  // Show loading
+  document.getElementById('loginText').style.display = 'none';
+  document.getElementById('loginSpinner').style.display = 'block';
+  document.getElementById('loginBtn').disabled = true;
+  
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'login',
+        username: username,
+        password: password
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      // Store credentials
+      sessionStorage.setItem('MW_USER', username);
+      sessionStorage.setItem('MW_PASS', password);
+      
+      if (remember) {
+        localStorage.setItem('MW_USER', username);
+        localStorage.setItem('MW_PASS', password);
+      }
+      
+      showMessage('Login successful! Redirecting...', false);
+      
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 500);
+    } else {
+      showMessage(result.error || 'Invalid username or password');
+    }
+  } catch (error) {
+    showMessage('Connection error. Please try again.');
+    console.error('Login error:', error);
+  } finally {
+    document.getElementById('loginText').style.display = 'inline';
+    document.getElementById('loginSpinner').style.display = 'none';
+    document.getElementById('loginBtn').disabled = false;
+  }
+}
+
+// Register handler
+async function handleRegister(e) {
+  e.preventDefault();
+  
+  const username = document.getElementById('regUsername').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const confirm = document.getElementById('regConfirm').value;
+  
+  // Validate
+  if (username.length < 3) {
+    document.getElementById('regUsername').parentElement.classList.add('error');
+    return;
+  } else {
+    document.getElementById('regUsername').parentElement.classList.remove('error');
+  }
+  
+  if (password.length < 4) {
+    document.getElementById('regPassword').parentElement.classList.add('error');
+    return;
+  } else {
+    document.getElementById('regPassword').parentElement.classList.remove('error');
+  }
+  
+  if (password !== confirm) {
+    document.getElementById('regConfirm').parentElement.classList.add('error');
+    return;
+  } else {
+    document.getElementById('regConfirm').parentElement.classList.remove('error');
+  }
+  
+  // Show loading
+  document.getElementById('registerText').style.display = 'none';
+  document.getElementById('registerSpinner').style.display = 'block';
+  document.getElementById('registerBtn').disabled = true;
+  
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'register',
+        username: username,
+        password: password
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      showMessage('Account created! You can now log in.', false);
+      
+      // Pre-fill login form
+      document.getElementById('username').value = username;
+      document.getElementById('password').value = '';
+      
+      setTimeout(() => {
+        showLogin();
+      }, 1500);
+    } else {
+      showMessage(result.error || 'Registration failed');
+    }
+  } catch (error) {
+    showMessage('Connection error. Please try again.');
+    console.error('Register error:', error);
+  } finally {
+    document.getElementById('registerText').style.display = 'inline';
+    document.getElementById('registerSpinner').style.display = 'none';
+    document.getElementById('registerBtn').disabled = false;
+  }
+}
+
+// Focus username on load
+document.getElementById('username').focus();
+</script>
+</body>
+</html>
