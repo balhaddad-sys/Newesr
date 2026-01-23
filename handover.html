@@ -934,18 +934,6 @@ async function acceptPt(id) {
     
     // Update local state
     if (result.patient) {
-      // Get current unit from session and assign it
-      const currentUnit = sessionStorage.getItem('MW_UNIT');
-      if (currentUnit) {
-        result.patient.unitId = currentUnit;
-        
-        // Save the unit assignment to server
-        await callAPI('patch', { 
-          operation: 'updatePatient', 
-          payload: { id: result.patient.id, unitId: currentUnit } 
-        });
-      }
-      
       patients.push(result.patient);
     }
     
