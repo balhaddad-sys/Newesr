@@ -9354,13 +9354,22 @@ RESPOND ONLY WITH VALID JSON. No markdown, no explanation.`;
 async function handleLabUpload(files) {
   // Guard: Check API URL
   if (!state.settings.apiUrl || state.settings.apiUrl === 'YOUR_API_URL_HERE') {
+    alert('DEBUG: API URL not configured!\n\nstate.settings.apiUrl = ' + state.settings.apiUrl + '\nCONFIG.API_URL = ' + CONFIG.API_URL);
     toast('API not configured. Go to Admin → Settings', true);
     return;
   }
+  
+  console.log('🔬 LAB UPLOAD STARTED');
+  console.log('📡 Using API:', state.settings.apiUrl);
 
   // Convert FileList to Array
   const fileArray = Array.isArray(files) ? files : Array.from(files);
-  if (fileArray.length === 0) return;
+  if (fileArray.length === 0) {
+    console.log('❌ No files selected');
+    return;
+  }
+  
+  console.log('📁 Files to process:', fileArray.length);
 
   // 1. Visual Feedback - Show multi-page analysis in progress
   state.isAnalyzingLab = true;
