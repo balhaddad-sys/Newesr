@@ -6254,6 +6254,14 @@ async function performSync() {
 // ───────────────────────────────────────────────────────────────────
 
 async function performSnapshotSync() {
+  // ═══════════════════════════════════════════════════════════════════
+  // SAFEGUARD: Never overwrite cloud with empty state
+  // ═══════════════════════════════════════════════════════════════════
+  if (!state.patients || state.patients.length === 0) {
+    console.warn('⚠️ SAFEGUARD: Refusing snapshot sync with empty patients');
+    return false;
+  }
+  
   console.log('📦 Snapshot sync:', state.patients.length, 'patients');
   
   const payload = { 
@@ -6306,6 +6314,23 @@ async function saveCloud() {
 
 // Force immediate sync - bypasses debounce for critical operations like lab saves
 async function forceSync() {
+  // ═══════════════════════════════════════════════════════════════════
+  // SAFEGUARD: Never overwrite cloud with empty state
+  // ═══════════════════════════════════════════════════════════════════
+  if (!state.patients || state.patients.length === 0) {
+    console.warn('⚠️ SAFEGUARD: Refusing to sync empty patients array to cloud');
+    console.warn('   This prevents accidental data loss on code updates');
+    
+    // Try to load from cloud instead
+    try {
+      await syncFromCloud();
+      toast('Data restored from cloud', false);
+    } catch (e) {
+      console.error('Could not restore from cloud:', e);
+    }
+    return false;
+  }
+  
   // Clear any pending debounced sync
   if (syncState.syncTimeout) {
     clearTimeout(syncState.syncTimeout);
