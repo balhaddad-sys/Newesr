@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Clinical AI Assistant | MedWard Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#0f766e;
+  --primary-dark:#115e59;
+  --primary-light:#ccfbf1;
+  --danger:#dc2626;
+  --danger-light:#fef2f2;
+  --warning:#d97706;
+  --warning-light:#fffbeb;
+  --success:#059669;
+  --success-light:#d1fae5;
+  --bg:#f0fdf4;
+  --bg-card:#fff;
+  --text:#0f172a;
+  --text-secondary:#475569;
+  --text-muted:#94a3b8;
+  --border:#e2e8f0;
+  --radius:16px;
+  --gradient:linear-gradient(135deg,#0f766e 0%,#115e59 50%,#064e3b 100%);
+}
+[data-theme="dark"]{
+  --primary:#2dd4bf;
+  --primary-dark:#14b8a6;
+  --primary-light:#134e4a;
+  --danger:#f87171;
+  --danger-light:#450a0a;
+  --warning:#fbbf24;
+  --warning-light:#451a03;
+  --success:#4ade80;
+  --success-light:#14532d;
+  --bg:#0f172a;
+  --bg-card:#1e293b;
+  --text:#f1f5f9;
+  --text-secondary:#cbd5e1;
+  --text-muted:#64748b;
+  --border:#334155;
+  --gradient:linear-gradient(135deg,#2dd4bf 0%,#14b8a6 50%,#0f766e 100%);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+}
+
+/* Header */
+.app-header{
+  background:var(--gradient);
+  color:#fff;
+  padding:20px;
+  padding-top:max(20px,env(safe-area-inset-top));
+  position:relative;
+  overflow:hidden;
+}
+.app-header::before{
+  content:'';
+  position:absolute;
+  top:-50%;
+  right:-20%;
+  width:200px;
+  height:200px;
+  background:rgba(255,255,255,0.1);
+  border-radius:50%;
+}
+.app-header::after{
+  content:'';
+  position:absolute;
+  bottom:-30%;
+  left:-10%;
+  width:150px;
+  height:150px;
+  background:rgba(255,255,255,0.05);
+  border-radius:50%;
+}
+.header-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:relative;
+  z-index:1;
+}
+.header-brand{display:flex;align-items:center;gap:14px}
+.header-logo{
+  width:48px;
+  height:48px;
+  background:rgba(255,255,255,0.2);
+  backdrop-filter:blur(10px);
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.5rem;
+}
+.header-title{font-weight:700;font-size:1.2rem;letter-spacing:-0.3px}
+.header-subtitle{font-size:.8rem;opacity:0.85;margin-top:2px}
+.header-actions{display:flex;gap:10px}
+.icon-btn{
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.2);
+  background:rgba(255,255,255,0.1);
+  backdrop-filter:blur(10px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  font-size:1.2rem;
+  color:#fff;
+  transition:all 0.2s;
+}
+.icon-btn:hover{background:rgba(255,255,255,0.2)}
+
+/* Main Content */
+.main-content{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  max-width:800px;
+  width:100%;
+  margin:0 auto;
+  padding:20px;
+}
+
+/* Quick Prompts */
+.prompts-section{margin-bottom:20px}
+.prompts-label{
+  font-size:.7rem;
+  font-weight:600;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  margin-bottom:10px;
+}
+.prompts-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+@media(min-width:500px){
+  .prompts-grid{grid-template-columns:repeat(4,1fr)}
+}
+.prompt-card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px 12px;
+  cursor:pointer;
+  transition:all 0.2s;
+  text-align:center;
+}
+.prompt-card:hover{
+  border-color:var(--primary);
+  transform:translateY(-2px);
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+.prompt-card:active{transform:scale(0.97)}
+.prompt-icon{font-size:1.4rem;margin-bottom:6px}
+.prompt-text{font-size:.75rem;font-weight:600;color:var(--text)}
+.prompt-hint{font-size:.65rem;color:var(--text-muted);margin-top:2px}
+
+/* Chat Container */
+.chat-container{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  background:var(--bg-card);
+  border-radius:var(--radius);
+  border:1px solid var(--border);
+  overflow:hidden;
+  min-height:300px;
+}
+.chat-header{
+  padding:14px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:var(--bg-card);
+}
+.chat-avatar{
+  width:36px;
+  height:36px;
+  background:var(--gradient);
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.1rem;
+}
+.chat-info{flex:1}
+.chat-name{font-weight:700;font-size:.9rem}
+.chat-status{font-size:.7rem;color:var(--success);display:flex;align-items:center;gap:4px}
+.chat-status::before{content:'';width:6px;height:6px;background:var(--success);border-radius:50%}
+.chat-clear{
+  padding:8px 12px;
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:8px;
+  font-size:.7rem;
+  font-weight:600;
+  color:var(--text-muted);
+  cursor:pointer;
+}
+.chat-clear:hover{color:var(--danger);border-color:var(--danger)}
+
+/* Messages Area */
+.messages-area{
+  flex:1;
+  overflow-y:auto;
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.message{
+  max-width:90%;
+  animation:fadeIn 0.3s ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.message.user{align-self:flex-end}
+.message.assistant{align-self:flex-start;max-width:95%}
+.message-bubble{
+  padding:14px 16px;
+  border-radius:16px;
+  font-size:.9rem;
+  line-height:1.7;
+  overflow:hidden;
+}
+.message.user .message-bubble{
+  background:var(--primary);
+  color:#fff;
+  border-bottom-right-radius:4px;
+}
+.message.assistant .message-bubble{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-bottom-left-radius:4px;
+  overflow-x:auto;
+}
+.message-time{
+  font-size:.65rem;
+  color:var(--text-muted);
+  margin-top:4px;
+  padding:0 4px;
+}
+.message.user .message-time{text-align:right}
+
+/* Welcome Message */
+.welcome-message{
+  text-align:center;
+  padding:40px 20px;
+  color:var(--text-muted);
+}
+.welcome-icon{font-size:3rem;margin-bottom:16px;opacity:0.5}
+.welcome-title{font-size:1.1rem;font-weight:600;color:var(--text);margin-bottom:8px}
+.welcome-text{font-size:.85rem;line-height:1.6}
+
+/* Loading Animation */
+.typing-indicator{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  padding:14px 16px;
+}
+.typing-dot{
+  width:8px;
+  height:8px;
+  background:var(--primary);
+  border-radius:50%;
+  animation:typingBounce 1.4s infinite ease-in-out both;
+}
+.typing-dot:nth-child(1){animation-delay:-0.32s}
+.typing-dot:nth-child(2){animation-delay:-0.16s}
+@keyframes typingBounce{
+  0%,80%,100%{transform:scale(0.6);opacity:0.4}
+  40%{transform:scale(1);opacity:1}
+}
+
+/* Input Area */
+.input-area{
+  padding:16px;
+  border-top:1px solid var(--border);
+  background:var(--bg-card);
+}
+.input-row{
+  display:flex;
+  gap:10px;
+  align-items:flex-end;
+}
+.input-wrapper{
+  flex:1;
+  position:relative;
+}
+.chat-input{
+  width:100%;
+  padding:14px 16px;
+  border:2px solid var(--border);
+  border-radius:14px;
+  font-size:16px;
+  font-family:inherit;
+  background:var(--bg);
+  color:var(--text);
+  resize:none;
+  min-height:52px;
+  max-height:120px;
+  transition:border-color 0.2s;
+}
+.chat-input:focus{
+  outline:none;
+  border-color:var(--primary);
+}
+.chat-input::placeholder{color:var(--text-muted)}
+.send-btn{
+  width:52px;
+  height:52px;
+  border-radius:14px;
+  background:var(--gradient);
+  border:none;
+  color:#fff;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.3rem;
+  transition:all 0.2s;
+  flex-shrink:0;
+}
+.send-btn:hover{transform:scale(1.05)}
+.send-btn:active{transform:scale(0.95)}
+.send-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+
+/* Response Formatting */
+.response-content{overflow-x:auto}
+.response-content h2{font-size:1.1rem;font-weight:700;color:var(--primary-dark);margin:0 0 12px;padding-bottom:8px;border-bottom:2px solid var(--primary-light)}
+.response-content h3{font-size:1rem;font-weight:700;color:var(--text);margin:16px 0 8px}
+.response-content h4{font-size:.9rem;font-weight:700;color:var(--primary);margin:12px 0 6px}
+.response-content p{margin:10px 0}
+.response-content strong{color:var(--text);font-weight:600}
+/* Table wrapper for horizontal scroll */
+.table-wrapper{overflow-x:auto;margin:12px -8px;padding:0 8px}
+.response-content table{width:100%;min-width:400px;border-collapse:collapse;margin:12px 0;font-size:.8rem;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.response-content th{padding:10px 12px;text-align:left;background:var(--primary-light);font-weight:600;border-bottom:2px solid var(--primary);white-space:nowrap}
+.response-content td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+.response-content tr:last-child td{border-bottom:none}
+.response-content hr{border:none;border-top:1px solid var(--border);margin:16px 0}
+.response-content li{margin:6px 0;margin-left:20px}
+
+/* Alert Boxes in Response */
+.alert-box{
+  padding:12px 14px;
+  border-radius:10px;
+  margin:12px 0;
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  font-size:.85rem;
+}
+.alert-box.danger{background:var(--danger-light);border-left:3px solid var(--danger)}
+.alert-box.warning{background:var(--warning-light);border-left:3px solid var(--warning)}
+.alert-box.success{background:var(--success-light);border-left:3px solid var(--success)}
+
+/* Bottom Navigation */
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:var(--bg-card);
+  border-top:1px solid var(--border);
+  padding:8px 16px;
+  padding-bottom:max(8px,env(safe-area-inset-bottom));
+  display:flex;
+  justify-content:space-around;
+  z-index:1000;
+}
+.nav-item{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  padding:10px 20px;
+  border-radius:12px;
+  cursor:pointer;
+  color:var(--text-muted);
+  font-size:.7rem;
+  font-weight:600;
+  transition:all 0.2s;
+  text-decoration:none;
+}
+.nav-item:hover{color:var(--primary)}
+.nav-item.active{color:var(--primary);background:var(--primary-light)}
+.nav-icon{font-size:1.3rem}
+
+/* Disclaimer */
+.disclaimer{
+  text-align:center;
+  padding:12px;
+  font-size:.7rem;
+  color:var(--text-muted);
+  background:var(--bg);
+  border-top:1px solid var(--border);
+}
+
+/* Spacer for bottom nav */
+.nav-spacer{height:80px}
+</style>
+</head>
+<body>
+<header class="app-header">
+<div class="header-row">
+<div class="header-brand">
+<div class="header-logo">🤖</div>
+<div>
+<div class="header-title">Clinical AI Assistant</div>
+<div class="header-subtitle">Evidence-Based • Kuwait SI Units</div>
+</div>
+</div>
+<div class="header-actions">
+<button class="icon-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+<button class="icon-btn" onclick="goBack()">✕</button>
+</div>
+</div>
+</header>
+
+<div class="main-content">
+<!-- Quick Prompts -->
+<div class="prompts-section">
+<div class="prompts-label">Quick Topics</div>
+<div class="prompts-grid">
+<div class="prompt-card" onclick="askQuestion('Hyperkalemia ECG changes and management')">
+<div class="prompt-icon">⚡</div>
+<div class="prompt-text">Hyperkalemia</div>
+<div class="prompt-hint">ECG & Treatment</div>
+</div>
+<div class="prompt-card" onclick="askQuestion('DKA management protocol step by step')">
+<div class="prompt-icon">💧</div>
+<div class="prompt-text">DKA Protocol</div>
+<div class="prompt-hint">Step-by-step</div>
+</div>
+<div class="prompt-card" onclick="askQuestion('Neutropenic fever workup and empiric antibiotics')">
+<div class="prompt-icon">🦠</div>
+<div class="prompt-text">Neutropenic Fever</div>
+<div class="prompt-hint">Workup & Abx</div>
+</div>
+<div class="prompt-card" onclick="askQuestion('GI bleed upper vs lower workup and management')">
+<div class="prompt-icon">🩸</div>
+<div class="prompt-text">GI Bleed</div>
+<div class="prompt-hint">UGIB vs LGIB</div>
+</div>
+<div class="prompt-card" onclick="askQuestion('Acute pancreatitis diagnosis and management')">
+<div class="prompt-icon">🔥</div>
+<div class="prompt-text">Pancreatitis</div>
+<div class="prompt-hint">Dx & Management</div>
+</div>
+<div class="prompt-card" onclick="askQuestion('Hyponatremia workup algorithm')">
+<div class="prompt-icon">🧂</div>
+<div class="prompt-text">Hyponatremia</div>
+<div class="prompt-hint">Workup Algorithm</div>
+</div>
+<div class="prompt-card" onclick="askQuestion('Acute kidney injury AKI workup and management')">
+<div class="prompt-icon">🫘</div>
+<div class="prompt-text">AKI</div>
+<div class="prompt-hint">Workup & Mx</div>
+</div>
+<div class="prompt-card" onclick="askQuestion('Status epilepticus management protocol')">
+<div class="prompt-icon">🧠</div>
+<div class="prompt-text">Status Epilepticus</div>
+<div class="prompt-hint">Emergency Mx</div>
+</div>
+</div>
+</div>
+
+<!-- Chat Container -->
+<div class="chat-container">
+<div class="chat-header">
+<div class="chat-avatar">🤖</div>
+<div class="chat-info">
+<div class="chat-name">Clinical AI</div>
+<div class="chat-status">Online • Ready to help</div>
+</div>
+<button class="chat-clear" onclick="clearChat()">Clear Chat</button>
+</div>
+<div class="messages-area" id="messagesArea">
+<div class="welcome-message">
+<div class="welcome-icon">🩺</div>
+<div class="welcome-title">How can I help you today?</div>
+<div class="welcome-text">Ask any clinical question. I'll provide evidence-based answers using Kuwait SI units.</div>
+</div>
+</div>
+<div class="disclaimer">⚠️ AI-assisted information. Always verify with clinical guidelines and senior physicians.</div>
+<div class="input-area">
+<div class="input-row">
+<div class="input-wrapper">
+<textarea class="chat-input" id="chatInput" placeholder="Ask a clinical question..." rows="1" onkeydown="handleKeydown(event)"></textarea>
+</div>
+<button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="nav-spacer"></div>
+
+<nav class="bottom-nav">
+<a class="nav-item" href="index.html"><div class="nav-icon">🏠</div><span>Home</span></a>
+<a class="nav-item" href="oncall_assistant.html"><div class="nav-icon">⚡</div><span>OnCall</span></a>
+<a class="nav-item" href="oncall_assistant.html#emergency"><div class="nav-icon">🚨</div><span>Emergency</span></a>
+<a class="nav-item active"><div class="nav-icon">🤖</div><span>AI</span></a>
+</nav>
+
+<script>
+var apiUrl='https://script.google.com/macros/s/AKfycbznXa9YNna26Srt1eZVEnSV-dIiubFLTwg3ryLdE-maGNCQhydP_8E6AK4QPXkeQrw7lA/exec';
+
+// Theme
+var savedTheme=localStorage.getItem('oncall-theme')||'light';
+document.documentElement.setAttribute('data-theme',savedTheme);
+document.getElementById('themeBtn').textContent=savedTheme==='dark'?'☀️':'🌙';
+
+function toggleTheme(){
+  var t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',t);
+  localStorage.setItem('oncall-theme',t);
+  document.getElementById('themeBtn').textContent=t==='dark'?'☀️':'🌙';
+}
+
+function goBack(){
+  // Navigate to oncall_assistant.html - works both locally and deployed
+  var baseUrl = window.location.href.split('/').slice(0, -1).join('/');
+  if(document.referrer && document.referrer.includes(window.location.hostname)){
+    window.history.back();
+  }else{
+    window.location.href = baseUrl + '/oncall_assistant.html';
+  }
+}
+
+// Auto-resize textarea
+var chatInput=document.getElementById('chatInput');
+chatInput.addEventListener('input',function(){
+  this.style.height='auto';
+  this.style.height=Math.min(this.scrollHeight,120)+'px';
+});
+
+function handleKeydown(e){
+  if(e.key==='Enter' && !e.shiftKey){
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function parseMarkdown(text){
+  // Tables
+  text = text.replace(/\n\|(.+)\|\n\|[-:| ]+\|\n([\s\S]*?)(?=\n\n|\n[^|]|$)/g, function(match, header, body) {
+    var headers = header.split('|').map(function(h){return h.trim();}).filter(Boolean);
+    var headerHtml = '<tr>' + headers.map(function(h){return '<th>'+h+'</th>';}).join('') + '</tr>';
+    var rows = body.trim().split('\n').map(function(row){
+      var cells = row.split('|').map(function(c){return c.trim();}).filter(Boolean);
+      return '<tr>' + cells.map(function(c){return '<td>'+c+'</td>';}).join('') + '</tr>';
+    }).join('');
+    return '<div class="table-wrapper"><table>'+headerHtml+rows+'</table></div>';
+  });
+  // Headers
+  text = text.replace(/^### (.+)$/gm, '<h4>$1</h4>');
+  text = text.replace(/^## (.+)$/gm, '<h3>$1</h3>');
+  text = text.replace(/^# (.+)$/gm, '<h2>$1</h2>');
+  // Bold and italic
+  text = text.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  // Horizontal rule
+  text = text.replace(/^---$/gm, '<hr>');
+  // Lists
+  text = text.replace(/^\* (.+)$/gm, '<li>$1</li>');
+  text = text.replace(/^- (.+)$/gm, '<li>$1</li>');
+  text = text.replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>');
+  // Paragraphs
+  text = text.replace(/\n\n/g, '</p><p>');
+  text = text.replace(/\n/g, '<br>');
+  return '<div class="response-content"><p>'+text+'</p></div>';
+}
+
+function getTime(){
+  return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}
+
+function addMessage(content,isUser,isHtml){
+  var area=document.getElementById('messagesArea');
+  // Remove welcome message if present
+  var welcome=area.querySelector('.welcome-message');
+  if(welcome)welcome.remove();
+  
+  var msg=document.createElement('div');
+  msg.className='message '+(isUser?'user':'assistant');
+  
+  var bubble=document.createElement('div');
+  bubble.className='message-bubble';
+  if(isHtml){
+    bubble.innerHTML=content;
+  }else{
+    bubble.textContent=content;
+  }
+  
+  var time=document.createElement('div');
+  time.className='message-time';
+  time.textContent=getTime();
+  
+  msg.appendChild(bubble);
+  msg.appendChild(time);
+  area.appendChild(msg);
+  area.scrollTop=area.scrollHeight;
+  
+  return msg;
+}
+
+function addTypingIndicator(){
+  var area=document.getElementById('messagesArea');
+  var msg=document.createElement('div');
+  msg.className='message assistant';
+  msg.id='typingIndicator';
+  msg.innerHTML='<div class="message-bubble"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>';
+  area.appendChild(msg);
+  area.scrollTop=area.scrollHeight;
+}
+
+function removeTypingIndicator(){
+  var el=document.getElementById('typingIndicator');
+  if(el)el.remove();
+}
+
+function sendMessage(){
+  var input=document.getElementById('chatInput');
+  var q=input.value.trim();
+  if(!q)return;
+  
+  // Add user message
+  addMessage(q,true,false);
+  input.value='';
+  input.style.height='auto';
+  
+  // Show typing indicator
+  addTypingIndicator();
+  document.getElementById('sendBtn').disabled=true;
+  
+  // Call API
+  fetch(apiUrl,{
+    method:'POST',
+    headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({action:'oncallAskClinical',question:q})
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    removeTypingIndicator();
+    document.getElementById('sendBtn').disabled=false;
+    var ans=d.answer||d.response||'Sorry, I could not process that request.';
+    var formatted=parseMarkdown(ans);
+    addMessage(formatted,false,true);
+  })
+  .catch(function(err){
+    removeTypingIndicator();
+    document.getElementById('sendBtn').disabled=false;
+    addMessage('❌ Error: '+err.message,false,false);
+  });
+}
+
+function askQuestion(q){
+  document.getElementById('chatInput').value=q;
+  sendMessage();
+}
+
+function clearChat(){
+  var area=document.getElementById('messagesArea');
+  area.innerHTML='<div class="welcome-message"><div class="welcome-icon">🩺</div><div class="welcome-title">How can I help you today?</div><div class="welcome-text">Ask any clinical question. I\'ll provide evidence-based answers using Kuwait SI units.</div></div>';
+}
+</script>
+</body>
+</html>
