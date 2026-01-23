@@ -5575,13 +5575,19 @@ window.doLogout = doLogout;
 // Generate session ID
 state.sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
-// Sync state tracking for reactive auto-sync
+// ═══════════════════════════════════════════════════════════════════════════════
+// ⚡ OPTIMIZED SYNC STATE WITH REVISION TRACKING
+// ═══════════════════════════════════════════════════════════════════════════════
 let syncState = {
   status: 'synced',
   lastSyncTime: null,
   pendingChanges: false,
   syncTimeout: null,
-  errorCount: 0
+  errorCount: 0,
+  clientRev: 0,           // Track client revision for conditional loads
+  dirtyCounter: 0,        // Fingerprint to prevent redundant saves
+  lastSavedCounter: 0,    // Last saved dirty counter
+  pendingPatches: []      // Queue of patches for delta sync
 };
 
 const $ = id => document.getElementById(id);
@@ -5625,6 +5631,43 @@ async function fetchWithRetry(url, options = {}, retries = CONFIG.MAX_RETRIES) {
     throw error;
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ⚡ STRIP HEAVY FIELDS - Remove large blobs from sync payload
+// ═══════════════════════════════════════════════════════════════════════════════
+function stripHeavyFields(patient) {
+  // Create shallow copy to avoid modifying original
+  const light = { ...patient };
+  
+  // Remove base64 images (can be megabytes)
+  delete light.labImages;
+  delete light.documentScans;
+  delete light.rawOCR;
+  delete light.attachmentData;
+  
+  // Keep lab data but limit to essentials
+  if (light.labData && light.labData.parameters) {
+    light.labData = {
+      ...light.labData,
+      // Keep only latest 3 values per parameter
+      parameters: light.labData.parameters.map(p => ({
+        name: p.name,
+        unit: p.unit,
+        refMin: p.refMin,
+        refMax: p.refMax,
+        values: (p.values || []).slice(0, 3)
+      }))
+    };
+  }
+  
+  // Truncate very long notes
+  if (light.notes && light.notes.length > 5000) {
+    light.notes = light.notes.substring(0, 5000) + '... [truncated]';
+  }
+  
+  return light;
+}
+
 const initials = n => { if (!n) return '?'; const p = n.trim().split(/\s+/); return p.length >= 2 ? (p[0][0] + p[p.length-1][0]).toUpperCase() : n.substring(0, 2).toUpperCase(); };
 
 function toast(msg, isError = false) {
@@ -6005,24 +6048,33 @@ function updateSyncStatus(status, message) {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// ⚡ OPTIMIZED SYNC - Local instant, Cloud background
+// ═══════════════════════════════════════════════════════════════════════════════
+
 function markDirty() {
+  syncState.dirtyCounter++;
   syncState.pendingChanges = true;
-  updateSyncStatus('pending', 'Saving...');
   
-  // Clear any pending timeout
+  // INSTANT local save (user sees "Saved" immediately)
+  saveLocal();
+  updateSyncStatus('pending', 'Saved locally');
+  
+  // Debounced cloud sync (background, doesn't block UI)
   if (syncState.syncTimeout) {
     clearTimeout(syncState.syncTimeout);
   }
   
-  // INSTANT SYNC - no debounce delay
-  performSync();
+  syncState.syncTimeout = setTimeout(() => {
+    performSync();
+  }, 500); // Short debounce for batching rapid changes
 }
 
 async function performSync() {
-  if (!syncState.pendingChanges) return;
-  
-  // Always save locally first
-  saveLocal();
+  // Skip if no real changes (dirty fingerprint check)
+  if (!syncState.pendingChanges || syncState.dirtyCounter === syncState.lastSavedCounter) {
+    return;
+  }
   
   if (!state.settings.apiUrl || state.settings.apiUrl === 'YOUR_API_URL_HERE') {
     syncState.pendingChanges = false;
@@ -6030,9 +6082,12 @@ async function performSync() {
     return;
   }
   
-  updateSyncStatus('syncing', 'Syncing to cloud...');
+  updateSyncStatus('syncing', 'Syncing...');
   
   try {
+    // Strip heavy data from patients for faster sync
+    const lightPatients = state.patients.map(p => stripHeavyFields(p));
+    
     const res = await fetch(state.settings.apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
@@ -6044,9 +6099,9 @@ async function performSync() {
           units: state.units, 
           settings: { 
             adminPassword: state.settings.adminPassword,
-            apiUrl: state.settings.apiUrl  // Include API URL so all users get it
+            apiUrl: state.settings.apiUrl
           }, 
-          patients: state.patients,
+          patients: lightPatients,
           unitRequests: state.unitRequests
         }
       })
@@ -6054,9 +6109,18 @@ async function performSync() {
     
     if (!res.ok) throw new Error('HTTP ' + res.status);
     
+    const result = await res.json();
+    
     syncState.pendingChanges = false;
     syncState.lastSyncTime = Date.now();
+    syncState.lastSavedCounter = syncState.dirtyCounter;
     syncState.errorCount = 0;
+    
+    // Update client revision from server
+    if (result.rev) {
+      syncState.clientRev = result.rev;
+    }
+    
     updateSyncStatus('synced', 'Synced');
     
   } catch (e) {
@@ -6178,7 +6242,7 @@ async function manualSync() {
 async function syncFromCloud() {
   if (!state.settings.apiUrl || state.settings.apiUrl === 'YOUR_API_URL_HERE') return;
   
-  console.log('🔄 Loading data from cloud...');
+  console.log('🔄 Checking cloud for updates...');
   
   try {
     const res = await fetch(state.settings.apiUrl, {
@@ -6187,14 +6251,27 @@ async function syncFromCloud() {
       body: JSON.stringify({ 
         action: 'loadData',
         username: AUTH.user,
-        password: AUTH.pass
+        password: AUTH.pass,
+        clientRev: syncState.clientRev  // Send current rev for conditional load
       })
     });
     
     const data = await res.json();
-    console.log('📥 Cloud data received:', data.success ? 'success' : 'failed');
+    
+    // ⚡ CONDITIONAL LOAD - Skip processing if unchanged
+    if (data.success && data.unchanged) {
+      console.log('✅ Data unchanged (rev:', syncState.clientRev, ')');
+      return;
+    }
+    
+    console.log('📥 Cloud data received:', data.success ? 'success' : 'failed', 'rev:', data.rev);
     
     if (data.success && data.data) {
+      // Update client revision
+      if (data.rev) {
+        syncState.clientRev = data.rev;
+      }
+      
       // Update units - MERGE instead of overwrite to preserve local units
       if (data.data.units?.length) {
         const cloudIds = new Set(data.data.units.map(u => u.id));
@@ -6218,13 +6295,6 @@ async function syncFromCloud() {
       if (data.data.patients) {
         state.patients = data.data.patients;
         console.log('   Patients loaded:', state.patients.length);
-        
-        // Log lab data for debugging
-        state.patients.forEach(p => {
-          if (p.labData?.parameters?.length) {
-            console.log(`   → ${p.name}: ${p.labData.parameters.length} lab parameters`);
-          }
-        });
         
         // If we have a current patient open, refresh their reference
         if (state.currentPatient) {
