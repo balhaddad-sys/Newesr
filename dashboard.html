@@ -3531,13 +3531,11 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 <div class="modal-header" style="text-align:center;display:block;border:none">
 <div id="accessIcon" style="font-size:3rem;margin-bottom:12px">🏥</div>
 <div class="modal-title" id="accessTitle">Unit Access</div>
-<p style="color:var(--text-muted);font-size:0.85rem;margin-top:8px">Enter 4-digit code</p>
+<p style="color:var(--text-muted);font-size:0.85rem;margin-top:8px">Enter your details to continue</p>
 </div>
 <div class="modal-body">
-<div class="code-inputs" id="codeInputs"></div>
-<p class="code-error" id="codeError">Invalid code</p>
-<div id="userSection" style="display:none;margin-top:28px;padding-top:28px;border-top:1px solid var(--border)">
-<div class="form-group"><label class="form-label">Your Name</label><input type="text" id="userName" class="form-input"></div>
+<div id="userSection">
+<div class="form-group"><label class="form-label">Your Name</label><input type="text" id="userName" class="form-input" placeholder="Enter your name"></div>
 <div class="form-group"><label class="form-label">Role</label><select id="userRole" class="form-select"><option value="attending">Attending</option><option value="resident">Resident</option><option value="intern">Intern</option></select></div>
 <div class="form-group" style="margin-top:16px">
 <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.85rem;color:var(--text-secondary)">
@@ -3549,7 +3547,7 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 </div>
 <div class="modal-footer">
 <button class="btn btn-secondary" onclick="closeModal('accessModal')">Cancel</button>
-<button class="btn btn-primary" id="enterBtn" style="display:none" onclick="enterUnit()">Enter</button>
+<button class="btn btn-primary" id="enterBtn" onclick="enterUnit()">Enter Unit</button>
 </div>
 </div>
 </div>
@@ -11803,35 +11801,10 @@ function openUnitAccess(id) {
   state.selectedUnitId = id;
   $('accessIcon').textContent = u.icon;
   $('accessTitle').textContent = u.name;
-  $('codeError').classList.remove('show');
-  $('userSection').style.display = 'none';
-  $('enterBtn').style.display = 'none';
-  $('codeInputs').innerHTML = [0,1,2,3].map(i => `<input type="tel" class="code-digit" maxlength="1" data-idx="${i}" inputmode="numeric">`).join('');
-  
-  const inputs = $$('.code-digit');
-  inputs.forEach((inp, idx) => {
-    inp.addEventListener('input', () => {
-      inp.value = inp.value.replace(/\D/g, '');
-      if (inp.value && idx < 3) inputs[idx + 1].focus();
-      const code = Array.from(inputs).map(i => i.value).join('');
-      if (code.length === 4) {
-        if (code === u.code) {
-          inputs.forEach(i => { i.classList.add('success'); i.disabled = true; });
-          $('userSection').style.display = 'block';
-          $('enterBtn').style.display = 'flex';
-          $('userName').focus();
-        } else {
-          $('codeError').classList.add('show');
-          inputs.forEach(i => i.classList.add('error'));
-          setTimeout(() => { inputs.forEach(i => { i.classList.remove('error'); i.value = ''; }); inputs[0].focus(); }, 500);
-        }
-      }
-    });
-    inp.addEventListener('keydown', e => { if (e.key === 'Backspace' && !inp.value && idx > 0) inputs[idx - 1].focus(); });
-  });
+  $('userName').value = '';
   
   openModal('accessModal');
-  setTimeout(() => inputs[0].focus(), 100);
+  setTimeout(() => $('userName').focus(), 100);
 }
 
 window.enterUnit = function() {
