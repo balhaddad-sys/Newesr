@@ -2371,7 +2371,7 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 }
 .plan-ai-item:active{background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.3)}
 .ai-item-icon{font-size:1rem;flex-shrink:0}
-.ai-item-text{flex:1;font-size:0.8rem;color:#c9d1d9;line-height:1.3}
+.ai-item-text{flex:1;font-size:0.8rem;color:var(--text-secondary);line-height:1.3}
 .ai-item-add{
   width:24px;height:24px;background:rgba(16,185,129,0.15);
   border-radius:6px;color:#10b981;display:grid;place-items:center;
@@ -2382,18 +2382,18 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 .plan-tasks-list{padding:0}
 .tasks-group-header{
   display:flex;align-items:center;gap:8px;
-  padding:12px 20px;background:rgba(255,255,255,0.02);
-  font-size:0.8rem;font-weight:700;color:#9ca3af;
+  padding:12px 20px;background:var(--bg);
+  font-size:0.8rem;font-weight:700;color:var(--text-muted);
   border-bottom:1px solid var(--border)
 }
 .tasks-group-header.completed-header{cursor:pointer}
-.tasks-group-header.completed-header:active{background:rgba(255,255,255,0.04)}
+.tasks-group-header.completed-header:active{background:var(--bg-elevated)}
 .tasks-count{
   margin-left:auto;padding:2px 8px;background:rgba(245,158,11,0.15);
   border-radius:100px;font-size:0.65rem;color:#f59e0b
 }
 .tasks-count.done{background:rgba(16,185,129,0.15);color:#10b981}
-.expand-arrow{font-size:0.6rem;color:#6b7280;margin-left:4px}
+.expand-arrow{font-size:0.6rem;color:var(--text-muted);margin-left:4px}
 
 /* Task Item */
 .plan-task-item{
@@ -2401,7 +2401,7 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
   padding:14px 20px;border-bottom:1px solid var(--border);
   transition:background 0.2s
 }
-.plan-task-item:active{background:rgba(255,255,255,0.02)}
+.plan-task-item:active{background:var(--bg-elevated)}
 .plan-task-item.completed{opacity:0.5}
 .plan-task-item[data-priority="high"]{border-left:3px solid #ef4444}
 .plan-task-item[data-priority="medium"]{border-left:3px solid #f59e0b}
@@ -2409,7 +2409,7 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 
 .task-check-box{
   width:22px;height:22px;border-radius:6px;flex-shrink:0;
-  border:2px solid rgba(255,255,255,0.2);background:transparent;
+  border:2px solid var(--border);background:transparent;
   display:grid;place-items:center;font-size:0.75rem;color:transparent;
   cursor:pointer;transition:all 0.2s;-webkit-tap-highlight-color:transparent
 }
@@ -2417,10 +2417,10 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 .task-check-box.done{background:#10b981;border-color:#10b981;color:#fff}
 
 .task-info{flex:1;min-width:0}
-.task-text{font-size:0.85rem;color:#e5e7eb;line-height:1.4;margin-bottom:6px}
-.plan-task-item.completed .task-text{text-decoration:line-through;color:#6b7280}
-.task-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:0.7rem;color:#6b7280}
-.task-cat{padding:2px 6px;background:rgba(255,255,255,0.04);border-radius:4px;text-transform:capitalize}
+.task-text{font-size:0.85rem;color:var(--text);line-height:1.4;margin-bottom:6px}
+.plan-task-item.completed .task-text{text-decoration:line-through;color:var(--text-muted)}
+.task-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:0.7rem;color:var(--text-muted)}
+.task-cat{padding:2px 6px;background:var(--bg);border-radius:4px;text-transform:capitalize}
 .task-pri.high{color:#ef4444}
 .task-pri.medium{color:#f59e0b}
 .task-pri.low{color:#10b981}
@@ -2428,17 +2428,17 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 .task-btns{display:flex;gap:4px;flex-shrink:0}
 .task-btn{
   width:28px;height:28px;border:none;border-radius:6px;
-  background:rgba(255,255,255,0.04);cursor:pointer;
+  background:var(--bg);cursor:pointer;
   display:grid;place-items:center;font-size:0.8rem;
   -webkit-tap-highlight-color:transparent
 }
-.task-btn:active{background:rgba(255,255,255,0.1)}
+.task-btn:active{background:var(--bg-elevated)}
 .task-btn.del:active{background:rgba(239,68,68,0.2)}
 
 /* Empty State */
 .plan-empty{text-align:center;padding:40px 20px}
 .plan-empty .empty-icon{font-size:2rem;margin-bottom:8px;opacity:0.5}
-.plan-empty .empty-text{font-size:0.85rem;color:#6b7280}
+.plan-empty .empty-text{font-size:0.85rem;color:var(--text-muted)}
 
 /* Task Modal */
 .task-modal-box{max-width:400px}
@@ -9685,25 +9685,27 @@ window.regenerateUnifiedSummary = async function() {
   const uniqueDx = [...new Set(allDiagnoses)];
   const uniqueMeds = [...new Set(allMeds)];
   
-  // Build context for AI
-  const context = `
-Patient: ${p.name || 'Unknown'}
-Documents analyzed: ${p.clinicalNotes.length}
+  // Build context for AI - improved prompt for synthesis
+  const context = `You are synthesizing clinical information from ${p.clinicalNotes.length} uploaded documents into ONE concise summary.
 
-Individual document findings:
-${allFindings.join('\n\n')}
+PATIENT: ${p.name || 'Unknown'}${p.age ? ', ' + p.age + 'yo' : ''}${p.gender ? ' ' + p.gender : ''}
 
-Diagnoses mentioned: ${uniqueDx.join(', ') || 'None'}
-Medications mentioned: ${uniqueMeds.join(', ') || 'None'}
+RAW EXTRACTED DATA (may contain duplicates):
+${allFindings.join(' | ')}
 
-Please create a unified, comprehensive clinical summary that:
-1. Synthesizes all findings into one coherent narrative
-2. Identifies the main clinical problems
-3. Notes any trends or changes if multiple dates
-4. Highlights key management considerations
-`;
+DIAGNOSES FOUND: ${uniqueDx.join(', ') || 'None specified'}
+MEDICATIONS FOUND: ${uniqueMeds.join(', ') || 'None specified'}
+
+INSTRUCTIONS:
+- Create ONE unified clinical summary (3-5 sentences max)
+- DO NOT repeat the same information multiple times
+- Synthesize and deduplicate - if same fact appears multiple times, mention it ONCE
+- Focus on: presenting complaint, key history, current status, main diagnoses
+- Be concise - this is for quick on-call reference
+- Do not list medications (they're shown separately)
+- Do not include disclaimers or headers`;
   
-  toast('Generating unified summary...');
+  toast('Synthesizing clinical summary...');
   
   try {
     const res = await fetch(state.settings.apiUrl, {
@@ -9722,7 +9724,7 @@ Please create a unified, comprehensive clinical summary that:
       p.unifiedSummary = data.answer;
       saveCloud();
       renderProfileHistory();
-      toast('✅ Summary regenerated');
+      toast('✅ Summary synthesized');
     } else {
       toast('Failed to generate summary', true);
     }
