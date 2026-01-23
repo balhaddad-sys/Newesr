@@ -961,31 +961,29 @@ async function callAPI(action, extra = {}) {
     res = await fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(requestBody),
-      redirect: 'follow'
+      body: JSON.stringify(requestBody)
     });
   } catch (e) {
     console.error('📡 Network error:', e);
-    toast('❌ Network error: ' + e.message);
+    toast('❌ Network error');
     return { success: false, error: 'Network error: ' + e.message };
   }
 
   const text = await res.text();
 
-  // Detect Google login page (deployment not public)
   if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
-    console.error('📡 Got HTML instead of JSON - check deployment settings');
-    toast('❌ Server error - check Apps Script deployment');
-    return { success: false, error: 'Server returned HTML instead of JSON' };
+    console.error('📡 Got HTML instead of JSON');
+    toast('❌ Server error');
+    return { success: false, error: 'Server returned HTML' };
   }
 
   try {
     const result = JSON.parse(text);
-    console.log('📡 Response:', action, result.success ? '✅' : '❌', result.error || '');
+    console.log('📡', action, result.success ? '✅' : '❌');
     return result;
   } catch (e) {
-    console.error('📡 Invalid JSON:', text.substring(0, 100));
-    return { success: false, error: 'Invalid response from server' };
+    console.error('📡 Invalid JSON');
+    return { success: false, error: 'Invalid response' };
   }
 }
 
