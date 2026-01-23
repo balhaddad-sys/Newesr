@@ -6184,7 +6184,11 @@ async function syncFromCloud() {
     const res = await fetch(state.settings.apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'loadData' })
+      body: JSON.stringify({ 
+        action: 'loadData',
+        username: AUTH.user,
+        password: AUTH.pass
+      })
     });
     
     const data = await res.json();
