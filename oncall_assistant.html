@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>OnCall Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--primary:#0f766e;--primary-dark:#115e59;--primary-light:#ccfbf1;--danger:#dc2626;--danger-light:#fef2f2;--warning:#d97706;--warning-light:#fffbeb;--success:#059669;--success-light:#d1fae5;--bg:#f8fafc;--bg-card:#fff;--text:#0f172a;--text-secondary:#475569;--text-muted:#94a3b8;--border:#e2e8f0;--radius:16px;--gold:#f59e0b}
+body.dark-theme{--primary:#14b8a6;--primary-dark:#2dd4bf;--primary-light:#134e4a;--danger-light:#7f1d1d;--warning-light:#78350f;--success-light:#064e3b;--bg:#0f172a;--bg-card:#1e293b;--text:#f8fafc;--text-secondary:#cbd5e1;--text-muted:#64748b;--border:#334155}
+body,.card,.protocol-card,.header,input,select,textarea{transition:background-color 0.3s ease,color 0.3s ease,border-color 0.3s ease}
+[data-theme="dark"]{--primary:#2dd4bf;--primary-dark:#14b8a6;--primary-light:#134e4a;--danger:#f87171;--danger-light:#450a0a;--warning:#fbbf24;--warning-light:#451a03;--success:#4ade80;--success-light:#14532d;--bg:#0f172a;--bg-card:#1e293b;--text:#f1f5f9;--text-secondary:#cbd5e1;--text-muted:#64748b;--border:#334155;--gold:#fbbf24}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+button:focus-visible,input:focus-visible,select:focus-visible{box-shadow:0 0 0 4px rgba(15,118,110,0.15)}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+.app-header{background:var(--bg-card);border-bottom:1px solid var(--border);padding:16px 20px;position:sticky;top:0;z-index:100}
+.header-row{display:flex;align-items:center;justify-content:space-between;max-width:800px;margin:0 auto}
+.header-brand{display:flex;align-items:center;gap:12px}
+.header-logo{width:40px;height:40px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.header-title{font-weight:700;font-size:1.1rem}
+.header-subtitle{font-size:.75rem;color:var(--text-muted)}
+.header-actions{display:flex;gap:8px}
+.icon-btn{width:44px;height:44px;border-radius:10px;border:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem}
+.main-content{max-width:800px;margin:0 auto;padding:0;padding-bottom:100px}
+.mode-switcher{padding:12px 16px;background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;gap:10px}
+.segment-btn{flex:1;padding:12px;border:1px solid var(--border);background:transparent;border-radius:10px;font-size:0.9rem;font-weight:600;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s}
+.segment-btn.active{background:var(--primary);color:white;border-color:var(--primary)}
+.segment-btn:hover:not(.active){background:var(--bg);border-color:var(--primary)}
+.badge-count{background:#dc2626;color:white;font-size:0.7rem;padding:2px 8px;border-radius:10px;min-width:20px;text-align:center}
+.badge-count.hidden{display:none}
+.call-log-view{padding:12px}
+.new-call-card{background:var(--bg-card);border:1px solid var(--border);border-left:4px solid var(--gold);border-radius:var(--radius);padding:16px;margin-bottom:16px}
+.new-call-title{font-weight:700;font-size:0.95rem;margin-bottom:12px;color:var(--text);display:flex;align-items:center;gap:8px}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.input-row-wide{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:12px}
+.call-input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:16px;background:var(--bg);color:var(--text);font-family:inherit}
+.call-input:focus{outline:none;border-color:var(--primary)}
+.call-select{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:16px;background:var(--bg);color:var(--text);font-family:inherit;cursor:pointer}
+.add-call-btn{width:100%;padding:14px;border:none;border-radius:10px;background:var(--primary);color:white;font-size:0.95rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.2s}
+.add-call-btn:hover{background:var(--primary-dark)}
+.add-call-btn:active{transform:scale(0.98)}
+.task-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;transition:all 0.2s}
+.task-card.done{opacity:0.5;background:var(--bg)}
+.task-card.done .task-text{text-decoration:line-through}
+.priority-stat{border-left:4px solid #dc2626}
+.priority-urgent{border-left:4px solid #f59e0b}
+.priority-routine{border-left:4px solid #10b981}
+.check-circle{width:28px;height:28px;min-width:28px;border:2px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;color:transparent;transition:all 0.2s}
+.check-circle:hover{border-color:var(--primary);background:var(--primary-light)}
+.task-card.done .check-circle{background:var(--success);border-color:var(--success);color:white}
+.task-content{flex:1;min-width:0}
+.task-meta{display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;color:var(--text-muted);margin-bottom:4px}
+.task-priority{font-weight:700;text-transform:uppercase;font-size:0.7rem;padding:2px 6px;border-radius:4px}
+.task-priority.stat{background:#fef2f2;color:#dc2626}
+.task-priority.urgent{background:#fffbeb;color:#d97706}
+.task-priority.routine{background:#d1fae5;color:#059669}
+[data-theme="dark"] .task-priority.stat{background:#450a0a}
+[data-theme="dark"] .task-priority.urgent{background:#451a03}
+[data-theme="dark"] .task-priority.routine{background:#14532d}
+.task-issue{font-weight:600;font-size:1rem;color:var(--text);margin-bottom:2px}
+.task-detail{font-size:0.85rem;color:var(--text-secondary)}
+.delete-btn{background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;padding:4px;opacity:0.5;transition:all 0.2s}
+.delete-btn:hover{color:var(--danger);opacity:1}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-muted)}
+.empty-state-icon{font-size:3rem;margin-bottom:12px;opacity:0.5}
+.empty-state-title{font-weight:600;font-size:1rem;margin-bottom:4px;color:var(--text-secondary)}
+.empty-state-text{font-size:0.85rem}
+.tools-view{padding:20px}
+.category-pills{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:20px}
+.pill{flex-shrink:0;padding:10px 18px;border-radius:20px;font-size:.8rem;font-weight:600;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);cursor:pointer}
+.pill.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.tool-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
+.tool-card.emergency{border-left:4px solid var(--danger)}
+.tool-header{padding:16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.tool-header-left{display:flex;align-items:center;gap:12px}
+.tool-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;background:var(--bg);border:1px solid var(--border)}
+.tool-title{font-weight:700;font-size:.95rem}
+.tool-subtitle{font-size:.8rem;color:var(--text-muted)}
+.tool-badge{padding:3px 8px;border-radius:6px;font-size:.65rem;font-weight:700;text-transform:uppercase;margin-left:8px}
+.tool-badge.urgent{background:var(--danger-light);color:var(--danger)}
+.tool-chevron{width:28px;height:28px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:transform .3s}
+.tool-card.expanded .tool-chevron{transform:rotate(180deg);color:var(--primary)}
+.tool-content{display:none;padding:0 16px 16px}
+.tool-card.expanded .tool-content{display:block}
+.tool-divider{height:1px;background:var(--border);margin-bottom:16px}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:.75rem;font-weight:600;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase}
+.form-input,.form-select{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:16px;background:var(--bg);color:var(--text);-webkit-appearance:none}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:400px){.form-row{grid-template-columns:1fr}.input-row{grid-template-columns:1fr}.input-row-wide{grid-template-columns:1fr}}
+.gender-buttons{display:flex;gap:10px}
+.gender-btn{flex:1;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);font-size:.9rem;font-weight:600;cursor:pointer;color:var(--text-secondary)}
+.gender-btn.selected{background:var(--primary-light);border-color:var(--primary);color:var(--primary)}
+.calc-btn{width:100%;padding:14px;border:none;border-radius:10px;background:var(--primary);color:#fff;font-size:.95rem;font-weight:600;cursor:pointer}
+.calc-btn.danger{background:var(--danger)}
+.result-box{margin-top:16px;padding:16px;border-radius:12px;background:var(--bg);border:1px solid var(--border)}
+.result-box.danger{background:var(--danger-light);border-color:var(--danger)}
+.result-box.warning{background:var(--warning-light);border-color:var(--warning)}
+.result-box.success{background:var(--success-light);border-color:var(--success)}
+.result-title{font-weight:700;font-size:1rem;margin-bottom:8px}
+.result-box.danger .result-title{color:var(--danger)}
+.result-box.warning .result-title{color:var(--warning)}
+.result-box.success .result-title{color:var(--success)}
+.result-content{font-size:.9rem;color:var(--text-secondary);line-height:1.7}
+.protocol-step{background:var(--bg-card);border-radius:10px;padding:14px;margin-bottom:10px;border-left:3px solid var(--primary)}
+.protocol-step.danger{border-left-color:var(--danger);background:var(--danger-light)}
+.protocol-step.warning{border-left-color:var(--warning);background:var(--warning-light)}
+.protocol-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.protocol-number{width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem}
+.protocol-step.danger .protocol-number{background:var(--danger)}
+.protocol-step.warning .protocol-number{background:var(--warning)}
+.protocol-title{font-weight:700;font-size:.9rem}
+.protocol-content{font-size:.85rem;color:var(--text-secondary);margin-left:34px}
+.prn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:500px){.prn-grid{grid-template-columns:repeat(2,1fr)}}
+.prn-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px 8px;cursor:pointer;text-align:center}
+.prn-card.active{border-color:var(--primary);background:var(--primary-light)}
+.prn-icon{font-size:1.5rem;margin-bottom:6px}
+.prn-name{font-weight:700;font-size:.8rem}
+.prn-details{display:none;margin-top:16px;padding:16px;background:var(--bg);border-radius:12px;border:1px solid var(--border)}
+.prn-details.visible{display:block}
+.ai-section{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px}
+.ai-header{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.ai-icon{width:44px;height:44px;background:linear-gradient(135deg,#0f766e,#115e59);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.ai-title{font-weight:700;font-size:1rem}
+.ai-subtitle{font-size:.8rem;color:var(--text-muted)}
+.ai-body{padding:16px}
+.ai-prompts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.ai-prompt-btn{padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:20px;font-size:.75rem;font-weight:500;color:var(--text-secondary);cursor:pointer}
+.ai-input-row{display:flex;gap:10px}
+.ai-input{flex:1;min-width:0;padding:14px 16px;border:1px solid var(--border);border-radius:12px;font-size:16px;background:var(--bg);color:var(--text)}
+.ai-send-btn{width:50px;height:50px;border-radius:12px;background:var(--primary);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ai-response{display:none;margin-top:16px;background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.ai-response.visible{display:block}
+.ai-response-header{padding:12px 16px;background:var(--primary-light);border-bottom:1px solid var(--border);display:flex;justify-content:space-between}
+.ai-response-label{font-size:.75rem;font-weight:600;color:var(--primary);text-transform:uppercase}
+.ai-response-body{padding:16px;font-size:.9rem;line-height:1.8;max-height:50vh;overflow-y:auto}
+.ai-loading{display:flex;align-items:center;justify-content:center;gap:12px;padding:30px;color:var(--text-muted)}
+.ai-loading-spinner{width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.quick-ref-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px;margin-bottom:20px}
+@media(max-width:500px){.quick-ref-grid{grid-template-columns:repeat(2,1fr)}}
+.quick-ref-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;transition:all 0.2s}
+.quick-ref-card:hover{border-color:var(--primary);transform:translateY(-2px)}
+.quick-ref-icon{font-size:1.3rem;margin-bottom:6px}
+.quick-ref-title{font-weight:600;font-size:.8rem;margin-bottom:2px}
+.quick-ref-value{font-size:.7rem;color:var(--text-muted)}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg-card);border-top:1px solid var(--border);padding:8px 16px;padding-bottom:calc(8px + env(safe-area-inset-bottom));display:flex;justify-content:space-around;z-index:1000}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 20px;border-radius:12px;cursor:pointer;color:var(--text-muted);font-size:.7rem;font-weight:600;text-decoration:none;transition:all 0.2s}
+a.nav-item{color:var(--text-muted)}
+.nav-item:hover{color:var(--primary)}
+.nav-item.active{color:var(--primary);background:var(--primary-light)}
+.nav-icon{font-size:1.3rem}
+.hidden{display:none!important}
+.section-label{font-size:.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:12px;margin-top:24px}
+.handover-framework{padding:0}
+.checklist-section{margin-bottom:16px;padding:14px;background:var(--bg);border-radius:10px}
+.checklist-title{font-weight:700;font-size:.85rem;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.checklist-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;font-size:.85rem;border-bottom:1px solid var(--border)}
+.checklist-item:last-child{border-bottom:none}
+.checklist-box{font-size:1rem;color:var(--primary)}
+.consult-box{background:var(--bg);border-radius:10px;padding:14px;margin-bottom:12px;border-left:3px solid var(--primary)}
+.consult-box.critical{border-left-color:var(--danger);background:var(--danger-light)}
+.consult-box.warning{border-left-color:var(--warning);background:var(--warning-light)}
+.consult-title{font-weight:700;font-size:.9rem;margin-bottom:10px;color:var(--text)}
+.consult-box.critical .consult-title{color:var(--danger)}
+.consult-box.warning .consult-title{color:var(--warning)}
+.consult-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:400px){.consult-grid{grid-template-columns:1fr}}
+.consult-item{font-size:.8rem;padding:8px;background:var(--bg-card);border-radius:6px;border:1px solid var(--border)}
+.handover-card{border-left:4px solid #3b82f6;background:linear-gradient(to right,rgba(59,130,246,0.05),var(--bg-card))}
+.handover-card .tool-header{background:transparent}
+.consult-intro{font-size:.8rem;color:var(--text-muted);margin:-8px 0 16px;padding:10px 14px;background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(236,72,153,0.1));border-radius:10px;border-left:3px solid #8b5cf6}
+.consult-card{border-left:4px solid #8b5cf6}
+.consult-critical{border-left-color:#dc2626;background:linear-gradient(to right,rgba(220,38,38,0.03),var(--bg-card))}
+.consult-cardio{border-left-color:#dc2626;background:linear-gradient(to right,rgba(220,38,38,0.03),var(--bg-card))}
+.consult-neuro{border-left-color:#ec4899;background:linear-gradient(to right,rgba(236,72,153,0.03),var(--bg-card))}
+.consult-gi{border-left-color:#f59e0b;background:linear-gradient(to right,rgba(245,158,11,0.03),var(--bg-card))}
+.consult-renal{border-left-color:#8b5cf6;background:linear-gradient(to right,rgba(139,92,246,0.03),var(--bg-card))}
+.consult-icon-critical{background:linear-gradient(135deg,#dc2626,#991b1b)!important;color:#fff!important;border:none!important}
+.consult-icon-cardio{background:linear-gradient(135deg,#dc2626,#be123c)!important;color:#fff!important;border:none!important}
+.consult-icon-neuro{background:linear-gradient(135deg,#ec4899,#db2777)!important;color:#fff!important;border:none!important}
+.consult-icon-gi{background:linear-gradient(135deg,#f59e0b,#d97706)!important;color:#fff!important;border:none!important}
+.consult-icon-renal{background:linear-gradient(135deg,#8b5cf6,#7c3aed)!important;color:#fff!important;border:none!important}
+.consult-icon-surgery{background:linear-gradient(135deg,#059669,#047857)!important;color:#fff!important;border:none!important}
+.consult-icon-pulm{background:linear-gradient(135deg,#06b6d4,#0891b2)!important;color:#fff!important;border:none!important}
+.consult-icon-id{background:linear-gradient(135deg,#84cc16,#65a30d)!important;color:#fff!important;border:none!important}
+.consult-icon-gi{background:linear-gradient(135deg,#f59e0b,#d97706)!important;color:#fff!important;border:none!important}
+.consult-surgery{border-left-color:#059669;background:linear-gradient(to right,rgba(5,150,105,0.03),var(--bg-card))}
+.consult-pulm{border-left-color:#06b6d4;background:linear-gradient(to right,rgba(6,182,212,0.03),var(--bg-card))}
+.consult-id{border-left-color:#84cc16;background:linear-gradient(to right,rgba(132,204,22,0.03),var(--bg-card))}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:12px 24px;border-radius:10px;font-size:0.9rem;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header class="app-header">
+<div class="header-row">
+<div class="header-brand">
+<div class="header-logo">🩺</div>
+<div><div class="header-title">OnCall Assistant</div><div class="header-subtitle">Evidence-Based Decision Support</div></div>
+</div>
+<div class="header-actions">
+<button class="icon-btn" id="themeBtn" onclick="toggleTheme()" aria-label="Toggle Night Mode">🌙</button>
+<button class="icon-btn" id="backBtn" onclick="goBack()" aria-label="Go back to home">✕</button>
+</div>
+</div>
+</header>
+<div class="main-content">
+<!-- Clinical Disclaimer -->
+<div style="background:#fef3c7;border:1px solid #d97706;border-radius:8px;padding:10px 14px;margin:16px 16px 8px;text-align:left">
+<div style="font-size:0.75rem;font-weight:600;color:#92400e;margin-bottom:2px">⚕️ Decision Support Only</div>
+<div style="font-size:0.7rem;color:#92400e;line-height:1.4">Verify with local protocols. If unstable: activate emergency pathway.</div>
+</div>
+<div class="mode-switcher">
+<button id="btn-mode-tasks" class="segment-btn active" onclick="switchMode('tasks')">📞 Call Log <span id="task-badge" class="badge-count hidden">0</span></button>
+<button id="btn-mode-tools" class="segment-btn" onclick="switchMode('tools')">🧮 Calculators</button>
+</div>
+<div id="call-log-view" class="call-log-view">
+<div class="new-call-card">
+<div class="new-call-title">📝 New Consult / Call</div>
+<div class="input-row">
+<input type="text" id="call-location" class="call-input" placeholder="Location (e.g. Ward 4)">
+<input type="text" id="call-mrn" class="call-input" placeholder="Bed / MRN">
+</div>
+<div class="input-row-wide">
+<input type="text" id="call-issue" class="call-input" placeholder="Issue (e.g. Fever, Chest Pain)">
+<select id="call-priority" class="call-select">
+<option value="routine">Routine</option>
+<option value="urgent">Urgent</option>
+<option value="stat">STAT ⚡</option>
+</select>
+</div>
+<button class="add-call-btn" onclick="addCallLog()"><span>+</span> Add Task</button>
+</div>
+<div id="call-log-list"></div>
+</div>
+<div id="tools-view" class="tools-view hidden">
+<div class="category-pills">
+<button class="pill active" onclick="filterCategory('all',this)">All Tools</button>
+<button class="pill" onclick="filterCategory('emergency',this)">🚨 Emergency</button>
+<button class="pill" onclick="filterCategory('handover',this)">📋 Handover</button>
+<button class="pill" onclick="filterCategory('consult',this)">📞 Consults</button>
+<button class="pill" onclick="filterCategory('prn',this)">💊 PRN</button>
+<button class="pill" onclick="filterCategory('lytes',this)">🧪 Lytes</button>
+<button class="pill" onclick="filterCategory('cardiac',this)">❤️ Cardiac</button>
+</div>
+<div class="tool-card emergency" data-category="emergency">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon">🍬</div>
+<div><div class="tool-title">Hypoglycemia<span class="tool-badge urgent">Urgent</span></div><div class="tool-subtitle">Glucose &lt; 3.9 mmol/L</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="form-group"><label class="form-label">Blood Glucose (mmol/L)</label><input type="number" class="form-input" id="inputHypoGlucose" placeholder="e.g., 2.8" step="0.1"></div>
+<div class="form-group"><label class="form-label">Patient Status</label>
+<select class="form-select" id="inputHypoStatus">
+<option value="conscious">Conscious</option>
+<option value="confused">Confused/Drowsy</option>
+<option value="unconscious">Unconscious/Seizing</option>
+</select></div>
+<button class="calc-btn danger" onclick="calcHypo(event)">Get Protocol</button>
+<div id="resultHypo" class="result-box hidden"></div>
+</div>
+</div>
+<div class="tool-card emergency" data-category="emergency">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon">⚡</div>
+<div><div class="tool-title">Hyperkalemia<span class="tool-badge urgent">Urgent</span></div><div class="tool-subtitle">K+ &gt; 6.0 mmol/L</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">K+ (mmol/L)</label><input type="number" class="form-input" id="inputHyperK" placeholder="e.g., 6.5" step="0.1"></div>
+<div class="form-group"><label class="form-label">ECG Changes?</label>
+<select class="form-select" id="inputHyperKECG">
+<option value="none">None</option>
+<option value="peaked">Peaked T</option>
+<option value="wide">Wide QRS</option>
+</select></div>
+</div>
+<button class="calc-btn danger" onclick="calcHyperK(event)">Get Protocol</button>
+<div id="resultHyperK" class="result-box hidden"></div>
+</div>
+</div>
+<div class="tool-card emergency" data-category="emergency">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon">💉</div>
+<div><div class="tool-title">Anaphylaxis<span class="tool-badge urgent">Urgent</span></div><div class="tool-subtitle">Severe allergic reaction</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="form-group"><label class="form-label">Age Group</label>
+<select class="form-select" id="inputAnapAge">
+<option value="adult">Adult</option>
+<option value="child">Child (6-12y)</option>
+<option value="infant">Infant (&lt;6y)</option>
+</select></div>
+<button class="calc-btn danger" onclick="calcAnap(event)">Get Adrenaline Dose</button>
+<div id="resultAnap" class="result-box hidden"></div>
+</div>
+</div>
+<div class="tool-card emergency" data-category="emergency">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon">🦠</div>
+<div><div class="tool-title">Sepsis<span class="tool-badge urgent">Urgent</span></div><div class="tool-subtitle">Hour-1 Bundle</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">Lactate</label><input type="number" class="form-input" id="inputSepsisLactate" placeholder="mmol/L" step="0.1"></div>
+<div class="form-group"><label class="form-label">MAP</label><input type="number" class="form-input" id="inputSepsisMAP" placeholder="mmHg"></div>
+</div>
+<button class="calc-btn danger" onclick="calcSepsis(event)">Get Bundle</button>
+<div id="resultSepsis" class="result-box hidden"></div>
+</div>
+</div>
+<div class="tool-card emergency" data-category="emergency">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon">💧</div>
+<div><div class="tool-title">DKA<span class="tool-badge urgent">Urgent</span></div><div class="tool-subtitle">Diabetic ketoacidosis</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">pH</label><input type="number" class="form-input" id="inputDKApH" placeholder="e.g., 7.15" step="0.01"></div>
+<div class="form-group"><label class="form-label">K+ (mmol/L)</label><input type="number" class="form-input" id="inputDKAK" placeholder="e.g., 5.2" step="0.1"></div>
+</div>
+<button class="calc-btn danger" onclick="calcDKA(event)">Get Protocol</button>
+<div id="resultDKA" class="result-box hidden"></div>
+</div>
+</div>
+<div class="tool-card" data-category="prn">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon">💊</div>
+<div><div class="tool-title">PRN Medications</div><div class="tool-subtitle">As-needed prescriptions</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="prn-grid">
+<div class="prn-card" onclick="showPRN('pain',this)"><div class="prn-icon">😣</div><div class="prn-name">Pain</div></div>
+<div class="prn-card" onclick="showPRN('nausea',this)"><div class="prn-icon">🤢</div><div class="prn-name">Nausea</div></div>
+<div class="prn-card" onclick="showPRN('fever',this)"><div class="prn-icon">🌡️</div><div class="prn-name">Fever</div></div>
+<div class="prn-card" onclick="showPRN('sleep',this)"><div class="prn-icon">😴</div><div class="prn-name">Sleep</div></div>
+<div class="prn-card" onclick="showPRN('anxiety',this)"><div class="prn-icon">😰</div><div class="prn-name">Anxiety</div></div>
+<div class="prn-card" onclick="showPRN('constipation',this)"><div class="prn-icon">💩</div><div class="prn-name">Constipation</div></div>
+<div class="prn-card" onclick="showPRN('itch',this)"><div class="prn-icon">🖐️</div><div class="prn-name">Itch</div></div>
+<div class="prn-card" onclick="showPRN('heartburn',this)"><div class="prn-icon">🔥</div><div class="prn-name">Heartburn</div></div>
+<div class="prn-card" onclick="showPRN('agitation',this)"><div class="prn-icon">😤</div><div class="prn-name">Agitation</div></div>
+<div class="prn-card" onclick="showPRN('htn',this)"><div class="prn-icon">📈</div><div class="prn-name">HTN</div></div>
+<div class="prn-card" onclick="showPRN('wheeze',this)"><div class="prn-icon">🌬️</div><div class="prn-name">Wheeze</div></div>
+<div class="prn-card" onclick="showPRN('diarrhea',this)"><div class="prn-icon">🚽</div><div class="prn-name">Diarrhea</div></div>
+</div>
+<div id="prnDetails" class="prn-details"></div>
+</div>
+</div>
+<div class="tool-card" data-category="lytes">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon">🧪</div>
+<div><div class="tool-title">K+ Correction</div><div class="tool-subtitle">Replacement dosing</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="form-group"><label class="form-label">K+ (mmol/L)</label><input type="number" class="form-input" id="inputK" placeholder="e.g., 3.2" step="0.1"></div>
+<button class="calc-btn" onclick="calcK(event)">Calculate</button>
+<div id="resultK" class="result-box hidden"></div>
+</div>
+</div>
+<div class="tool-card" data-category="lytes">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon">🦴</div>
+<div><div class="tool-title">Corrected Ca</div><div class="tool-subtitle">Albumin adjustment</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">Ca (mmol/L)</label><input type="number" class="form-input" id="inputCa" placeholder="e.g., 2.0" step="0.01"></div>
+<div class="form-group"><label class="form-label">Albumin (g/L)</label><input type="number" class="form-input" id="inputAlb" placeholder="e.g., 28"></div>
+</div>
+<button class="calc-btn" onclick="calcCa(event)">Calculate</button>
+<div id="resultCa" class="result-box hidden"></div>
+</div>
+</div>
+<div class="tool-card" data-category="renal">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon">🫘</div>
+<div><div class="tool-title">eGFR</div><div class="tool-subtitle">CKD-EPI 2021</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">Cr (µmol/L)</label><input type="number" class="form-input" id="inputCr" placeholder="e.g., 120"></div>
+<div class="form-group"><label class="form-label">Age</label><input type="number" class="form-input" id="inputAge" placeholder="years"></div>
+</div>
+<div class="form-group"><label class="form-label">Sex</label>
+<div class="gender-buttons">
+<button class="gender-btn" onclick="setGFRSex('m',this,event)">♂️ Male</button>
+<button class="gender-btn" onclick="setGFRSex('f',this,event)">♀️ Female</button>
+</div></div>
+<button class="calc-btn" onclick="calcEGFR(event)">Calculate</button>
+<div id="resultEGFR" class="result-box hidden"></div>
+</div>
+</div>
+<div class="tool-card" data-category="cardiac">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon">❤️</div>
+<div><div class="tool-title">QTc</div><div class="tool-subtitle">Bazett formula</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">QT (ms)</label><input type="number" class="form-input" id="inputQT" placeholder="e.g., 400"></div>
+<div class="form-group"><label class="form-label">HR (bpm)</label><input type="number" class="form-input" id="inputHR" placeholder="e.g., 80"></div>
+</div>
+<button class="calc-btn" onclick="calcQTc(event)">Calculate</button>
+<div id="resultQTc" class="result-box hidden"></div>
+</div>
+</div>
+<div class="section-label" style="margin-top:12px;">📋 HANDOVER TOOLS</div>
+<div class="tool-card handover-card" data-category="handover">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;">📋</div>
+<div><div class="tool-title">SBAR Handover</div><div class="tool-subtitle">Structured communication</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="handover-framework">
+<div class="protocol-step" style="border-left-color:#3b82f6">
+<div class="protocol-header"><div class="protocol-number" style="background:#3b82f6">S</div><div class="protocol-title">Situation</div></div>
+<div class="protocol-content">"I am calling about [patient], MRN [X], in [bed/ward]"</div>
+</div>
+<div class="protocol-step" style="border-left-color:#8b5cf6">
+<div class="protocol-header"><div class="protocol-number" style="background:#8b5cf6">B</div><div class="protocol-title">Background</div></div>
+<div class="protocol-content">Admission Dx, PMHx, Meds, Allergies, Code status</div>
+</div>
+<div class="protocol-step" style="border-left-color:#f59e0b">
+<div class="protocol-header"><div class="protocol-number" style="background:#f59e0b">A</div><div class="protocol-title">Assessment</div></div>
+<div class="protocol-content">Vitals, exam findings, labs, your impression</div>
+</div>
+<div class="protocol-step" style="border-left-color:#10b981">
+<div class="protocol-header"><div class="protocol-number" style="background:#10b981">R</div><div class="protocol-title">Recommendation</div></div>
+<div class="protocol-content">What do you need? Specific orders requested</div>
+</div>
+</div>
+</div>
+</div>
+<div class="section-label">📞 SPECIALTY CONSULTATIONS</div>
+<div class="consult-intro">Tap any specialty for what you need BEFORE calling</div>
+<div class="tool-card consult-card consult-critical" data-category="consult">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon consult-icon-critical">🏥</div>
+<div><div class="tool-title">ICU<span class="tool-badge urgent">Critical</span></div><div class="tool-subtitle">Intensive Care Unit</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="consult-box critical">
+<div class="consult-title">📞 Before Calling ICU</div>
+<div class="consult-grid">
+<div class="consult-item"><strong>Airway:</strong> Patent? Protecting? GCS?</div>
+<div class="consult-item"><strong>Breathing:</strong> RR, SpO2, O2 requirement, ABG</div>
+<div class="consult-item"><strong>Circulation:</strong> HR, BP, MAP, lactate, access</div>
+<div class="consult-item"><strong>Interventions:</strong> What you've done so far</div>
+</div>
+</div>
+<div class="consult-box">
+<div class="consult-title">📋 ICU Admission Criteria</div>
+<div class="protocol-content">
+• Mechanical ventilation or imminent intubation<br>
+• Vasopressor requirement<br>
+• Severe sepsis/septic shock<br>
+• Active MI with hemodynamic instability<br>
+• Status epilepticus<br>
+• Acute renal failure requiring CRRT<br>
+• GCS ≤8 or rapidly declining<br>
+• Post-cardiac arrest<br>
+• DKA/HHS with pH &lt;7.1 or altered mental status
+</div>
+</div>
+<div class="consult-box">
+<div class="consult-title">📊 Must-Have Information</div>
+<div class="protocol-content">
+• <strong>Recent ABG</strong> with FiO2<br>
+• <strong>Lactate</strong> (ideally serial)<br>
+• <strong>Current vitals</strong> & trend over last 2-4 hours<br>
+• <strong>Fluid balance</strong> & urine output<br>
+• <strong>Recent labs:</strong> CBC, BMP, coags, LFTs<br>
+• <strong>ECG</strong> within last hour if cardiac concern<br>
+• <strong>Code status</strong> & goals of care<br>
+• <strong>Family contact</strong> information
+</div>
+</div>
+</div>
+</div>
+
+<!-- SURGERY CONSULTATION -->
+<div class="tool-card consult-card consult-surgery" data-category="consult">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon consult-icon-surgery">🔪</div>
+<div><div class="tool-title">Surgery</div><div class="tool-subtitle">General Surgery</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="consult-box">
+<div class="consult-title">📞 Before Calling Surgery</div>
+<div class="consult-grid">
+<div class="consult-item"><strong>Localize:</strong> Where is the problem?</div>
+<div class="consult-item"><strong>Imaging:</strong> CT/US done? Results?</div>
+<div class="consult-item"><strong>NPO status:</strong> Last oral intake?</div>
+<div class="consult-item"><strong>Anticoag:</strong> On blood thinners?</div>
+</div>
+</div>
+<div class="consult-box">
+<div class="consult-title">📋 Required Information</div>
+<div class="protocol-content">
+• <strong>Chief complaint</strong> with timeline<br>
+• <strong>Physical exam:</strong> Peritonitis? Guarding? Rebound?<br>
+• <strong>Labs:</strong> CBC, BMP, lipase, LFTs, lactate, coags<br>
+• <strong>Imaging results</strong> (CT report or images available)<br>
+• <strong>Hemodynamic status</strong><br>
+• <strong>Surgical history</strong> & previous abdominal surgeries<br>
+• <strong>Comorbidities</strong> affecting surgical risk
+</div>
+</div>
+<div class="consult-box warning">
+<div class="consult-title">🚨 Urgent Surgical Conditions</div>
+<div class="protocol-content">
+• Perforated viscus / free air<br>
+• Acute appendicitis with peritonitis<br>
+• Small bowel obstruction with strangulation<br>
+• Acute mesenteric ischemia<br>
+• Necrotizing fasciitis<br>
+• Compartment syndrome<br>
+• Hemorrhage requiring operative control<br>
+• Acute cholecystitis (Tokyo Grade II-III)
+</div>
+</div>
+</div>
+</div>
+
+<div class="tool-card consult-card consult-cardio" data-category="consult">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon consult-icon-cardio">❤️</div>
+<div><div class="tool-title">Cardiology</div><div class="tool-subtitle">Cardiac referral</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="consult-box critical">
+<div class="consult-title">🚨 STEMI - Activate Cath Lab</div>
+<div class="protocol-content">
+• <strong>Call cath lab FIRST</strong> - don't wait for consult<br>
+• ECG with ST elevation or new LBBB<br>
+• Symptom onset time (door-to-balloon &lt;90 min)<br>
+• Aspirin 300mg + Ticagrelor 180mg given?<br>
+• Anticoagulation given?<br>
+• Contraindications to intervention?
+</div>
+</div>
+<div class="consult-box">
+<div class="consult-title">📋 Non-STEMI/Unstable Angina</div>
+<div class="protocol-content">
+• <strong>Serial ECGs</strong> (at least 2)<br>
+• <strong>Troponin</strong> at 0, 3, 6 hours<br>
+• <strong>GRACE/TIMI score</strong> if possible<br>
+• Current anti-ischemic therapy<br>
+• Bleeding risk assessment<br>
+• Echo findings if available
+</div>
+</div>
+<div class="consult-box">
+<div class="consult-title">📊 Arrhythmia Consult</div>
+<div class="protocol-content">
+• <strong>12-lead ECG</strong> (during arrhythmia if possible)<br>
+• <strong>Rhythm strip</strong> showing onset/termination<br>
+• Hemodynamic stability during episodes<br>
+• Electrolytes: K+, Mg2+, Ca2+<br>
+• Current medications (esp. QT-prolonging)<br>
+• Previous ablations or device history
+</div>
+</div>
+<div class="consult-box">
+<div class="consult-title">🫀 Heart Failure Consult</div>
+<div class="protocol-content">
+• <strong>BNP/NT-proBNP</strong> level<br>
+• <strong>Echo</strong> with EF (recent or pending)<br>
+• Volume status: JVP, edema, crackles<br>
+• Daily weights & I/O balance<br>
+• Current diuretic regimen & response<br>
+• Renal function trend
+</div>
+</div>
+</div>
+</div>
+<div class="tool-card consult-card consult-neuro" data-category="consult">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon consult-icon-neuro">🧠</div>
+<div><div class="tool-title">Neurology</div><div class="tool-subtitle">Neuro referral</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="consult-box critical">
+<div class="consult-title">🚨 Stroke Alert</div>
+<div class="protocol-content">
+• <strong>Time last seen normal</strong> - CRITICAL<br>
+• <strong>NIHSS score</strong> (or key deficits)<br>
+• <strong>CT head</strong> done? Hemorrhage ruled out?<br>
+• <strong>Glucose</strong> checked?<br>
+• <strong>BP</strong> - do NOT lower unless &gt;220/120<br>
+• <strong>Anticoagulant use?</strong> (INR if on warfarin)<br>
+• Contraindications to tPA?
+</div>
+</div>
+<div class="consult-box">
+<div class="consult-title">📋 Seizure Consult</div>
+<div class="protocol-content">
+• <strong>Witnessed description</strong> of event<br>
+• Duration & post-ictal state<br>
+• First seizure vs known epilepsy<br>
+• AED levels if applicable<br>
+• Labs: glucose, Na+, Ca2+, Mg2+<br>
+• CT/MRI done?<br>
+• EEG ordered?
+</div>
+</div>
+<div class="consult-box">
+<div class="consult-title">📊 Altered Mental Status</div>
+<div class="protocol-content">
+• <strong>GCS</strong> and trend<br>
+• <strong>Focal deficits?</strong> Pupils, motor exam<br>
+• <strong>Metabolic workup:</strong> glucose, Na+, ammonia, TSH<br>
+• <strong>Infectious workup:</strong> WBC, UA, CXR, blood Cx<br>
+• <strong>Toxicology</strong> screen if indicated<br>
+• CT head ± LP if meningitis suspected
+</div>
+</div>
+</div>
+</div>
+
+<!-- GI CONSULTATION -->
+<div class="tool-card consult-card consult-gi" data-category="consult">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon consult-icon-gi">🔬</div>
+<div><div class="tool-title">Gastroenterology</div><div class="tool-subtitle">GI referral</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="consult-box critical">
+<div class="consult-title">🚨 GI Bleed - Urgent</div>
+<div class="protocol-content">
+• <strong>Hemodynamic status:</strong> HR, BP, orthostatics<br>
+• <strong>Blood products:</strong> Type & Screen, transfusion needs<br>
+• <strong>Hgb/Hct</strong> trend<br>
+• <strong>Active bleeding?</strong> Hematemesis, melena, BRBPR<br>
+• <strong>Coags:</strong> INR, platelets<br>
+• Glasgow-Blatchford score
+</div>
+</div>
+<div class="consult-box">
+<div class="consult-title">📋 Liver/Pancreas Consult</div>
+<div class="protocol-content">
+• <strong>LFTs</strong> with trend<br>
+• <strong>Lipase</strong> (for pancreatitis)<br>
+• <strong>Imaging:</strong> US, CT, MRCP<br>
+• Hepatitis serologies if relevant<br>
+• INR, albumin (synthetic function)<br>
+• Ascites/encephalopathy status
+</div>
+</div>
+</div>
+</div>
+
+<div class="tool-card consult-card consult-renal" data-category="consult">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon consult-icon-renal">🫘</div>
+<div><div class="tool-title">Nephrology</div><div class="tool-subtitle">Renal referral</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="consult-box critical">
+<div class="consult-title">🚨 Urgent Dialysis Indications (AEIOU)</div>
+<div class="protocol-content">
+• <strong>A</strong>cidosis - severe metabolic (pH &lt;7.1)<br>
+• <strong>E</strong>lectrolytes - K+ &gt;6.5 refractory to medical Rx<br>
+• <strong>I</strong>ngestion - toxic alcohols, lithium, salicylates<br>
+• <strong>O</strong>verload - pulmonary edema refractory to diuretics<br>
+• <strong>U</strong>remia - encephalopathy, pericarditis, bleeding
+</div>
+</div>
+<div class="consult-box">
+<div class="consult-title">📋 AKI Workup</div>
+<div class="protocol-content">
+• <strong>Baseline Cr</strong> & trend<br>
+• <strong>Urine output</strong> (hourly if available)<br>
+• <strong>UA with sediment</strong><br>
+• <strong>FENa</strong> or FEUrea<br>
+• <strong>Renal US</strong> - hydronephrosis?<br>
+• Nephrotoxins review<br>
+• Volume status assessment
+</div>
+</div>
+</div>
+</div>
+
+<!-- PULMONOLOGY CONSULTATION -->
+<div class="tool-card consult-card consult-pulm" data-category="consult">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon consult-icon-pulm">🫁</div>
+<div><div class="tool-title">Pulmonology</div><div class="tool-subtitle">Respiratory referral</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="consult-box">
+<div class="consult-title">📞 Before Calling Pulm</div>
+<div class="consult-grid">
+<div class="consult-item"><strong>O2 needs:</strong> FiO2, device, SpO2</div>
+<div class="consult-item"><strong>ABG:</strong> With FiO2 at time of draw</div>
+<div class="consult-item"><strong>CXR:</strong> Recent imaging findings</div>
+<div class="consult-item"><strong>Work of breathing:</strong> RR, accessory muscles</div>
+</div>
+</div>
+<div class="consult-box">
+<div class="consult-title">📋 Required Information</div>
+<div class="protocol-content">
+• <strong>Respiratory history:</strong> COPD, asthma, ILD, OSA<br>
+• <strong>Home O2?</strong> L/min, continuous vs nocturnal<br>
+• <strong>Recent PFTs</strong> if available<br>
+• <strong>CT chest</strong> findings<br>
+• <strong>Sputum culture</strong> results<br>
+• BiPAP/CPAP settings if applicable
+</div>
+</div>
+</div>
+</div>
+
+<!-- ID CONSULTATION -->
+<div class="tool-card consult-card consult-id" data-category="consult">
+<div class="tool-header" onclick="toggleTool(this)">
+<div class="tool-header-left">
+<div class="tool-icon consult-icon-id">🦠</div>
+<div><div class="tool-title">Infectious Disease</div><div class="tool-subtitle">ID referral</div></div>
+</div>
+<div class="tool-chevron">▼</div>
+</div>
+<div class="tool-content">
+<div class="tool-divider"></div>
+<div class="consult-box">
+<div class="consult-title">📞 Before Calling ID</div>
+<div class="consult-grid">
+<div class="consult-item"><strong>Source:</strong> Where is the infection?</div>
+<div class="consult-item"><strong>Cultures:</strong> Blood Cx x2 drawn?</div>
+<div class="consult-item"><strong>Current Abx:</strong> What & how long?</div>
+<div class="consult-item"><strong>Allergies:</strong> Especially PCN/cephalosporins</div>
+</div>
+</div>
+<div class="consult-box">
+<div class="consult-title">📋 Required Information</div>
+<div class="protocol-content">
+• <strong>Culture data</strong> with sensitivities<br>
+• <strong>Imaging</strong> showing source<br>
+• <strong>Fever curve</strong> & WBC trend<br>
+• <strong>Procalcitonin</strong> if available<br>
+• <strong>Renal function</strong> (for dosing)<br>
+• <strong>Immunocompromised?</strong> HIV, transplant, chemo<br>
+• Travel & exposure history
+</div>
+</div>
+</div>
+</div>
+
+<div class="section-label">🤖 AI ASSISTANT</div>
+<div class="ai-section" data-category="all,emergency">
+<div class="ai-header">
+<div class="ai-icon">🤖</div>
+<div><div class="ai-title">Clinical AI</div><div class="ai-subtitle">Ask any clinical question</div></div>
+</div>
+<div class="ai-body">
+<div class="ai-prompts">
+<button class="ai-prompt-btn" onclick="setPrompt('Hyponatremia workup')">Hyponatremia</button>
+<button class="ai-prompt-btn" onclick="setPrompt('Chest pain DDx')">Chest Pain</button>
+<button class="ai-prompt-btn" onclick="setPrompt('Abx dosing in CKD')">Abx in CKD</button>
+</div>
+<div class="ai-input-row">
+<input type="text" class="ai-input" id="aiInput" placeholder="Ask anything...">
+<button class="ai-send-btn" onclick="askAI()">➤</button>
+</div>
+<div class="ai-response" id="aiResponse"></div>
+</div>
+</div>
+<div class="section-label">Quick Reference</div>
+<div class="quick-ref-grid">
+<div class="quick-ref-card" onclick="showRef('K+: 3.5-5.0 mmol/L')"><div class="quick-ref-icon">🧪</div><div class="quick-ref-title">K+</div><div class="quick-ref-value">3.5-5.0</div></div>
+<div class="quick-ref-card" onclick="showRef('Na+: 136-145 mmol/L')"><div class="quick-ref-icon">🧂</div><div class="quick-ref-title">Na+</div><div class="quick-ref-value">136-145</div></div>
+<div class="quick-ref-card" onclick="showRef('Ca: 2.1-2.6 mmol/L')"><div class="quick-ref-icon">🦴</div><div class="quick-ref-title">Ca</div><div class="quick-ref-value">2.1-2.6</div></div>
+<div class="quick-ref-card" onclick="showRef('Glucose: 3.9-5.6 mmol/L')"><div class="quick-ref-icon">🍬</div><div class="quick-ref-title">Gluc</div><div class="quick-ref-value">3.9-5.6</div></div>
+</div>
+</div>
+</div>
+<nav class="bottom-nav">
+<div class="nav-item" onclick="goBack()"><div class="nav-icon">🏠</div><span>Home</span></div>
+<div class="nav-item active"><div class="nav-icon">⚡</div><span>OnCall</span></div>
+<div class="nav-item" onclick="switchMode('tools');filterCategory('emergency',null)"><div class="nav-icon">🚨</div><span>Emergency</span></div>
+<a class="nav-item" href="ai_assistant.html"><div class="nav-icon">🤖</div><span>AI</span></a>
+</nav>
+<div id="toast" class="toast"></div>
+<script>
+var apiUrl='https://script.google.com/macros/s/AKfycbznXa9YNna26Srt1eZVEnSV-dIiubFLTwg3ryLdE-maGNCQhydP_8E6AK4QPXkeQrw7lA/exec';
+var gfrSex='';
+var callLogs = JSON.parse(localStorage.getItem('ONCALL_CALLS')) || [];
+
+(function(){
+  var savedTheme=localStorage.getItem('oncall-theme')||'light';
+  document.documentElement.setAttribute('data-theme',savedTheme);
+})();
+
+document.addEventListener('DOMContentLoaded',function(){
+  var savedTheme=localStorage.getItem('oncall-theme')||'light';
+  var btn=document.getElementById('themeBtn');
+  if(btn) btn.textContent=savedTheme==='dark'?'☀️':'🌙';
+  renderCallLogs();
+  if(window.location.hash === '#emergency') {
+    switchMode('tools');
+    filterCategory('emergency', null);
+  }
+  document.getElementById('call-issue').addEventListener('keydown', function(e) {
+    if(e.key === 'Enter') addCallLog();
+  });
+});
+
+function switchMode(mode) {
+  document.getElementById('call-log-view').classList.add('hidden');
+  document.getElementById('tools-view').classList.add('hidden');
+  document.getElementById('btn-mode-tasks').classList.remove('active');
+  document.getElementById('btn-mode-tools').classList.remove('active');
+  if(mode === 'tasks') {
+    document.getElementById('call-log-view').classList.remove('hidden');
+    document.getElementById('btn-mode-tasks').classList.add('active');
+  } else {
+    document.getElementById('tools-view').classList.remove('hidden');
+    document.getElementById('btn-mode-tools').classList.add('active');
+  }
+}
+
+function addCallLog() {
+  var loc = document.getElementById('call-location').value.trim();
+  var mrn = document.getElementById('call-mrn').value.trim();
+  var issue = document.getElementById('call-issue').value.trim();
+  var priority = document.getElementById('call-priority').value;
+  if (!loc || !issue) { toast("Location and Issue required"); return; }
+  var newCall = {
+    id: Date.now(), loc: loc, mrn: mrn, issue: issue, priority: priority,
+    timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+    done: false
+  };
+  callLogs.unshift(newCall);
+  saveCalls();
+  renderCallLogs();
+  document.getElementById('call-issue').value = '';
+  document.getElementById('call-mrn').value = '';
+  document.getElementById('call-priority').value = 'routine';
+  toast("✓ Call Logged");
+}
+
+function renderCallLogs() {
+  var container = document.getElementById('call-log-list');
+  container.innerHTML = '';
+  var activeCount = callLogs.filter(function(c){return !c.done;}).length;
+  var badge = document.getElementById('task-badge');
+  badge.innerText = activeCount;
+  badge.classList.toggle('hidden', activeCount === 0);
+  if (callLogs.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">No calls logged</div><div class="empty-state-text">Add your first call above</div></div>';
+    return;
+  }
+  callLogs.forEach(function(call) {
+    var div = document.createElement('div');
+    div.className = 'task-card priority-' + call.priority + (call.done ? ' done' : '');
+    div.innerHTML = '<div class="check-circle" onclick="toggleCallDone(' + call.id + ')">' + (call.done ? '✓' : '') + '</div><div class="task-content" onclick="toggleCallDone(' + call.id + ')"><div class="task-meta"><span>' + call.timestamp + ' • ' + call.loc + '</span><span class="task-priority ' + call.priority + '">' + call.priority + '</span></div><div class="task-issue">' + escapeHtml(call.issue) + '</div>' + (call.mrn ? '<div class="task-detail">' + escapeHtml(call.mrn) + '</div>' : '') + '</div><button class="delete-btn" onclick="deleteCall(' + call.id + ')">✕</button>';
+    container.appendChild(div);
+  });
+}
+
+function toggleCallDone(id) {
+  var call = callLogs.find(function(c){return c.id === id;});
+  if (call) {
+    call.done = !call.done;
+    callLogs.sort(function(a, b){return a.done === b.done ? 0 : a.done ? 1 : -1;});
+    saveCalls();
+    renderCallLogs();
+  }
+}
+
+function deleteCall(id) {
+  if(confirm("Delete this log?")) {
+    callLogs = callLogs.filter(function(c){return c.id !== id;});
+    saveCalls();
+    renderCallLogs();
+    toast("Deleted");
+  }
+}
+
+function saveCalls() { localStorage.setItem('ONCALL_CALLS', JSON.stringify(callLogs)); }
+function escapeHtml(text) { var div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+function toast(message) { var t = document.getElementById('toast'); t.textContent = message; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');}, 2000); }
+function initTheme(){const t=localStorage.getItem('MEDWARD_THEME');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.body.classList.add('dark-theme');document.getElementById('themeBtn').textContent='☀️';}}
+function toggleTheme(){
+  var isDark=document.body.classList.toggle('dark-theme');
+  localStorage.setItem('MEDWARD_THEME',isDark?'dark':'light');
+  document.getElementById('themeBtn').textContent=isDark?'☀️':'🌙';
+}
+initTheme();
+function goBack(){ window.location.href = window.location.href.split('/').slice(0, -1).join('/') + '/index.html'; }
+function filterCategory(cat,btn){
+  var pills=document.querySelectorAll('.pill');
+  for(var i=0;i<pills.length;i++){pills[i].classList.remove('active');}
+  if(btn)btn.classList.add('active');
+  var cards=document.querySelectorAll('.tool-card,.ai-section');
+  for(var i=0;i<cards.length;i++){
+    var c=cards[i];
+    var cats=c.getAttribute('data-category');
+    if(cat==='all'||(cats&&cats.indexOf(cat)>=0)){c.style.display='block';}
+    else{c.style.display='none';}
+  }
+}
+function toggleTool(header){ header.parentElement.classList.toggle('expanded'); }
+function setGFRSex(s,btn,e){ if(e)e.stopPropagation(); gfrSex=s; var btns=btn.parentElement.querySelectorAll('.gender-btn'); for(var i=0;i<btns.length;i++){btns[i].classList.remove('selected');} btn.classList.add('selected'); }
+function showRef(text){alert(text);}
+function setPrompt(t){document.getElementById('aiInput').value=t;}
+
+var prnData={
+  pain:'😣 PAIN<br><br>Mild: Paracetamol 1g PO q6h (max 4g/day)<br>Moderate: Tramadol 50-100mg PO q6h<br>Severe: Morphine 2.5-5mg IV q4h<br><br>⚠️ Reduce opioids in elderly/renal',
+  nausea:'🤢 NAUSEA<br><br>1st: Ondansetron 4-8mg IV/PO q8h<br>Alt: Metoclopramide 10mg q8h<br><br>⚠️ Avoid metoclopramide >5 days',
+  fever:'🌡️ FEVER<br><br>Paracetamol 1g PO/IV q6h<br>Ibuprofen 400mg PO q6-8h<br><br>⚠️ Avoid NSAIDs in renal/GI',
+  sleep:'😴 SLEEP<br><br>Melatonin 3-5mg PO hs<br>Zopiclone 3.75-7.5mg hs<br><br>⚠️ Avoid benzos in elderly',
+  anxiety:'😰 ANXIETY<br><br>Hydroxyzine 25-50mg PO q6h<br>Lorazepam 0.5-1mg PO/SL q6h<br><br>⚠️ Benzos worsen delirium',
+  constipation:'💩 CONSTIPATION<br><br>Lactulose 15-30mL PO BD<br>Senna 15mg PO hs<br>Bisacodyl 10mg PR<br><br>⚠️ Rule out obstruction',
+  itch:'🖐️ ITCH<br><br>Cetirizine 10mg PO daily<br>Chlorpheniramine 4mg q6h<br><br>⚠️ Sedating in elderly',
+  heartburn:'🔥 HEARTBURN<br><br>Gaviscon 10-20mL PRN<br>Omeprazole 20-40mg daily<br><br>⚠️ Long-term PPI risks',
+  agitation:'😤 AGITATION<br><br>⚠️ Verbal de-escalation first!<br><br>PO: Olanzapine 5-10mg OR Lorazepam 1-2mg<br>IM: Haloperidol 5mg + Lorazepam 2mg<br><br>🚨 NEVER IM olanzapine with benzos',
+  htn:'📈 HYPERTENSION<br><br>Mild: Amlodipine 5mg PO<br>Moderate: Labetalol 100-200mg PO<br>Severe: Labetalol 20mg IV<br><br>⚠️ Rule out emergency first',
+  wheeze:'🌬️ WHEEZE<br><br>Salbutamol 2.5-5mg neb q20min x3<br>Ipratropium 500mcg neb<br>Hydrocortisone 100mg IV<br><br>⚠️ Continuous nebs if severe',
+  diarrhea:'🚽 DIARRHEA<br><br>Rehydrate first!<br>Loperamide 4mg then 2mg PRN<br><br>🚨 AVOID if bloody/fever/C.diff'
+};
+
+function showPRN(type,card){
+  var cards=document.querySelectorAll('.prn-card');
+  for(var i=0;i<cards.length;i++){cards[i].classList.remove('active');}
+  card.classList.add('active');
+  var det=document.getElementById('prnDetails');
+  det.innerHTML='<div style="font-family:inherit;line-height:1.6;">'+prnData[type]+'</div>';
+  det.classList.add('visible');
+}
+
+function calcHypo(e){
+  if(e)e.stopPropagation();
+  var g=parseFloat(document.getElementById('inputHypoGlucose').value);
+  var s=document.getElementById('inputHypoStatus').value;
+  var box=document.getElementById('resultHypo');
+  if(!g){alert('Enter glucose');return;}
+  box.className='result-box';
+  if(g>=3.9){box.className+=' success';box.innerHTML='<div class="result-title">✓ Normal</div><div class="result-content">'+g+' mmol/L is normal</div>';}
+  else if(s==='unconscious'){box.className+=' danger';box.innerHTML='<div class="result-title">🚨 SEVERE</div><div class="result-content"><strong>D50 25-50mL IV</strong> or Glucagon 1mg IM<br><br>Recheck 15min</div>';}
+  else if(s==='confused'){box.className+=' warning';box.innerHTML='<div class="result-title">⚠️ Moderate</div><div class="result-content"><strong>Glucose gel 15-20g</strong> buccal<br><br>If no response: D50 25mL IV</div>';}
+  else{box.innerHTML='<div class="result-title">📋 Mild</div><div class="result-content"><strong>15-20g fast carbs</strong><br>Juice, glucose tabs<br><br>Recheck 15min</div>';}
+}
+
+function calcHyperK(e){
+  if(e)e.stopPropagation();
+  var k=parseFloat(document.getElementById('inputHyperK').value);
+  var ecg=document.getElementById('inputHyperKECG').value;
+  var box=document.getElementById('resultHyperK');
+  if(!k){alert('Enter K+');return;}
+  box.className='result-box';
+  if(k<5.5&&ecg==='none'){box.className+=' success';box.innerHTML='<div class="result-title">✓ Normal</div><div class="result-content">Review meds</div>';}
+  else{
+    var severe=k>=6.5||ecg!=='none';
+    box.className+=' '+(severe?'danger':'warning');
+    box.innerHTML='<div class="result-title">'+(severe?'🚨 EMERGENCY':'⚠️ Moderate')+' K+ '+k+'</div><div class="result-content">'+(ecg!=='none'?'<strong>⚡ ECG CHANGES - Treat NOW</strong><br><br>':'')+'<strong>1. Ca Gluconate 10% 10mL IV</strong> (2-3min)<br><br><strong>2. Insulin 10U + D50 25g IV</strong><br>Salbutamol 10-20mg neb<br><br><strong>3. Furosemide 40-80mg IV</strong></div>';
+  }
+}
+
+function calcAnap(e){
+  if(e)e.stopPropagation();
+  var age=document.getElementById('inputAnapAge').value;
+  var box=document.getElementById('resultAnap');
+  box.className='result-box danger';
+  var dose=age==='adult'?'0.5mg (0.5mL 1:1000)':age==='child'?'0.3mg (0.3mL 1:1000)':'0.15mg (0.15mL 1:1000)';
+  box.innerHTML='<div class="result-title">🚨 ANAPHYLAXIS</div><div class="result-content"><strong>💉 ADRENALINE FIRST!</strong><br><br><strong>'+dose+' IM thigh</strong><br>Repeat q5min PRN<br><br>Lie flat, elevate legs<br>High-flow O2<br>NS 20mL/kg if hypotensive</div>';
+}
+
+function calcSepsis(e){
+  if(e)e.stopPropagation();
+  var lac=parseFloat(document.getElementById('inputSepsisLactate').value);
+  var map=parseFloat(document.getElementById('inputSepsisMAP').value);
+  var box=document.getElementById('resultSepsis');
+  var shock=(map&&map<65)||(lac&&lac>2);
+  box.className='result-box '+(shock?'danger':'warning');
+  box.innerHTML='<div class="result-title">'+(shock?'🚨 SEPTIC SHOCK':'⚠️ SEPSIS')+' Hour-1</div><div class="result-content"><strong>1. Lactate</strong> '+(lac?lac+' mmol/L':'Draw NOW')+'<br><br><strong>2. Blood Cx x2</strong> before abx<br><br><strong>3. Pip-Tazo 4.5g IV</strong> within 1hr<br><br><strong>4. NS 30mL/kg</strong> if hypotensive</div>';
+}
+
+function calcDKA(e){
+  if(e)e.stopPropagation();
+  var pH=parseFloat(document.getElementById('inputDKApH').value);
+  var k=parseFloat(document.getElementById('inputDKAK').value);
+  var box=document.getElementById('resultDKA');
+  var severe=pH&&pH<7.0;
+  box.className='result-box '+(severe?'danger':'warning');
+  var kMsg=k?((k<3.3)?'🚨 HOLD insulin until K+>3.3!':(k<5.3)?'Add 20-30 mEq KCl/L':'No K+ initially'):'Check K+ first';
+  box.innerHTML='<div class="result-title">'+(severe?'🚨 SEVERE DKA':'⚠️ DKA')+(pH?' pH '+pH:'')+'</div><div class="result-content"><strong>1. NS 1-1.5L/hr</strong> x1h<br><br><strong>2. Insulin 0.1 U/kg/hr</strong><br><br><strong>3. K+:</strong> '+kMsg+'<br><br>BG q1h, lytes q2-4h</div>';
+}
+
+function calcK(e){
+  if(e)e.stopPropagation();
+  var k=parseFloat(document.getElementById('inputK').value);
+  var box=document.getElementById('resultK');
+  if(!k){alert('Enter K+');return;}
+  box.className='result-box';
+  if(k>=3.5&&k<=5.0){box.className+=' success';box.innerHTML='<div class="result-title">✓ Normal</div><div class="result-content">K+ '+k+' is within range</div>';}
+  else if(k<2.5){box.className+=' danger';box.innerHTML='<div class="result-title">🚨 Severe Hypokalemia</div><div class="result-content">K+ '+k+'<br><br><strong>KCl 40 mEq IV</strong> (max 20/hr peripheral)<br>Recheck in 2-4h</div>';}
+  else if(k<3.0){box.className+=' warning';box.innerHTML='<div class="result-title">⚠️ Moderate</div><div class="result-content">K+ '+k+'<br><br><strong>KCl 40 mEq PO/IV</strong><br>Recheck in 4h</div>';}
+  else if(k<3.5){box.innerHTML='<div class="result-title">📋 Mild</div><div class="result-content">K+ '+k+'<br><br><strong>KCl 20-40 mEq PO</strong><br>Recheck next AM</div>';}
+  else{box.className+=' warning';box.innerHTML='<div class="result-title">⚠️ Elevated</div><div class="result-content">K+ '+k+'<br><br>Review meds (ACEi, K-sparing)</div>';}
+}
+
+function calcCa(e){
+  if(e)e.stopPropagation();
+  var ca=parseFloat(document.getElementById('inputCa').value);
+  var alb=parseFloat(document.getElementById('inputAlb').value);
+  var box=document.getElementById('resultCa');
+  if(!ca||!alb){alert('Enter values');return;}
+  var corr=(ca+0.02*(40-alb)).toFixed(2);
+  box.className='result-box';
+  if(corr<1.9){box.className+=' danger';box.innerHTML='<div class="result-title">🚨 Severe Hypocalcemia</div><div class="result-content">Corrected: <strong>'+corr+'</strong><br>Ca Gluconate 1-2g IV</div>';}
+  else if(corr<2.1){box.className+=' warning';box.innerHTML='<div class="result-title">⚠️ Low</div><div class="result-content">Corrected: <strong>'+corr+'</strong></div>';}
+  else if(corr>3.0){box.className+=' danger';box.innerHTML='<div class="result-title">🚨 Severe Hypercalcemia</div><div class="result-content">Corrected: <strong>'+corr+'</strong><br>IV NS aggressively</div>';}
+  else if(corr>2.6){box.className+=' warning';box.innerHTML='<div class="result-title">⚠️ High</div><div class="result-content">Corrected: <strong>'+corr+'</strong></div>';}
+  else{box.className+=' success';box.innerHTML='<div class="result-title">✓ Normal</div><div class="result-content">Corrected: '+corr+'</div>';}
+}
+
+function calcEGFR(e){
+  if(e)e.stopPropagation();
+  var cr=parseFloat(document.getElementById('inputCr').value);
+  var age=parseFloat(document.getElementById('inputAge').value);
+  var box=document.getElementById('resultEGFR');
+  if(!cr||!age||!gfrSex){alert('Enter all values');return;}
+  var crMg=cr/88.4;
+  var egfr;
+  if(gfrSex==='f'){egfr=142*Math.pow(Math.min(crMg/0.7,1),-0.241)*Math.pow(Math.max(crMg/0.7,1),-1.2)*Math.pow(0.9938,age)*1.012;}
+  else{egfr=142*Math.pow(Math.min(crMg/0.9,1),-0.302)*Math.pow(Math.max(crMg/0.9,1),-1.2)*Math.pow(0.9938,age);}
+  egfr=Math.round(egfr);
+  box.className='result-box';
+  var stage;
+  if(egfr>=90){stage='G1';box.className+=' success';}
+  else if(egfr>=60){stage='G2';box.className+=' success';}
+  else if(egfr>=45){stage='G3a';box.className+=' warning';}
+  else if(egfr>=30){stage='G3b';box.className+=' warning';}
+  else if(egfr>=15){stage='G4';box.className+=' danger';}
+  else{stage='G5';box.className+=' danger';}
+  box.innerHTML='<div class="result-title">eGFR: '+egfr+'</div><div class="result-content">CKD Stage: '+stage+'</div>';
+}
+
+function calcQTc(e){
+  if(e)e.stopPropagation();
+  var qt=parseFloat(document.getElementById('inputQT').value);
+  var hr=parseFloat(document.getElementById('inputHR').value);
+  var box=document.getElementById('resultQTc');
+  if(!qt||!hr){alert('Enter values');return;}
+  var qtc=Math.round(qt/Math.sqrt(60/hr));
+  box.className='result-box';
+  if(qtc>500){box.className+=' danger';box.innerHTML='<div class="result-title">🚨 '+qtc+'ms</div><div class="result-content">HIGH TdP risk<br>STOP QT drugs</div>';}
+  else if(qtc>470){box.className+=' warning';box.innerHTML='<div class="result-title">⚠️ '+qtc+'ms</div><div class="result-content">Prolonged</div>';}
+  else if(qtc>440){box.innerHTML='<div class="result-title">📋 '+qtc+'ms</div><div class="result-content">Borderline</div>';}
+  else{box.className+=' success';box.innerHTML='<div class="result-title">✓ '+qtc+'ms</div><div class="result-content">Normal</div>';}
+}
+
+function askAI(){
+  var input=document.getElementById('aiInput');
+  var resp=document.getElementById('aiResponse');
+  var q=input.value;
+  if(!q){alert('Enter question');return;}
+  resp.className='ai-response visible';
+  resp.innerHTML='<div class="ai-response-header"><span class="ai-response-label">Loading...</span></div><div class="ai-response-body"><div class="ai-loading"><div class="ai-loading-spinner"></div></div></div>';
+  fetch(apiUrl,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'oncallAskClinical',question:q})})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    var ans=d.answer||d.response||'No response';
+    resp.innerHTML='<div class="ai-response-header"><span class="ai-response-label">Response</span></div><div class="ai-response-body">'+ans+'</div>';
+    input.value='';
+  })
+  .catch(function(err){
+    resp.innerHTML='<div class="ai-response-header"><span class="ai-response-label" style="color:var(--danger)">Error</span></div><div class="ai-response-body">'+err.message+'</div>';
+  });
+}
+
+document.getElementById('aiInput').onkeydown=function(e){if(e.keyCode===13)askAI();};
+</script>
+</body>
+</html>

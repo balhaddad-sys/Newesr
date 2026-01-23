@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Welcome to MedWard Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #2563EB;
+      --primary-light: #3B82F6;
+      --accent: #7C3AED;
+      --success: #059669;
+      --bg: #0F172A;
+      --bg-card: #1E293B;
+      --bg-elevated: #334155;
+      --text: #F8FAFC;
+      --text-muted: #94A3B8;
+      --border: rgba(148, 163, 184, 0.1);
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    /* ════════════════════════════════════════════════════════════════
+       SLIDES
+    ════════════════════════════════════════════════════════════════ */
+    
+    .slide {
+      display: none;
+      position: fixed;
+      inset: 0;
+      flex-direction: column;
+      animation: slideIn 0.4s ease-out;
+    }
+    
+    .slide.active { display: flex; }
+    
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    .slide-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 80px 32px 200px;
+    }
+    
+    /* ════════════════════════════════════════════════════════════════
+       HEADER
+    ════════════════════════════════════════════════════════════════ */
+    
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      z-index: 100;
+    }
+    
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text-muted);
+    }
+    
+    .header-logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .header-logo-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: white;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    
+    .skip-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    
+    .skip-btn:hover {
+      background: var(--bg-elevated);
+      color: var(--text);
+    }
+    
+    /* ════════════════════════════════════════════════════════════════
+       WELCOME SLIDE
+    ════════════════════════════════════════════════════════════════ */
+    
+    .welcome-container {
+      text-align: center;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    .welcome-icon {
+      width: 88px;
+      height: 88px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 32px;
+      box-shadow: 
+        0 0 0 1px rgba(255,255,255,0.1),
+        0 20px 50px -10px rgba(37, 99, 235, 0.5);
+    }
+    
+    .welcome-icon svg {
+      width: 44px;
+      height: 44px;
+      stroke: white;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    
+    .welcome-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(5, 150, 105, 0.15);
+      border: 1px solid rgba(5, 150, 105, 0.3);
+      color: #34D399;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .welcome-title {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, var(--text) 0%, var(--text-muted) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .welcome-subtitle {
+      font-size: 17px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 40px;
+    }
+    
+    .welcome-features {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+    }
+    
+    .welcome-feature {
+      text-align: center;
+    }
+    
+    .welcome-feature-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary-light);
+    }
+    
+    .welcome-feature-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    
+    /* ════════════════════════════════════════════════════════════════
+       FEATURE SLIDES
+    ════════════════════════════════════════════════════════════════ */
+    
+    .feature-container {
+      max-width: 400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    
+    .feature-visual {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+    }
+    
+    .feature-icon-large {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+    }
+    
+    .feature-icon-large.blue { 
+      background: linear-gradient(135deg, rgba(37,99,235,0.2), rgba(59,130,246,0.1));
+      box-shadow: 0 0 40px rgba(37,99,235,0.2);
+    }
+    .feature-icon-large.purple { 
+      background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(139,92,246,0.1));
+      box-shadow: 0 0 40px rgba(124,58,237,0.2);
+    }
+    .feature-icon-large.green { 
+      background: linear-gradient(135deg, rgba(5,150,105,0.2), rgba(16,185,129,0.1));
+      box-shadow: 0 0 40px rgba(5,150,105,0.2);
+    }
+    .feature-icon-large.amber { 
+      background: linear-gradient(135deg, rgba(217,119,6,0.2), rgba(245,158,11,0.1));
+      box-shadow: 0 0 40px rgba(217,119,6,0.2);
+    }
+    .feature-icon-large.rose { 
+      background: linear-gradient(135deg, rgba(225,29,72,0.2), rgba(244,63,94,0.1));
+      box-shadow: 0 0 40px rgba(225,29,72,0.2);
+    }
+    .feature-icon-large.cyan { 
+      background: linear-gradient(135deg, rgba(6,182,212,0.2), rgba(34,211,238,0.1));
+      box-shadow: 0 0 40px rgba(6,182,212,0.2);
+    }
+    
+    .feature-label {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--primary-light);
+      margin-bottom: 12px;
+    }
+    
+    .feature-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 12px;
+    }
+    
+    .feature-desc {
+      font-size: 16px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    
+    /* Lab Visual */
+    .lab-demo {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+    
+    .lab-item {
+      display: flex;
+      align-items: center;
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    
+    .lab-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 14px;
+    }
+    
+    .lab-dot.red { background: #EF4444; box-shadow: 0 0 10px #EF4444; }
+    .lab-dot.yellow { background: #F59E0B; box-shadow: 0 0 10px #F59E0B; }
+    .lab-dot.green { background: #10B981; box-shadow: 0 0 10px #10B981; }
+    
+    .lab-name {
+      flex: 1;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    
+    .lab-value {
+      font-size: 18px;
+      font-weight: 700;
+      margin-right: 12px;
+    }
+    
+    .lab-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    
+    .lab-badge.critical { background: rgba(239,68,68,0.15); color: #EF4444; }
+    .lab-badge.low { background: rgba(245,158,11,0.15); color: #F59E0B; }
+    .lab-badge.normal { background: rgba(16,185,129,0.15); color: #10B981; }
+    
+    /* Document Visual */
+    .doc-demo {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+    
+    .doc-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    
+    .doc-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    
+    .doc-icon.purple { background: rgba(124,58,237,0.2); }
+    .doc-icon.blue { background: rgba(37,99,235,0.2); }
+    .doc-icon.cyan { background: rgba(6,182,212,0.2); }
+    
+    .doc-text {
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    /* Chat Visual */
+    .chat-demo {
+      width: 100%;
+    }
+    
+    .chat-msg {
+      padding: 14px 18px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+    
+    .chat-msg.user {
+      background: var(--primary);
+      margin-left: 40px;
+      border-bottom-right-radius: 4px;
+    }
+    
+    .chat-msg.ai {
+      background: var(--bg);
+      margin-right: 40px;
+      border-bottom-left-radius: 4px;
+    }
+    
+    /* ════════════════════════════════════════════════════════════════
+       FINAL SLIDE
+    ════════════════════════════════════════════════════════════════ */
+    
+    .final-container {
+      text-align: center;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    .final-check {
+      width: 88px;
+      height: 88px;
+      background: linear-gradient(135deg, var(--success), #10B981);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 32px;
+      font-size: 44px;
+      box-shadow: 
+        0 0 0 1px rgba(255,255,255,0.1),
+        0 20px 50px -10px rgba(5, 150, 105, 0.5);
+    }
+    
+    .final-title {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    
+    .final-desc {
+      font-size: 16px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+    
+    .final-checklist {
+      text-align: left;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    
+    .final-checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      font-size: 14px;
+    }
+    
+    .final-checklist-item:not(:last-child) {
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .final-checklist-check {
+      width: 20px;
+      height: 20px;
+      background: rgba(5, 150, 105, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #10B981;
+      font-size: 12px;
+    }
+    
+    /* ════════════════════════════════════════════════════════════════
+       NAVIGATION
+    ════════════════════════════════════════════════════════════════ */
+    
+    .nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px 24px;
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
+      background: linear-gradient(to top, var(--bg) 60%, transparent);
+    }
+    
+    .nav-inner {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    .progress-bar {
+      height: 4px;
+      background: var(--bg-elevated);
+      border-radius: 2px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+    
+    .nav-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    
+    .nav-step {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    
+    .nav-btn {
+      flex: 1;
+      max-width: 200px;
+      padding: 16px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    
+    .nav-btn.primary {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .nav-btn.primary:hover {
+      background: var(--primary-light);
+    }
+    
+    .nav-btn.success {
+      background: var(--success);
+      color: white;
+      max-width: none;
+    }
+    
+    .nav-btn:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-logo">
+      <div class="header-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
+      MedWard Pro
+    </div>
+    <button class="skip-btn" onclick="finish()">Skip tour</button>
+  </div>
+
+  <!-- Slide 1: Welcome -->
+  <div class="slide active" id="s1">
+    <div class="slide-content">
+      <div class="welcome-container">
+        <div class="welcome-icon">
+          <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <div class="welcome-badge">Clinical Decision Support</div>
+        <h1 class="welcome-title">Welcome to MedWard Pro</h1>
+        <p class="welcome-subtitle">The intelligent ward management system that helps you deliver better patient care.</p>
+        <div class="welcome-features">
+          <div class="welcome-feature">
+            <div class="welcome-feature-value">50%</div>
+            <div class="welcome-feature-label">Time Saved</div>
+          </div>
+          <div class="welcome-feature">
+            <div class="welcome-feature-value">AI</div>
+            <div class="welcome-feature-label">Powered</div>
+          </div>
+          <div class="welcome-feature">
+            <div class="welcome-feature-value">100%</div>
+            <div class="welcome-feature-label">Secure</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2: Patient Management -->
+  <div class="slide" id="s2">
+    <div class="slide-content">
+      <div class="feature-container">
+        <div class="feature-visual">
+          <div class="feature-icon-large blue">👥</div>
+        </div>
+        <div class="feature-label">Feature 01</div>
+        <h2 class="feature-title">Patient Management</h2>
+        <p class="feature-desc">Organize patients by ward and unit. Track critical status, view history, and manage care plans all in one place.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3: Medication Scanner -->
+  <div class="slide" id="s3">
+    <div class="slide-content">
+      <div class="feature-container">
+        <div class="feature-visual">
+          <div class="feature-icon-large purple">📷</div>
+        </div>
+        <div class="feature-label">Feature 02</div>
+        <h2 class="feature-title">Medication Scanner</h2>
+        <p class="feature-desc">Point your camera at any pill bottle, prescription, or medication list. AI identifies and extracts drug information instantly.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4: Lab Analysis -->
+  <div class="slide" id="s4">
+    <div class="slide-content">
+      <div class="feature-container">
+        <div class="feature-visual">
+          <div class="lab-demo">
+            <div class="lab-item">
+              <div class="lab-dot red"></div>
+              <span class="lab-name">Potassium</span>
+              <span class="lab-value">6.8</span>
+              <span class="lab-badge critical">CRITICAL</span>
+            </div>
+            <div class="lab-item">
+              <div class="lab-dot yellow"></div>
+              <span class="lab-name">Hemoglobin</span>
+              <span class="lab-value">8.2</span>
+              <span class="lab-badge low">LOW</span>
+            </div>
+            <div class="lab-item">
+              <div class="lab-dot green"></div>
+              <span class="lab-name">Sodium</span>
+              <span class="lab-value">138</span>
+              <span class="lab-badge normal">NORMAL</span>
+            </div>
+          </div>
+        </div>
+        <div class="feature-label">Feature 03</div>
+        <h2 class="feature-title">Smart Lab Analysis</h2>
+        <p class="feature-desc">Upload lab reports and get instant AI interpretation with critical value alerts and clinical recommendations.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5: Document Import -->
+  <div class="slide" id="s5">
+    <div class="slide-content">
+      <div class="feature-container">
+        <div class="feature-visual">
+          <div class="doc-demo">
+            <div class="doc-item">
+              <div class="doc-icon purple">🖥️</div>
+              <span class="doc-text">EMR Screenshots</span>
+            </div>
+            <div class="doc-item">
+              <div class="doc-icon blue">📋</div>
+              <span class="doc-text">Medication Lists</span>
+            </div>
+            <div class="doc-item">
+              <div class="doc-icon cyan">📄</div>
+              <span class="doc-text">Clinical Reports</span>
+            </div>
+          </div>
+        </div>
+        <div class="feature-label">Feature 04</div>
+        <h2 class="feature-title">Document Import</h2>
+        <p class="feature-desc">Upload any clinical document—photos or PDFs. AI extracts patient data, medications, diagnoses, and more.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 6: AI Assistant -->
+  <div class="slide" id="s6">
+    <div class="slide-content">
+      <div class="feature-container">
+        <div class="feature-visual">
+          <div class="chat-demo">
+            <div class="chat-msg user">How should I treat hyperkalemia in this patient?</div>
+            <div class="chat-msg ai">For K+ 6.8 with ECG changes, consider:<br>1. Calcium gluconate IV<br>2. Insulin + D50<br>3. Nephrology consult</div>
+          </div>
+        </div>
+        <div class="feature-label">Feature 05</div>
+        <h2 class="feature-title">AI Clinical Assistant</h2>
+        <p class="feature-desc">Ask any clinical question. Get evidence-based answers with patient-specific context and recommendations.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 7: Ready -->
+  <div class="slide" id="s7">
+    <div class="slide-content">
+      <div class="final-container">
+        <div class="final-check">✓</div>
+        <h2 class="final-title">You're All Set!</h2>
+        <p class="final-desc">Start managing your patients more efficiently with MedWard Pro.</p>
+        <div class="final-checklist">
+          <div class="final-checklist-item">
+            <div class="final-checklist-check">✓</div>
+            <span>Smart patient organization</span>
+          </div>
+          <div class="final-checklist-item">
+            <div class="final-checklist-check">✓</div>
+            <span>AI medication scanner</span>
+          </div>
+          <div class="final-checklist-item">
+            <div class="final-checklist-check">✓</div>
+            <span>Instant lab analysis</span>
+          </div>
+          <div class="final-checklist-item">
+            <div class="final-checklist-check">✓</div>
+            <span>Clinical AI assistant</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="nav">
+    <div class="nav-inner">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress" style="width: 14.28%"></div>
+      </div>
+      <div class="nav-row">
+        <span class="nav-step" id="step">1 of 7</span>
+        <button class="nav-btn primary" id="btn">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var current = 1;
+    var total = 7;
+    var btn = document.getElementById('btn');
+    var step = document.getElementById('step');
+    var progress = document.getElementById('progress');
+
+    function go(n) {
+      document.getElementById('s' + current).classList.remove('active');
+      current = n;
+      document.getElementById('s' + current).classList.add('active');
+      
+      step.textContent = current + ' of ' + total;
+      progress.style.width = (current / total * 100) + '%';
+      
+      if (current === total) {
+        btn.textContent = 'Get Started';
+        btn.className = 'nav-btn success';
+      } else {
+        btn.textContent = 'Continue';
+        btn.className = 'nav-btn primary';
+      }
+    }
+
+    btn.onclick = function() {
+      if (current === total) {
+        finish();
+      } else {
+        go(current + 1);
+      }
+    };
+
+    function finish() {
+      localStorage.setItem('medward_onboarding_complete', 'true');
+      localStorage.setItem('medward_onboarding_version', 'v4_sparklines');
+      window.location.href = 'index.html';
+    }
+
+    // Swipe support
+    var startX = 0;
+    document.addEventListener('touchstart', function(e) {
+      startX = e.touches[0].clientX;
+    });
+    document.addEventListener('touchend', function(e) {
+      var diff = startX - e.changedTouches[0].clientX;
+      if (diff > 50 && current < total) go(current + 1);
+      if (diff < -50 && current > 1) go(current - 1);
+    });
+  </script>
+</body>
+</html>
