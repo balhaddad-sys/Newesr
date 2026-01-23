@@ -1380,6 +1380,18 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 
 .history-empty{text-align:center;padding:32px 20px;color:var(--text-muted)}
 
+/* History Upload Button */
+.history-upload-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:14px 20px;margin-bottom:16px;
+  background:var(--primary);color:#fff;border:none;border-radius:10px;
+  font-family:inherit;font-size:0.9rem;font-weight:600;cursor:pointer;
+  transition:all 0.2s
+}
+.history-upload-btn:hover{opacity:0.9}
+.history-upload-btn:disabled{background:var(--border);cursor:not-allowed}
+.history-upload-btn svg{width:20px;height:20px}
+
 .unified-summary{
   background:var(--bg-card);border:1px solid var(--border);
   border-radius:12px;padding:20px;margin-bottom:20px
@@ -1394,10 +1406,33 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 }
 .unified-summary-title svg{color:var(--primary)}
 .unified-summary-meta{font-size:0.75rem;color:var(--text-muted)}
+
+/* Formatted Summary Content */
+.unified-summary-content{
+  font-size:0.88rem;color:var(--text-secondary);line-height:1.7;
+  margin-bottom:16px
+}
+.summary-section{margin-bottom:16px}
+.summary-section:last-child{margin-bottom:0}
+.summary-section-header{
+  display:flex;align-items:center;gap:8px;
+  font-weight:700;font-size:0.82rem;color:var(--text);
+  margin-bottom:8px;padding-bottom:6px;
+  border-bottom:1px solid var(--border)
+}
+.summary-section-header svg{width:16px;height:16px;color:var(--primary)}
+.summary-section-body{
+  font-size:0.85rem;color:var(--text-secondary);line-height:1.7
+}
+.summary-section-body ul{margin:0;padding-left:18px}
+.summary-section-body li{margin-bottom:4px}
+
+/* Legacy text format */
 .unified-summary-text{
   font-size:0.9rem;color:var(--text-secondary);line-height:1.7;
   margin-bottom:16px
 }
+
 .unified-section{
   background:var(--bg);border-radius:8px;padding:12px;margin-bottom:12px
 }
@@ -9290,17 +9325,17 @@ function renderProfileHistory() {
       <div class="section-body">
   `;
   
-  // Upload zone (compact)
+  // Upload button (professional blue)
   html += `
-    <div class="history-upload-zone ${state.isAnalyzingHistory ? 'analyzing' : ''}" onclick="${state.isAnalyzingHistory ? '' : 'triggerHistoryUpload()'}">
+    <button class="history-upload-btn" onclick="triggerHistoryUpload()" ${state.isAnalyzingHistory ? 'disabled' : ''}>
       ${state.isAnalyzingHistory ? `
         <div class="upload-spinner"></div>
-        <span>Analyzing${state.historyUploadQueue > 1 ? ` (${state.historyUploadComplete + 1}/${state.historyUploadQueue})` : ''}...</span>
+        Analyzing${state.historyUploadQueue > 1 ? ` (${state.historyUploadComplete + 1}/${state.historyUploadQueue})` : ''}...
       ` : `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        <span>Upload clinical documents, EMR screenshots, discharge summaries</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload Clinical Documents
       `}
-    </div>
+    </button>
   `;
   
   if (!p.clinicalNotes.length) {
@@ -9316,6 +9351,10 @@ function renderProfileHistory() {
     // UNIFIED AI SUMMARY - Combines all documents into one view
     // ═══════════════════════════════════════════════════════════════════
     
+    // Get summary text and format it
+    const summaryText = p.unifiedSummary || allFindings.join(' ') || '';
+    const formattedSummary = formatClinicalSummary(summaryText);
+    
     html += `
       <div class="unified-summary">
         <div class="unified-summary-header">
@@ -9326,10 +9365,8 @@ function renderProfileHistory() {
           <div class="unified-summary-meta">${p.clinicalNotes.length} document${p.clinicalNotes.length > 1 ? 's' : ''} analyzed</div>
         </div>
         
-        ${p.unifiedSummary ? `
-          <div class="unified-summary-text">${esc(p.unifiedSummary)}</div>
-        ` : allFindings.length ? `
-          <div class="unified-summary-text">${esc(allFindings.join(' '))}</div>
+        ${summaryText ? `
+          <div class="unified-summary-content">${formattedSummary}</div>
         ` : `
           <div class="unified-summary-text" style="color:var(--text-muted);font-style:italic">Summary will be generated from your documents...</div>
         `}
@@ -9661,6 +9698,105 @@ window.importAllMedsFromHistory = function() {
     toast('All medications already exist', true);
   }
 };
+
+// Format clinical summary - convert markdown-style text to professional HTML
+function formatClinicalSummary(text) {
+  if (!text) return '';
+  
+  let html = text;
+  
+  // Remove emojis
+  html = html.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '');
+  
+  // Extract sections based on ** headers ** or --- dividers
+  const sections = [];
+  
+  // Check for section headers like **Clinical Summary:** or **CLINICAL PEARLS:**
+  const sectionPattern = /\*\*([^*]+):\*\*\s*([\s\S]*?)(?=\*\*[^*]+:\*\*|---|$)/g;
+  let match;
+  let lastIndex = 0;
+  let hasMatches = false;
+  
+  while ((match = sectionPattern.exec(html)) !== null) {
+    hasMatches = true;
+    // Add any content before this section as intro
+    if (match.index > lastIndex && sections.length === 0) {
+      const intro = html.substring(lastIndex, match.index).trim();
+      if (intro) sections.push({ title: '', content: intro });
+    }
+    
+    sections.push({
+      title: match[1].trim(),
+      content: match[2].trim()
+    });
+    lastIndex = match.index + match[0].length;
+  }
+  
+  // If no sections found, treat entire text as one block
+  if (!hasMatches) {
+    // Clean up the text
+    html = html
+      .replace(/\*\*/g, '') // Remove bold markers
+      .replace(/---/g, '') // Remove dividers
+      .replace(/\n+/g, '<br>') // Convert newlines to breaks
+      .trim();
+    return `<div class="summary-section-body">${html}</div>`;
+  }
+  
+  // Build HTML for sections
+  let outputHtml = '';
+  
+  sections.forEach(section => {
+    if (section.title) {
+      // Get appropriate icon
+      const titleLower = section.title.toLowerCase();
+      let icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>';
+      
+      if (titleLower.includes('clinical') && titleLower.includes('summary')) {
+        icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>';
+      } else if (titleLower.includes('pearl') || titleLower.includes('flag') || titleLower.includes('alert')) {
+        icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+      } else if (titleLower.includes('disclaimer')) {
+        icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>';
+      }
+      
+      outputHtml += `
+        <div class="summary-section">
+          <div class="summary-section-header">${icon} ${esc(section.title)}</div>
+          <div class="summary-section-body">${formatSectionContent(section.content)}</div>
+        </div>
+      `;
+    } else if (section.content) {
+      outputHtml += `<div class="summary-section-body">${formatSectionContent(section.content)}</div>`;
+    }
+  });
+  
+  return outputHtml;
+}
+
+function formatSectionContent(content) {
+  if (!content) return '';
+  
+  // Clean up markdown
+  let html = content
+    .replace(/\*\*/g, '') // Remove remaining bold markers
+    .replace(/---/g, '') // Remove dividers
+    .trim();
+  
+  // Convert list items (- item) to proper list
+  if (html.includes(' - ') || html.startsWith('- ')) {
+    const items = html.split(/\s*-\s+/).filter(Boolean);
+    if (items.length > 1) {
+      html = '<ul>' + items.map(item => `<li>${esc(item.trim())}</li>`).join('') + '</ul>';
+    } else {
+      html = esc(html).replace(/\n/g, '<br>');
+    }
+  } else {
+    html = esc(html).replace(/\n/g, '<br>');
+  }
+  
+  return html;
+}
 
 // Regenerate unified summary from all documents
 window.regenerateUnifiedSummary = async function() {
