@@ -1002,12 +1002,15 @@ const AUTH = {
   pass: sessionStorage.getItem('MW_PASS') || localStorage.getItem('MW_PASS')
 };
 
-// App state
+// App state - structure matches Code.gs expectations
 let state = {
+  rev: 0,                                    // Revision number for sync tracking
+  updatedAt: null,                           // Last update timestamp
   units: [],
   patients: [],
   trash: { units: [], patients: [] },
-  settings: {}
+  settings: {},
+  unitRequests: []                           // Unit access requests
 };
 
 let editingUnitId = null;
@@ -1060,14 +1063,39 @@ async function loadData() {
   showLoading('Loading your data...');
   
   try {
-    const res = await callAPI('loadData');
+    // Send current rev for conditional load (server returns 'unchanged' if we have latest)
+    const res = await callAPI('loadData', { clientRev: state.rev });
     
-    if (res.success && res.data) {
-      const data = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
-      state.units = data.units || [];
-      state.patients = data.patients || [];
-      state.trash = data.trash || { units: [], patients: [] };
-      state.settings = data.settings || {};
+    if (res.success) {
+      // Handle conditional load response - server says we already have latest
+      if (res.unchanged) {
+        console.log('Data unchanged, rev:', res.rev);
+        updateSyncStatus('synced');
+        renderUnits();
+        hideLoading();
+        return;
+      }
+      
+      // Full data received
+      if (res.data) {
+        const data = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+        
+        // Update state with all fields from server
+        state.rev = data.rev || res.rev || 1;
+        state.updatedAt = data.updatedAt || null;
+        state.units = data.units || [];
+        state.patients = data.patients || [];
+        state.trash = data.trash || { units: [], patients: [] };
+        state.settings = data.settings || {};
+        state.unitRequests = data.unitRequests || [];
+        
+        console.log('Data loaded, rev:', state.rev);
+      }
+      
+      updateSyncStatus('synced');
+    } else {
+      console.error('Load failed:', res.error);
+      toast('Failed to load: ' + (res.error || 'Unknown error'));
     }
     
     renderUnits();
@@ -1075,24 +1103,101 @@ async function loadData() {
   } catch (e) {
     hideLoading();
     toast('Failed to load data');
-    console.error(e);
+    console.error('Load error:', e);
   }
 }
 
 async function saveData() {
   try {
-    await callAPI('saveData', {
+    // Send complete state structure matching Code.gs expectations
+    // Note: rev is managed by server, we don't send it
+    const res = await callAPI('saveData', {
       payload: {
         units: state.units,
         patients: state.patients,
         trash: state.trash,
-        settings: state.settings
+        settings: state.settings,
+        unitRequests: state.unitRequests || []
       }
     });
-    updateSyncStatus('synced');
+    
+    if (res.success) {
+      // Update local rev with server's new revision
+      if (res.rev) {
+        state.rev = res.rev;
+      }
+      if (res.timestamp) {
+        state.updatedAt = res.timestamp;
+      }
+      console.log('Data saved, new rev:', state.rev);
+      updateSyncStatus('synced');
+    } else {
+      console.error('Save failed:', res.error);
+      updateSyncStatus('error');
+      toast('Save failed: ' + (res.error || 'Unknown error'));
+    }
   } catch (e) {
     updateSyncStatus('error');
-    console.error(e);
+    console.error('Save error:', e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DELTA SYNC OPERATIONS (Optimized patch-based updates)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Apply a single patch operation to the server
+ * Operations: addUnit, updateUnit, deleteUnit, updateSettings
+ */
+async function applyPatch(operation, payload) {
+  try {
+    updateSyncStatus('syncing');
+    const res = await callAPI('patch', { operation, payload });
+    
+    if (res.success) {
+      state.rev = res.rev;
+      state.updatedAt = res.timestamp;
+      console.log(`Patch applied: ${operation}, new rev: ${state.rev}`);
+      updateSyncStatus('synced');
+      return true;
+    } else {
+      console.error('Patch failed:', res.error);
+      // Fall back to full save
+      await saveData();
+      return false;
+    }
+  } catch (e) {
+    console.error('Patch error:', e);
+    // Fall back to full save
+    await saveData();
+    return false;
+  }
+}
+
+/**
+ * Apply multiple patches in one call (batch operation)
+ */
+async function applyPatches(patches) {
+  try {
+    updateSyncStatus('syncing');
+    const res = await callAPI('patches', { patches });
+    
+    if (res.success) {
+      state.rev = res.rev;
+      state.updatedAt = res.timestamp;
+      console.log(`Batch patches applied: ${res.applied}, new rev: ${state.rev}`);
+      updateSyncStatus('synced');
+      return true;
+    } else {
+      console.error('Batch patches failed:', res.error);
+      await saveData();
+      return false;
+    }
+  } catch (e) {
+    console.error('Batch patches error:', e);
+    await saveData();
+    return false;
   }
 }
 
@@ -1192,26 +1297,39 @@ async function saveUnit() {
     return;
   }
   
+  updateSyncStatus('syncing');
+  
   if (editingUnitId) {
+    // Update existing unit
     const idx = state.units.findIndex(u => u.id === editingUnitId);
     if (idx !== -1) {
-      state.units[idx] = { ...state.units[idx], name, desc, color };
+      const updatedUnit = { ...state.units[idx], name, desc, color };
+      state.units[idx] = updatedUnit;
+      
+      closeModal('unitModal');
+      renderUnits();
+      
+      // Use delta sync for update
+      await applyPatch('updateUnit', updatedUnit);
+      toast('Unit updated');
     }
   } else {
-    state.units.push({
+    // Add new unit
+    const newUnit = {
       id: 'u' + Date.now(),
       name,
       desc,
       color
-    });
+    };
+    state.units.push(newUnit);
+    
+    closeModal('unitModal');
+    renderUnits();
+    
+    // Use delta sync for add
+    await applyPatch('addUnit', newUnit);
+    toast('Unit added');
   }
-  
-  closeModal('unitModal');
-  renderUnits();
-  
-  updateSyncStatus('syncing');
-  await saveData();
-  toast(editingUnitId ? 'Unit updated' : 'Unit added');
 }
 
 async function deleteUnit(unitId) {
@@ -1226,7 +1344,9 @@ async function deleteUnit(unitId) {
   
   renderUnits();
   updateSyncStatus('syncing');
-  await saveData();
+  
+  // Use delta sync for delete
+  await applyPatch('deleteUnit', { id: unitId });
   toast('Unit moved to trash');
 }
 
@@ -1260,11 +1380,33 @@ function toggleTrashView() {
 
 async function forceCloudSync() {
   toast('Syncing with cloud...');
+  updateSyncStatus('syncing');
+  
   try {
-    await saveData();
-    toast('Sync complete');
+    // Force full save
+    const res = await callAPI('saveData', {
+      payload: {
+        units: state.units,
+        patients: state.patients,
+        trash: state.trash,
+        settings: state.settings,
+        unitRequests: state.unitRequests || []
+      }
+    });
+    
+    if (res.success) {
+      if (res.rev) state.rev = res.rev;
+      if (res.timestamp) state.updatedAt = res.timestamp;
+      updateSyncStatus('synced');
+      toast('Sync complete (rev: ' + state.rev + ')');
+    } else {
+      updateSyncStatus('error');
+      toast('Sync failed: ' + (res.error || 'Unknown error'));
+    }
   } catch (e) {
+    updateSyncStatus('error');
     toast('Sync failed');
+    console.error('Sync error:', e);
   }
 }
 
@@ -1312,6 +1454,8 @@ function renderTrash() {
 }
 
 async function restoreItem(id, isUnit) {
+  updateSyncStatus('syncing');
+  
   if (isUnit) {
     const idx = state.trash.units.findIndex(u => u.id === id);
     if (idx !== -1) {
@@ -1331,8 +1475,26 @@ async function restoreItem(id, isUnit) {
   renderUnits();
   renderTrash();
   updateTrashCount();
-  updateSyncStatus('syncing');
-  await saveData();
+  
+  // Use restoreTrash API for patients (managed separately by Code.gs)
+  if (!isUnit) {
+    try {
+      const res = await callAPI('restoreTrash', { itemIds: [id] });
+      if (res.success) {
+        state.rev = res.rev || state.rev;
+        updateSyncStatus('synced');
+      } else {
+        // Fallback to full save
+        await saveData();
+      }
+    } catch (e) {
+      await saveData();
+    }
+  } else {
+    // Units trash is stored in main data, use full save
+    await saveData();
+  }
+  
   toast('Item restored');
 }
 
