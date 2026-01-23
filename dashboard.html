@@ -6009,13 +6009,13 @@ function markDirty() {
   syncState.pendingChanges = true;
   updateSyncStatus('pending', 'Saving...');
   
+  // Clear any pending timeout
   if (syncState.syncTimeout) {
     clearTimeout(syncState.syncTimeout);
   }
   
-  syncState.syncTimeout = setTimeout(() => {
-    performSync();
-  }, CONFIG.SYNC_DEBOUNCE_MS);
+  // INSTANT SYNC - no debounce delay
+  performSync();
 }
 
 async function performSync() {
