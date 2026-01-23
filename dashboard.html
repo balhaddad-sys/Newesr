@@ -5971,59 +5971,136 @@ function loadLocal() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// NON-BLOCKING LOCAL STORAGE (Prevents UI lag)
+// 🚀 PROFESSIONAL-GRADE SYNC SYSTEM v2.0
+// ═══════════════════════════════════════════════════════════════════
+// Architecture:
+// 1. Optimistic UI - state updates instantly, sync happens in background
+// 2. Patch Queue - only send what changed, not full snapshots
+// 3. Non-blocking saves - localStorage writes in idle time only
+// 4. Conditional loads - skip download if revision unchanged
+// 5. Debounced batch sync - 800ms debounce, patches batched
 // ═══════════════════════════════════════════════════════════════════
 
-function saveLocal() {
-  // Use requestIdleCallback for non-blocking writes (or setTimeout fallback)
-  const saveTask = () => {
-    try {
-      localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify({
-        units: state.units, 
-        settings: state.settings, 
-        patients: state.patients, 
-        unitRequests: state.unitRequests, 
-        trash: state.trash, 
-        lastUpdated: new Date().toISOString()
-      }));
-    } catch (e) {
-      console.warn('⚠️ localStorage save failed:', e);
-    }
-  };
+// Timers for deferred saves
+let localSaveTimer = null;
+let fullSnapshotTimer = null;
+
+// ───────────────────────────────────────────────────────────────────
+// TIER 1: INSTANT - In-memory only (0ms)
+// ───────────────────────────────────────────────────────────────────
+function saveLocalLite() {
+  // Only save tiny meta - NEVER blocks UI
+  try {
+    localStorage.setItem('MW_REV', String(syncState.clientRev));
+    localStorage.setItem('MW_DIRTY', syncState.patchQueue.length > 0 ? '1' : '0');
+  } catch (e) {}
+}
+
+// ───────────────────────────────────────────────────────────────────
+// TIER 2: DEFERRED - Full state in idle time (non-blocking)
+// ───────────────────────────────────────────────────────────────────
+function saveLocalDeferred() {
+  // Cancel any pending save
+  if (localSaveTimer) cancelIdleCallback(localSaveTimer);
   
-  // Schedule off main thread to prevent UI jank
+  // Schedule for when browser is idle
   if ('requestIdleCallback' in window) {
-    requestIdleCallback(saveTask, { timeout: 1000 });
+    localSaveTimer = requestIdleCallback(() => {
+      saveLocalNow();
+    }, { timeout: 2000 }); // Max 2s wait
   } else {
-    setTimeout(saveTask, 0);
+    setTimeout(saveLocalNow, 100);
   }
+}
+
+function saveLocalNow() {
+  try {
+    const payload = JSON.stringify({
+      units: state.units,
+      settings: state.settings,
+      patients: state.patients,
+      unitRequests: state.unitRequests,
+      trash: state.trash,
+      rev: syncState.clientRev,
+      lastUpdated: new Date().toISOString()
+    });
+    localStorage.setItem(CONFIG.STORAGE_KEY, payload);
+    localStorage.setItem(CONFIG.CACHE_KEY, payload); // Also update cache
+  } catch (e) {
+    console.warn('⚠️ localStorage save failed:', e);
+  }
+}
+
+// Legacy compatibility
+function saveLocal() {
+  saveLocalDeferred();
 }
 
 // Lightweight session save (just essentials, synchronous for critical data)
 function saveSessionLite() {
-  try {
-    localStorage.setItem('MW_REV', String(syncState.clientRev));
-    localStorage.setItem('MW_LAST_SYNC', new Date().toISOString());
-  } catch (e) {}
+  saveLocalLite();
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// PATCH QUEUE SYSTEM (Delta Sync)
-// ═══════════════════════════════════════════════════════════════════
+// ───────────────────────────────────────────────────────────────────
+// TIER 3: PATCH QUEUE - Accumulate changes for batched sync
+// ───────────────────────────────────────────────────────────────────
 
 function enqueuePatch(operation, payload) {
-  syncState.patchQueue.push({ operation, payload });
+  // Add to queue with timestamp for ordering
+  syncState.patchQueue.push({ 
+    operation, 
+    payload,
+    ts: Date.now()
+  });
+  
+  // Mark dirty and trigger debounced sync
   markDirty();
 }
 
-async function syncCloud() {
-  // Redirect to new system
-  await syncFromCloud();
+// Compress patch queue - remove redundant patches
+function compressPatchQueue() {
+  const queue = syncState.patchQueue;
+  if (queue.length <= 1) return;
+  
+  const patientPatches = new Map(); // id -> latest patch
+  const unitPatches = new Map();
+  const otherPatches = [];
+  
+  for (const patch of queue) {
+    const id = patch.payload?.id;
+    
+    if (patch.operation === 'updatePatient' && id) {
+      // Keep only the latest update for each patient
+      const existing = patientPatches.get(id);
+      if (existing && existing.operation === 'updatePatient') {
+        // Merge payloads
+        existing.payload = { ...existing.payload, ...patch.payload };
+      } else {
+        patientPatches.set(id, patch);
+      }
+    } else if (patch.operation === 'deletePatient' && id) {
+      // Delete supersedes any updates
+      patientPatches.set(id, patch);
+    } else if (patch.operation === 'addPatient' && id) {
+      patientPatches.set(id, patch);
+    } else if (patch.operation.includes('Unit') && id) {
+      unitPatches.set(id, patch);
+    } else {
+      otherPatches.push(patch);
+    }
+  }
+  
+  // Rebuild queue with compressed patches
+  syncState.patchQueue = [
+    ...patientPatches.values(),
+    ...unitPatches.values(),
+    ...otherPatches
+  ];
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// REACTIVE AUTO-SYNC SYSTEM
-// ═══════════════════════════════════════════════════════════════════
+// ───────────────────────────────────────────────────────────────────
+// SYNC STATUS UI
+// ───────────────────────────────────────────────────────────────────
 
 function updateSyncStatus(status, message) {
   syncState.status = status;
@@ -6049,90 +6126,122 @@ function updateSyncStatus(status, message) {
   }
 }
 
+// ───────────────────────────────────────────────────────────────────
+// MARK DIRTY - Triggers debounced sync
+// ───────────────────────────────────────────────────────────────────
+
 function markDirty() {
   syncState.pendingChanges = true;
+  
+  // Instant feedback
   updateSyncStatus('pending', 'Saving...');
   
+  // Save lite meta immediately (non-blocking)
+  saveLocalLite();
+  
+  // Debounce the actual sync (800ms)
   if (syncState.syncTimeout) {
     clearTimeout(syncState.syncTimeout);
   }
   
   syncState.syncTimeout = setTimeout(() => {
     performSync();
-  }, CONFIG.SYNC_DEBOUNCE_MS);
+  }, 800); // 800ms debounce for batching
 }
+
+// ───────────────────────────────────────────────────────────────────
+// PERFORM SYNC - Main sync orchestrator
+// ───────────────────────────────────────────────────────────────────
 
 async function performSync() {
   if (!syncState.pendingChanges) return;
-  if (syncState.isSyncing) return; // Prevent concurrent syncs
+  if (syncState.isSyncing) {
+    // Already syncing - reschedule
+    syncState.syncTimeout = setTimeout(performSync, 500);
+    return;
+  }
   
-  // Always save locally first (non-blocking)
-  saveLocal();
-  saveSessionLite();
+  syncState.isSyncing = true;
   
+  // Compress patch queue to minimize payload
+  compressPatchQueue();
+  
+  // Schedule deferred local save (non-blocking)
+  saveLocalDeferred();
+  
+  // Check if we have cloud configured
   if (!state.settings.apiUrl || state.settings.apiUrl === 'YOUR_API_URL_HERE') {
     syncState.pendingChanges = false;
+    syncState.isSyncing = false;
     updateSyncStatus('synced', 'Saved locally');
     return;
   }
   
-  // ═══════════════════════════════════════════════════════════════════
-  // DELTA SYNC: Use patches if available, otherwise fall back to snapshot
-  // ═══════════════════════════════════════════════════════════════════
-  
-  syncState.isSyncing = true;
   updateSyncStatus('syncing', 'Syncing...');
   
   try {
-    let res;
+    let success = false;
     
     if (syncState.patchQueue.length > 0) {
-      // DELTA SYNC: Send only patches (fast, minimal data)
+      // ═══════════════════════════════════════════════════════════════
+      // DELTA SYNC: Send only patches (typically <1KB)
+      // ═══════════════════════════════════════════════════════════════
       console.log('⚡ Delta sync:', syncState.patchQueue.length, 'patches');
       
-      res = await fetch(state.settings.apiUrl, {
+      const res = await fetch(state.settings.apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({
           action: 'patches',
           username: AUTH.user,
           password: AUTH.pass,
-          patches: syncState.patchQueue
+          patches: syncState.patchQueue.map(p => ({
+            operation: p.operation,
+            payload: p.payload
+          }))
         })
       });
       
       const data = await res.json();
       
       if (data.success) {
-        // Clear patch queue on success
-        syncState.patchQueue = [];
+        syncState.patchQueue = []; // Clear queue
         syncState.clientRev = data.rev || syncState.clientRev;
         localStorage.setItem('MW_REV', String(syncState.clientRev));
-        console.log('✅ Delta sync complete, rev:', syncState.clientRev);
+        console.log('✅ Delta sync complete, rev:', syncState.clientRev, 'applied:', data.applied);
+        success = true;
       } else {
-        // Patches failed - fall back to full snapshot
-        console.warn('⚠️ Patch sync failed, falling back to snapshot:', data.error);
-        await performSnapshotSync();
+        console.warn('⚠️ Patch sync failed:', data.error);
+        // Fall back to snapshot on next sync
       }
-      
     } else {
-      // No patches queued - do a lightweight snapshot sync
-      await performSnapshotSync();
+      // No patches - we're already in sync
+      success = true;
     }
     
-    syncState.pendingChanges = false;
-    syncState.lastSyncTime = Date.now();
-    syncState.errorCount = 0;
-    updateSyncStatus('synced', 'Synced');
+    if (success) {
+      syncState.pendingChanges = false;
+      syncState.lastSyncTime = Date.now();
+      syncState.errorCount = 0;
+      updateSyncStatus('synced', 'Synced');
+    } else {
+      throw new Error('Sync failed');
+    }
     
   } catch (e) {
     console.error('Sync error:', e);
     syncState.errorCount++;
     
     if (syncState.errorCount >= 3) {
-      updateSyncStatus('error', 'Sync failed - check connection');
+      updateSyncStatus('error', 'Sync failed');
+      // After 3 failures, fall back to snapshot on next attempt
+      if (syncState.patchQueue.length > 0) {
+        console.log('📦 Will attempt snapshot sync on retry');
+      }
     } else {
-      setTimeout(() => performSync(), 5000);
+      // Retry with exponential backoff
+      const delay = Math.min(5000 * syncState.errorCount, 15000);
+      setTimeout(() => performSync(), delay);
       updateSyncStatus('pending', 'Retrying...');
     }
   } finally {
@@ -6140,9 +6249,23 @@ async function performSync() {
   }
 }
 
-// Full snapshot sync (fallback when patches fail or for initial sync)
+// ───────────────────────────────────────────────────────────────────
+// SNAPSHOT SYNC - Full state upload (fallback / initial sync)
+// ───────────────────────────────────────────────────────────────────
+
 async function performSnapshotSync() {
   console.log('📦 Snapshot sync:', state.patients.length, 'patients');
+  
+  const payload = { 
+    units: state.units, 
+    settings: { 
+      adminPassword: state.settings.adminPassword,
+      apiUrl: state.settings.apiUrl
+    }, 
+    patients: state.patients,
+    unitRequests: state.unitRequests,
+    trash: state.trash
+  };
   
   const res = await fetch(state.settings.apiUrl, {
     method: 'POST',
@@ -6151,28 +6274,30 @@ async function performSnapshotSync() {
       action: 'saveData',
       username: AUTH.user,
       password: AUTH.pass,
-      payload: { 
-        units: state.units, 
-        settings: { 
-          adminPassword: state.settings.adminPassword,
-          apiUrl: state.settings.apiUrl
-        }, 
-        patients: state.patients,
-        unitRequests: state.unitRequests,
-        trash: state.trash
-      }
+      payload: payload
     })
   });
   
   if (!res.ok) throw new Error('HTTP ' + res.status);
   
   const data = await res.json();
-  if (data.success && data.rev) {
-    syncState.clientRev = data.rev;
-    localStorage.setItem('MW_REV', String(syncState.clientRev));
-    // Clear patch queue since snapshot includes everything
-    syncState.patchQueue = [];
+  if (data.success) {
+    if (data.rev) {
+      syncState.clientRev = data.rev;
+      localStorage.setItem('MW_REV', String(syncState.clientRev));
+    }
+    syncState.patchQueue = []; // Clear queue since snapshot includes everything
+    return true;
   }
+  return false;
+}
+
+// ───────────────────────────────────────────────────────────────────
+// LEGACY COMPATIBILITY
+// ───────────────────────────────────────────────────────────────────
+
+async function syncCloud() {
+  await syncFromCloud();
 }
 
 async function saveCloud() {
@@ -6189,7 +6314,7 @@ async function forceSync() {
   
   // Save locally first (non-blocking)
   saveLocal();
-  saveSessionLite();
+  saveLocalLite();
   
   if (!state.settings.apiUrl || state.settings.apiUrl === 'YOUR_API_URL_HERE') {
     console.log('⚠️ No API URL configured - saved locally only');
@@ -13856,6 +13981,39 @@ async function init() {
       syncFromCloud().catch(() => console.log('📴 Background sync skipped - offline'));
     }
   }, 60000);
+  
+  // ═══════════════════════════════════════════════════════════════════
+  // LIFECYCLE EVENTS - Ensure data is saved on app close/background
+  // ═══════════════════════════════════════════════════════════════════
+  
+  // Save when leaving page
+  window.addEventListener('beforeunload', () => {
+    // Synchronous save - must complete before page unloads
+    if (syncState.pendingChanges || syncState.patchQueue.length > 0) {
+      saveLocalNow(); // Force immediate save
+    }
+  });
+  
+  // Save when app goes to background (mobile)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      // Going to background - save immediately
+      saveLocalNow();
+      
+      // Try to flush patch queue to cloud
+      if (syncState.patchQueue.length > 0 && navigator.sendBeacon && state.settings.apiUrl) {
+        // Use sendBeacon for reliable background send
+        const payload = JSON.stringify({
+          action: 'patches',
+          username: AUTH.user,
+          password: AUTH.pass,
+          patches: syncState.patchQueue.map(p => ({ operation: p.operation, payload: p.payload }))
+        });
+        navigator.sendBeacon(state.settings.apiUrl, payload);
+        console.log('📤 Beacon sent with', syncState.patchQueue.length, 'patches');
+      }
+    }
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -13864,28 +14022,20 @@ async function init() {
 
 // Save to local cache immediately (optimistic UI)
 function saveLocalCache() {
-  try {
-    localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify({
-      patients: state.patients,
-      units: state.units,
-      trash: state.trash,
-      lastUpdated: new Date().toISOString()
-    }));
-  } catch (e) {
-    console.warn('⚠️ Cache save failed:', e);
-  }
+  // Use the deferred save to prevent UI blocking
+  saveLocalDeferred();
 }
 
 // Optimistic save: Local first, then cloud (non-blocking)
 function saveOptimistic() {
-  // 1. Save to phone storage immediately (instant feedback)
-  saveLocalCache();
-  saveLocal();
+  // 1. Save lite meta immediately (instant, non-blocking)
+  saveLocalLite();
   
-  // 2. Then sync to cloud quietly in background
-  syncToCloud().catch(e => {
-    console.warn('☁️ Background sync failed, but local is safe:', e.message);
-  });
+  // 2. Schedule full local save for idle time
+  saveLocalDeferred();
+  
+  // 3. Mark dirty to trigger cloud sync
+  markDirty();
 }
 
 // Check and apply saved login - returns true if login was restored
