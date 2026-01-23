@@ -687,7 +687,7 @@ function showNotLogged() {
       <div class="not-logged-icon">🔐</div>
       <h2>Login Required</h2>
       <p>Please log in to MedWard Pro first</p>
-      <a href="index.html" class="login-link">→ Go to Login</a>
+      <a href="login.html" class="login-link">→ Go to Login</a>
     </div>
   `;
 }
@@ -818,26 +818,36 @@ function selectPt(id) {
 }
 
 async function sendPatient() {
-  if (!selectedId || !recipient) return;
+  if (!selectedId || !recipient) {
+    toast('❌ Please select a patient and recipient');
+    return;
+  }
   
   const pt = patients.find(p => p.id === selectedId);
-  if (!pt) return;
+  if (!pt) {
+    toast('❌ Patient not found');
+    return;
+  }
   
-  showLoad('Sending...');
+  showLoad('Sending to Dr. ' + recipient + '...');
   
   try {
+    console.log('Sending patient:', pt.name, 'to:', recipient);
     const res = await callAPI('sendPatient', { recipient, patientData: pt });
+    console.log('Send response:', res);
     hideLoad();
     
     if (res.success) {
       closeSelect();
-      toast('✅ Sent to Dr. ' + recipient);
+      toast('✅ Patient sent to Dr. ' + recipient);
     } else {
-      toast('❌ ' + (res.error || 'Failed'));
+      toast('❌ ' + (res.error || 'Failed to send'));
+      console.error('Send failed:', res.error);
     }
   } catch (e) {
     hideLoad();
-    toast('❌ Network error');
+    toast('❌ Network error: ' + e.message);
+    console.error('Send error:', e);
   }
 }
 
