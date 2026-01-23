@@ -229,9 +229,10 @@ body {
   transform: translateX(4px);
 }
 
-.quick-link.purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: #fff; border: none; }
-.quick-link.teal { background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); color: #fff; border: none; }
-.quick-link.blue { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #fff; border: none; }
+.quick-link.purple { background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--border); }
+.quick-link.teal { background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--border); }
+.quick-link.blue { background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--border); }
+.quick-link.purple:hover, .quick-link.teal:hover, .quick-link.blue:hover { border-color: var(--primary); background: var(--bg-elevated); }
 
 .quick-link-icon {
   font-size: 1.3rem;
@@ -804,20 +805,17 @@ body {
     </div>
     <div class="modal-body">
       <div class="modal-unit-info">
-        <div class="modal-unit-icon" id="accessUnitIcon">🏥</div>
+        <div class="modal-unit-icon" id="accessUnitIcon" style="display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40" style="color:var(--primary)"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg></div>
         <div>
           <div class="modal-unit-name" id="accessUnitName">Unit Name</div>
           <div class="modal-unit-desc" id="accessUnitDesc">Description</div>
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Access Code</label>
-        <input type="text" class="form-input" id="accessCode" maxlength="4" placeholder="• • • •" inputmode="numeric" autocomplete="off">
-        <div class="form-hint">Enter 4-digit unit code</div>
-      </div>
+      <p style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin-top:8px">Tap Enter to access this unit</p>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-primary" onclick="verifyAccess()" id="accessBtn">Enter Unit</button>
+      <button class="btn btn-secondary" onclick="closeModal('accessModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="enterUnit()" id="accessBtn">Enter Unit</button>
     </div>
   </div>
 </div>
@@ -1082,10 +1080,13 @@ async function saveData() {
 function renderUnits() {
   const grid = document.getElementById('unitsGrid');
   
+  // SVG icon for hospital/unit
+  const unitSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32" style="color:var(--primary)"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>`;
+  
   if (state.units.length === 0) {
     grid.innerHTML = `
       <div style="grid-column: 1/-1; text-align: center; padding: 40px 20px; color: var(--text-muted);">
-        <div style="font-size: 2.5rem; margin-bottom: 8px;">🏥</div>
+        <div style="margin-bottom: 8px;">${unitSvg}</div>
         <div>No units yet. Add your first unit!</div>
       </div>
     `;
@@ -1095,10 +1096,10 @@ function renderUnits() {
   grid.innerHTML = state.units.map(u => `
     <div class="unit-card" style="--unit-color: ${u.color || '#005eb8'}" onclick="openAccessModal('${u.id}')">
       <div class="unit-actions">
-        <button class="unit-action-btn" onclick="event.stopPropagation(); editUnit('${u.id}')" title="Edit">✏️</button>
-        <button class="unit-action-btn" onclick="event.stopPropagation(); deleteUnit('${u.id}')" title="Delete">🗑️</button>
+        <button class="unit-action-btn" onclick="event.stopPropagation(); editUnit('${u.id}')" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="unit-action-btn" onclick="event.stopPropagation(); deleteUnit('${u.id}')" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
       </div>
-      <div class="unit-icon">${u.icon || '🏥'}</div>
+      <div class="unit-icon">${unitSvg}</div>
       <div class="unit-name">${escapeHtml(u.name)}</div>
       <div class="unit-desc">${escapeHtml(u.desc || '')}</div>
     </div>
@@ -1110,33 +1111,22 @@ function openAccessModal(unitId) {
   if (!unit) return;
   
   selectedUnitId = unitId;
-  document.getElementById('accessUnitIcon').textContent = unit.icon || '🏥';
   document.getElementById('accessUnitName').textContent = unit.name;
   document.getElementById('accessUnitDesc').textContent = unit.desc || 'Medical Unit';
-  document.getElementById('accessCode').value = '';
   
   openModal('accessModal');
-  setTimeout(() => document.getElementById('accessCode').focus(), 100);
 }
 
-function verifyAccess() {
-  const code = document.getElementById('accessCode').value;
+function enterUnit() {
   const unit = state.units.find(u => u.id === selectedUnitId);
-  
   if (!unit) return;
   
-  if (code === unit.code) {
-    // Store selected unit
-    sessionStorage.setItem('MW_UNIT', selectedUnitId);
-    sessionStorage.setItem('MW_UNIT_NAME', unit.name);
-    
-    // Navigate to dashboard
-    window.location.href = 'dashboard.html';
-  } else if (code.length === 4) {
-    toast('Incorrect code');
-    document.getElementById('accessCode').value = '';
-    document.getElementById('accessCode').focus();
-  }
+  // Store selected unit
+  sessionStorage.setItem('MW_UNIT', selectedUnitId);
+  sessionStorage.setItem('MW_UNIT_NAME', unit.name);
+  
+  // Navigate to dashboard
+  window.location.href = 'dashboard.html';
 }
 
 function openAddUnitModal() {
