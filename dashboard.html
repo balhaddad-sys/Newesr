@@ -5595,6 +5595,7 @@ let syncState = {
   // ═══════════════════════════════════════════════════════════════════
   isHydrated: false,           // Set true ONLY after successful cloud load
   isReadOnly: true,            // ★ STRICT: Default READ-ONLY until cloud sync succeeds
+  hasEverSyncedThisSession: false,  // ★ FIRST-LOGIN GUARD: Must download before any upload
   lastServerPatientCount: 0,   // Track server state to detect accidental wipes
   lastServerUnitCount: 0,
   lastServerTimestamp: null,   // Track server timestamp for conflict detection
@@ -6093,6 +6094,14 @@ function saveSessionLite() {
 // ───────────────────────────────────────────────────────────────────
 
 function enqueuePatch(operation, payload) {
+  // ═══════════════════════════════════════════════════════════════════
+  // CRITICAL GUARD: Block patches until cloud sync completes
+  // ═══════════════════════════════════════════════════════════════════
+  if (syncState.isReadOnly) {
+    console.warn('⛔ enqueuePatch blocked: App is in read-only mode');
+    return; // Don't queue anything
+  }
+  
   // Add to queue with timestamp for ordering
   syncState.patchQueue.push({ 
     operation, 
@@ -6178,6 +6187,15 @@ function updateSyncStatus(status, message) {
 // ───────────────────────────────────────────────────────────────────
 
 function markDirty() {
+  // ═══════════════════════════════════════════════════════════════════
+  // CRITICAL GUARD: Block ALL changes until cloud sync completes
+  // This prevents zombie cache from even queuing up for sync
+  // ═══════════════════════════════════════════════════════════════════
+  if (syncState.isReadOnly) {
+    console.warn('⛔ markDirty blocked: App is in read-only mode');
+    return; // Don't even set pendingChanges
+  }
+  
   syncState.pendingChanges = true;
   
   // Instant feedback
@@ -6214,6 +6232,14 @@ async function performSync() {
   if (!syncState.isHydrated) {
     console.warn('⛔ Sync blocked: App not yet hydrated from cloud');
     // Don't clear pendingChanges - will retry after hydration
+    return;
+  }
+  
+  // ═══════════════════════════════════════════════════════════════════
+  // READ-ONLY GATE - Block sync while viewing stale/cached data
+  // ═══════════════════════════════════════════════════════════════════
+  if (syncState.isReadOnly) {
+    console.warn('⛔ Sync blocked: App is in read-only mode');
     return;
   }
   
@@ -6397,6 +6423,20 @@ async function saveCloud() {
 
 // Force immediate sync - bypasses debounce for critical operations like lab saves
 async function forceSync() {
+  // ═══════════════════════════════════════════════════════════════════
+  // FIRST-LOGIN GUARD - Never upload until we've downloaded from cloud
+  // This prevents new devices from wiping existing cloud data
+  // ═══════════════════════════════════════════════════════════════════
+  if (!syncState.hasEverSyncedThisSession) {
+    console.warn('⛔ forceSync blocked: Must download from cloud first (first-login protection)');
+    toast('Syncing with cloud first...', false);
+    await syncFromCloud();
+    if (!syncState.hasEverSyncedThisSession) {
+      console.error('⛔ Cannot save: Cloud sync failed');
+      return false;
+    }
+  }
+  
   // ═══════════════════════════════════════════════════════════════════
   // HYDRATION GATE - Block sync until we've loaded from cloud
   // ═══════════════════════════════════════════════════════════════════
@@ -6632,8 +6672,10 @@ async function syncFromCloud() {
       // ✅ OPEN THE GATES - we're in sync
       syncState.isHydrated = true;
       syncState.isReadOnly = false;  // ★ UNLOCK - can now save
+      syncState.hasEverSyncedThisSession = true;  // ★ FIRST-LOGIN GUARD passed
       syncState.lastServerPatientCount = state.patients?.length || 0;
       syncState.lastServerUnitCount = state.units?.length || 0;
+      showSyncStatusBar('☁️ Cloud connected', 'green');
       return state; // Return current state, nothing changed
     }
     
@@ -6697,10 +6739,11 @@ async function syncFromCloud() {
       // ═══════════════════════════════════════════════════════════════════
       syncState.isHydrated = true;
       syncState.isReadOnly = false;  // ★ UNLOCK - can now save
+      syncState.hasEverSyncedThisSession = true;  // ★ FIRST-LOGIN GUARD passed
       syncState.lastServerPatientCount = state.patients?.length || 0;
       syncState.lastServerUnitCount = state.units?.length || 0;
       syncState.lastServerTimestamp = data.data.updatedAt || new Date().toISOString();
-      console.log('✅ Hydration complete: isHydrated=true, isReadOnly=false');
+      console.log('✅ Hydration complete: isHydrated=true, isReadOnly=false, hasEverSynced=true');
       console.log('   Server counts:', syncState.lastServerPatientCount, 'patients,', syncState.lastServerUnitCount, 'units');
       console.log('   Server timestamp:', syncState.lastServerTimestamp);
       
@@ -14077,6 +14120,7 @@ function initDebugPanel() {
 
 async function init() {
   console.log('🚀 MedWard Pro v17.0 - Luxury Standard');
+  console.log('🔒 Starting in READ-ONLY mode until cloud sync completes');
   
   // Run boot diagnostics
   if (!Diagnostics.run()) {
@@ -14202,7 +14246,8 @@ async function init() {
 
   // Periodic background sync (every 60 seconds)
   setInterval(() => {
-    if (!syncState.pendingChanges) {
+    // Only pull from cloud if we're not in read-only mode and no pending changes
+    if (!syncState.isReadOnly && !syncState.pendingChanges) {
       syncFromCloud().catch(() => console.log('📴 Background sync skipped - offline'));
     }
   }, 60000);
@@ -14222,8 +14267,17 @@ async function init() {
   // Save when app goes to background (mobile)
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
-      // Going to background - save immediately
+      // Going to background - save locally immediately
       saveLocalNow();
+      
+      // ═══════════════════════════════════════════════════════════════════
+      // CRITICAL: Only send beacon if we've successfully loaded from cloud
+      // This prevents zombie cache from wiping server data
+      // ═══════════════════════════════════════════════════════════════════
+      if (syncState.isReadOnly) {
+        console.warn('⛔ Beacon blocked: App is in read-only mode');
+        return;
+      }
       
       // Try to flush patch queue to cloud
       if (syncState.patchQueue.length > 0 && navigator.sendBeacon && state.settings.apiUrl) {
