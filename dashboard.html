@@ -897,16 +897,17 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 .lab-upload-subtitle{color:var(--text-muted);font-size:0.7rem}
 @keyframes spin{to{transform:rotate(360deg)}}
 /* AI Interpretation Card with Feedback */
-.ai-interpretation{background:linear-gradient(135deg,rgba(20,184,166,0.08),rgba(59,130,246,0.08));border:1px solid rgba(20,184,166,0.2);border-radius:var(--radius);padding:20px;margin-bottom:24px}
+.ai-interpretation{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:24px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
 .ai-interpretation-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.ai-interpretation-title{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--teal)}
-.ai-badge{background:var(--primary);color:#fff;font-size:0.6rem;padding:4px 8px;border-radius:4px;font-weight:700;letter-spacing:0.5px}
+.ai-interpretation-title{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--text)}
+.ai-badge{background:var(--text-muted);color:#fff;font-size:0.6rem;padding:4px 8px;border-radius:4px;font-weight:700;letter-spacing:0.5px}
 .ai-interpretation-text{color:var(--text-secondary);font-size:0.9rem;line-height:1.7;margin-bottom:16px}
 .ai-details{background:var(--bg);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px}
-.ai-details-title{font-size:0.75rem;font-weight:600;color:var(--gold);text-transform:uppercase;margin-bottom:12px}
+.ai-details-title{font-size:0.75rem;font-weight:600;color:var(--primary);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px}
 .ai-details-list{list-style:none;padding:0;margin:0}
 .ai-details-list li{font-size:0.85rem;color:var(--text-secondary);padding:6px 0;border-bottom:1px solid var(--border)}
 .ai-details-list li:last-child{border-bottom:none}
+.ai-disclaimer{font-size:0.7rem;color:var(--text-muted);background:var(--bg);padding:8px 12px;border-radius:6px;margin-bottom:12px;display:flex;align-items:center;gap:6px;border-left:3px solid var(--text-muted)}
 /* Feedback Buttons */
 .feedback-section{display:flex;align-items:center;justify-content:space-between;padding-top:16px;border-top:1px solid var(--border)}
 .feedback-label{font-size:0.75rem;color:var(--text-muted)}
@@ -966,10 +967,12 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 .lab-trend-chart{background:var(--bg);border-radius:var(--radius-sm);padding:20px;height:220px}
 /* Other sections */
 .vitals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
-.vital-card{background:var(--bg);border-radius:var(--radius-sm);padding:16px;text-align:center}
-.vital-icon{font-size:1.5rem;margin-bottom:8px}
-.vital-value{font-size:1.25rem;font-weight:700}
-.vital-label{font-size:0.7rem;color:var(--text-muted);margin-top:4px}
+.vital-card{background:var(--bg);border-radius:var(--radius-sm);padding:16px;text-align:center;border:1px solid var(--border)}
+.vital-icon{margin-bottom:8px;display:flex;justify-content:center}
+.vital-icon svg{width:28px;height:28px;color:var(--primary)}
+.vital-value{font-size:1.25rem;font-weight:700;font-family:'JetBrains Mono',monospace}
+.vital-value.empty{color:var(--text-muted);font-size:1rem}
+.vital-label{font-size:0.7rem;color:var(--text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.5px}
 .fluid-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .fluid-stat{background:var(--bg);border-radius:var(--radius-sm);padding:16px;text-align:center}
 .fluid-stat-value{font-size:1.5rem;font-weight:800}
@@ -2515,8 +2518,8 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
    PLAN SECTION - Professional Interactive Design
    ═══════════════════════════════════════════════════════════════════ */
 .plan-card {
-  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
-  border: 1px solid #bae6fd;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   border-radius: 16px;
   overflow: hidden;
 }
@@ -2526,8 +2529,8 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-  color: white;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
 }
 
 .plan-header-title {
@@ -2536,11 +2539,13 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
   gap: 10px;
   font-weight: 700;
   font-size: 1rem;
+  color: var(--text);
 }
 
 .plan-header-title svg {
   width: 20px;
   height: 20px;
+  color: var(--primary);
 }
 
 .plan-header-actions {
@@ -2562,21 +2567,23 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 }
 
 .plan-btn-edit {
-  background: rgba(255,255,255,0.2);
-  color: white;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
 }
 
 .plan-btn-edit:hover {
-  background: rgba(255,255,255,0.3);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .plan-btn-add {
-  background: white;
-  color: #0284c7;
+  background: var(--primary);
+  color: white;
 }
 
 .plan-btn-add:hover {
-  background: #f0f9ff;
+  opacity: 0.9;
 }
 
 .plan-content {
@@ -2611,15 +2618,15 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
   align-items: flex-start;
   gap: 12px;
   padding: 12px;
-  background: white;
-  border: 1px solid #e0f2fe;
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 10px;
   transition: all 0.2s;
 }
 
 .plan-item:hover {
-  border-color: #7dd3fc;
-  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.1);
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .plan-item-check {
@@ -2627,7 +2634,7 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
   height: 22px;
   min-width: 22px;
   border-radius: 6px;
-  border: 2px solid #cbd5e1;
+  border: 2px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2637,13 +2644,13 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 }
 
 .plan-item-check:hover {
-  border-color: #0284c7;
-  background: #f0f9ff;
+  border-color: var(--primary);
+  background: rgba(0,94,184,0.05);
 }
 
 .plan-item-check.completed {
-  background: #10b981;
-  border-color: #10b981;
+  background: var(--emerald);
+  border-color: var(--emerald);
   color: white;
 }
 
@@ -2696,8 +2703,8 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 
 .plan-summary {
   padding: 12px 16px;
-  background: #f8fafc;
-  border-top: 1px solid #e0f2fe;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2713,7 +2720,7 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 
 .plan-summary-stat span {
   font-weight: 700;
-  color: #0284c7;
+  color: var(--primary);
 }
 
 /* Add Plan Modal */
@@ -9553,11 +9560,11 @@ function renderProfileOverview() {
       <div class="section-header"><div class="section-title">🩺 Vitals</div><button class="btn btn-secondary btn-xs" onclick="openAddVitals()">Update</button></div>
       <div class="section-body">
         <div class="vitals-grid">
-          <div class="vital-card"><div class="vital-icon">❤️</div><div class="vital-value">${p.vitals?.hr || '—'}</div><div class="vital-label">HR</div></div>
-          <div class="vital-card"><div class="vital-icon">🩸</div><div class="vital-value">${p.vitals?.bp || '—'}</div><div class="vital-label">BP</div></div>
-          <div class="vital-card"><div class="vital-icon">🌡️</div><div class="vital-value">${p.vitals?.temp || '—'}</div><div class="vital-label">Temp</div></div>
-          <div class="vital-card"><div class="vital-icon">💨</div><div class="vital-value">${p.vitals?.rr || '—'}</div><div class="vital-label">RR</div></div>
-          <div class="vital-card"><div class="vital-icon">🫁</div><div class="vital-value">${p.vitals?.spo2 || '—'}</div><div class="vital-label">SpO₂</div></div>
+          <div class="vital-card"><div class="vital-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="vital-value${p.vitals?.hr ? '' : ' empty'}">${p.vitals?.hr || '—'}</div><div class="vital-label">HR</div></div>
+          <div class="vital-card"><div class="vital-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div><div class="vital-value${p.vitals?.bp ? '' : ' empty'}">${p.vitals?.bp || '—'}</div><div class="vital-label">BP</div></div>
+          <div class="vital-card"><div class="vital-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></svg></div><div class="vital-value${p.vitals?.temp ? '' : ' empty'}">${p.vitals?.temp || '—'}</div><div class="vital-label">Temp</div></div>
+          <div class="vital-card"><div class="vital-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="vital-value${p.vitals?.rr ? '' : ' empty'}">${p.vitals?.rr || '—'}</div><div class="vital-label">RR</div></div>
+          <div class="vital-card"><div class="vital-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.081 20C2.732 14.252 3.73 8.122 6.5 5"/><path d="M17.92 20c3.349-5.748 2.351-11.878-.42-15"/><path d="M12 12a4 4 0 0 0-4 4c0 1.5.5 3.5 4 6 3.5-2.5 4-4.5 4-6a4 4 0 0 0-4-4z"/><path d="M12 8V2"/></svg></div><div class="vital-value${p.vitals?.spo2 ? '' : ' empty'}">${p.vitals?.spo2 || '—'}</div><div class="vital-label">SpO₂</div></div>
         </div>
       </div>
     </div>
@@ -9591,7 +9598,7 @@ function renderProfileOverview() {
     </div>
     
     <div class="section-card">
-      <div class="section-header"><div class="section-title">📝 History & Examination</div><button class="btn btn-secondary btn-xs" onclick="openEditText('history', 'History')">Edit</button></div>
+      <div class="section-header"><div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align:-3px;margin-right:6px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>History & Examination</div><button class="btn btn-secondary btn-xs" onclick="openEditText('history', 'History')">Edit</button></div>
       <div class="section-body">
         <div style="font-size:0.9rem;color:var(--text-secondary);white-space:pre-wrap;min-height:60px">${esc(p.history) || 'Tap Edit to add...'}</div>
       </div>
@@ -9674,7 +9681,7 @@ function renderProfileLabs() {
             <div class="ai-interpretation-title">${labIcons.brain} AI Interpretation <span class="ai-badge">DECISION SUPPORT</span></div>
             <div style="font-size:0.7rem;color:var(--text-muted)">Generated ${interpTime}</div>
           </div>
-          <div style="font-size:0.7rem;color:var(--warning-text);background:var(--warning-bg);padding:6px 10px;border-radius:6px;margin-bottom:10px">${labIcons.info} Requires clinical correlation. Verify with local protocols.</div>
+          <div class="ai-disclaimer">${labIcons.info} Requires clinical correlation. Verify with local protocols.</div>
           <div class="ai-interpretation-text">${esc(interp.summary)}</div>
           
           ${interp.clinicalCorrelation ? `
