@@ -723,11 +723,20 @@ function generateBadge() {
 
 async function loadPatients() {
   try {
-    console.log('Loading patients...');
+    console.log('=== LOADING PATIENTS ===');
     console.log('Auth user:', AUTH.user);
+    console.log('Auth pass exists:', !!AUTH.pass);
+    console.log('Auth pass length:', AUTH.pass ? AUTH.pass.length : 0);
     
     const res = await callAPI('loadData');
+    console.log('Full API response:', JSON.stringify(res).substring(0, 500));
     console.log('API response success:', res.success);
+    
+    if (!res.success) {
+      console.error('❌ API FAILED:', res.error);
+      toast('❌ Load failed: ' + (res.error || 'Unknown error'));
+      return;
+    }
     
     if (res.success && res.data) {
       // res.data is already the data object
@@ -736,19 +745,20 @@ async function loadPatients() {
       
       // Patients are directly in the data object
       patients = d.patients || [];
-      console.log('Patients found:', patients.length);
+      console.log('✅ Patients found:', patients.length);
       
       if (patients.length > 0) {
         console.log('Patient IDs:', patients.map(p => p.id));
         console.log('Patient names:', patients.map(p => p.name));
       } else {
-        console.log('No patients in data. Full data:', JSON.stringify(d).substring(0, 300));
+        console.log('No patients in data. Full data:', JSON.stringify(d).substring(0, 500));
       }
     } else {
-      console.log('API failed or no data. Response:', JSON.stringify(res).substring(0, 200));
+      console.log('API returned no data. Response:', JSON.stringify(res).substring(0, 500));
     }
   } catch (e) { 
-    console.error('Load patients error:', e); 
+    console.error('Load patients error:', e);
+    toast('❌ Error: ' + e.message);
   }
 }
 
@@ -804,8 +814,8 @@ function openSelect(rec) {
   if (!patients.length) {
     list.innerHTML = '<div class="inbox-empty"><div class="inbox-empty-icon">📋</div><div>No patients</div></div>';
   } else {
-    list.innerHTML = patients.map(p => `
-      <div class="patient-item" data-id="${p.id}" onclick="selectPt('${p.id}')">
+    list.innerHTML = patients.map((p, idx) => `
+      <div class="patient-item" data-idx="${idx}" onclick="selectPtByIdx(${idx})">
         <div class="patient-avatar">${initials(p.name)}</div>
         <div class="patient-info">
           <div class="patient-name">${esc(p.name)}</div>
@@ -829,6 +839,17 @@ function closeSelect() {
       startScanner();
     }
   }, 300);
+}
+
+function selectPtByIdx(idx) {
+  if (idx >= 0 && idx < patients.length) {
+    selectedId = patients[idx].id;
+    console.log('Selected patient by index:', idx, 'ID:', selectedId);
+    document.querySelectorAll('.patient-item').forEach((el, i) => {
+      el.classList.toggle('selected', i === idx);
+    });
+    document.getElementById('sendBtn').disabled = false;
+  }
 }
 
 function selectPt(id) {
