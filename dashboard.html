@@ -1648,7 +1648,384 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 .med-ai-empty-icon{font-size:1.5rem;margin-bottom:8px;opacity:0.5}
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ADD MEDICATION FORM - Premium Inline Design v15
+   PRESTIGE PHARMACY INTERFACE v17.0
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* Upload Zone */
+.pharmacy-upload {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 16px;
+}
+.pharmacy-upload:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+.pharmacy-upload.analyzing {
+  border-style: solid;
+  border-color: var(--primary);
+  cursor: default;
+}
+.pharmacy-upload-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: var(--bg-input);
+  border-radius: 10px;
+  color: var(--text-secondary);
+}
+.pharmacy-upload.analyzing .pharmacy-upload-icon {
+  color: var(--primary);
+}
+.pharmacy-upload-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+.pharmacy-upload-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Action Buttons */
+.pharmacy-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.pharmacy-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.pharmacy-action-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light);
+}
+.pharmacy-action-btn.primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+.pharmacy-action-btn.primary:hover {
+  background: var(--primary-dark);
+}
+.pharmacy-action-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.5;
+}
+
+/* Section Headers */
+.pharmacy-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.pharmacy-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.pharmacy-count {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--success);
+  background: rgba(5, 150, 105, 0.1);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.pharmacy-count.discontinued {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Empty State */
+.pharmacy-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+.pharmacy-empty-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+.pharmacy-empty-icon svg {
+  width: 48px;
+  height: 48px;
+}
+.pharmacy-empty-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+.pharmacy-empty-hint {
+  font-size: 0.8rem;
+}
+
+/* Form Overlay */
+.pharmacy-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 20px;
+}
+.pharmacy-form {
+  background: var(--bg-surface);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3);
+}
+@media (min-width: 600px) {
+  .pharmacy-form-overlay {
+    align-items: center;
+  }
+  .pharmacy-form {
+    border-radius: 20px;
+  }
+}
+
+/* Form Header */
+.pharmacy-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg-surface);
+  z-index: 10;
+}
+.pharmacy-form-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.pharmacy-form-title svg {
+  color: var(--primary);
+}
+
+/* Search Section */
+.pharmacy-search-section {
+  padding: 16px 20px;
+  background: var(--bg-input);
+  border-bottom: 1px solid var(--border);
+}
+.pharmacy-search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px 14px;
+}
+.pharmacy-search-box:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 94, 184, 0.1);
+}
+.pharmacy-search-box svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.pharmacy-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 12px 0;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  font-family: inherit;
+  outline: none;
+}
+.pharmacy-search-input::placeholder {
+  color: var(--text-muted);
+}
+.pharmacy-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.pharmacy-suggestion {
+  padding: 6px 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pharmacy-suggestion:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+/* Form Fields */
+.pharmacy-field {
+  padding: 12px 20px;
+}
+.pharmacy-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+.pharmacy-input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: var(--text-main);
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.pharmacy-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--bg-surface);
+}
+.pharmacy-dose-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 12px 20px;
+}
+.pharmacy-dose-row .pharmacy-field {
+  padding: 0;
+}
+
+/* Chip Selection */
+.pharmacy-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pharmacy-chip {
+  padding: 10px 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pharmacy-chip:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.pharmacy-chip.selected {
+  background: rgba(0, 94, 184, 0.1);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Status Chips */
+.pharmacy-status-chips {
+  display: flex;
+  gap: 8px;
+}
+.pharmacy-status {
+  flex: 1;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pharmacy-status.active.selected {
+  background: rgba(5, 150, 105, 0.1);
+  border-color: #059669;
+  color: #059669;
+}
+.pharmacy-status.new.selected {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+.pharmacy-status.prn.selected {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: #f59e0b;
+  color: #f59e0b;
+}
+
+/* Form Actions */
+.pharmacy-form-actions {
+  display: flex;
+  gap: 12px;
+  padding: 20px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-input);
+}
+.pharmacy-form-actions .btn {
+  flex: 1;
+  padding: 14px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LEGACY MEDICATION FORM STYLES (keeping for compatibility)
 ═══════════════════════════════════════════════════════════════════════════ */
 
 .med-add-form{
@@ -6622,38 +6999,53 @@ function renderProfileMeds() {
   const activeMeds = p.medications.filter(m => m.status !== 'discontinued');
   const discontinuedMeds = p.medications.filter(m => m.status === 'discontinued');
   
+  // SVG Icons for Prestige UI
+  const medIcons = {
+    upload: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+    scan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+    plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+    reconcile: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>',
+    pill: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24"><path d="M10.5 20.5L3.5 13.5a4.95 4.95 0 117-7l7 7a4.95 4.95 0 11-7 7z"/><path d="M8.5 8.5l7 7"/></svg>',
+    search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>',
+    loader: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20" class="spin"><circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="20"/></svg>'
+  };
+  
   let html = `
     <div class="meds-container">
-      <!-- Compact Upload Zone -->
-      <div class="upload-zone-compact ${state.isAnalyzingMeds ? 'analyzing' : ''}" onclick="${state.isAnalyzingMeds ? '' : 'triggerMedsUpload()'}" style="margin-bottom:12px">
-        ${state.isAnalyzingMeds ? `
-          <div class="upload-spinner"></div>
-          <div class="meds-upload-content">
-            <div class="upload-text">Analyzing medications...</div>
-          </div>
-        ` : `
-          <div class="upload-icon">📋</div>
-          <div class="meds-upload-content">
-            <div class="upload-text">Upload Medication List</div>
-            <div class="upload-hint">Photo of med list, MAR sheet, or EMR screen</div>
-          </div>
-        `}
+      <!-- Prestige Upload Zone -->
+      <div class="pharmacy-upload ${state.isAnalyzingMeds ? 'analyzing' : ''}" onclick="${state.isAnalyzingMeds ? '' : 'triggerMedsUpload()'}">
+        <div class="pharmacy-upload-icon">
+          ${state.isAnalyzingMeds ? medIcons.loader : medIcons.upload}
+        </div>
+        <div class="pharmacy-upload-content">
+          <div class="pharmacy-upload-title">${state.isAnalyzingMeds ? 'Analyzing...' : 'Upload Medication List'}</div>
+          <div class="pharmacy-upload-hint">Photo of med list, MAR sheet, or EMR screen</div>
+        </div>
       </div>
       
-      <!-- Quick Actions -->
-      <div class="meds-quick-actions">
-        <button class="med-scan-btn" onclick="triggerMedScan()">📷 Scan Drug</button>
-        <button class="meds-quick-btn" onclick="showAddMedForm()">+ Add Manually</button>
-        <button class="meds-quick-btn" onclick="reconcileMeds()">⚖️ Reconcile</button>
+      <!-- Prestige Quick Actions -->
+      <div class="pharmacy-actions">
+        <button class="pharmacy-action-btn primary" onclick="triggerMedScan()">
+          ${medIcons.scan}
+          <span>Scan Drug</span>
+        </button>
+        <button class="pharmacy-action-btn" onclick="showAddMedForm()">
+          ${medIcons.plus}
+          <span>Add Manually</span>
+        </button>
+        <button class="pharmacy-action-btn" onclick="reconcileMeds()">
+          ${medIcons.reconcile}
+          <span>Reconcile</span>
+        </button>
       </div>
   `;
   
   // Active Medications
   if (activeMeds.length > 0) {
     html += `
-      <div class="meds-list-header">
-        <div class="meds-list-title">Active Medications</div>
-        <div class="meds-count">${activeMeds.length} active</div>
+      <div class="pharmacy-section-header">
+        <span class="pharmacy-section-title">Active Medications</span>
+        <span class="pharmacy-count">${activeMeds.length} active</span>
       </div>
     `;
     
@@ -6666,9 +7058,9 @@ function renderProfileMeds() {
   // Discontinued
   if (discontinuedMeds.length > 0) {
     html += `
-      <div class="meds-list-header" style="margin-top:20px">
-        <div class="meds-list-title">Discontinued</div>
-        <div class="meds-count" style="background:rgba(248,81,73,0.1);color:#f85149">${discontinuedMeds.length}</div>
+      <div class="pharmacy-section-header" style="margin-top:20px">
+        <span class="pharmacy-section-title">Discontinued</span>
+        <span class="pharmacy-count discontinued">${discontinuedMeds.length}</span>
       </div>
     `;
     
@@ -6681,123 +7073,104 @@ function renderProfileMeds() {
   // Empty State
   if (p.medications.length === 0) {
     html += `
-      <div class="meds-empty">
-        <div class="meds-empty-icon">💊</div>
-        <div class="meds-empty-title">No medications recorded</div>
-        <div class="meds-empty-hint">Upload a photo or add manually</div>
+      <div class="pharmacy-empty">
+        <div class="pharmacy-empty-icon">${medIcons.pill}</div>
+        <div class="pharmacy-empty-title">No medications recorded</div>
+        <div class="pharmacy-empty-hint">Upload a photo or add manually</div>
       </div>
     `;
   }
   
   html += `
-      <!-- Add Med Form (hidden by default) -->
-      <div class="med-add-form" id="medAddForm" style="display:none">
-        <div class="med-form-header">
-          <div class="med-form-title">💊 Add Medication</div>
-          <button class="med-form-close" onclick="hideAddMedForm()"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-        </div>
-        
-        <div class="med-form-section">
-          <div class="med-form-section-title">Drug Information</div>
-          
-          <!-- AI Smart Suggestions -->
-          <div class="med-ai-suggestions" id="medAiSuggestions">
-            <div class="med-ai-header">
-              <div class="med-ai-icon">🧠</div>
-              <div class="med-ai-title">
-                <span>Neural Suggestions</span>
-                <span class="med-ai-badge">AI-Powered</span>
-              </div>
-              <div class="med-ai-hint">Based on diagnosis & similar patients</div>
+      <!-- Prestige Add Med Form (hidden by default) -->
+      <div class="pharmacy-form-overlay" id="medAddForm" style="display:none">
+        <div class="pharmacy-form">
+          <div class="pharmacy-form-header">
+            <div class="pharmacy-form-title">
+              ${medIcons.pill}
+              <span>Add Medication</span>
             </div>
-            <div class="med-ai-chips" id="medSuggestionChips">
-              <!-- Populated by JS -->
-              <div class="med-ai-loading">
-                <span class="med-ai-pulse"></span>
-                Analyzing patient profile...
-              </div>
-            </div>
+            <button class="icon-btn" onclick="hideAddMedForm()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
           
-          <div class="med-form-group med-form-full">
-            <label class="med-form-label">Drug Name <span class="required">*</span></label>
-            <input type="text" class="med-form-input" id="medName" placeholder="e.g., Metformin" oninput="filterMedSuggestions(this.value)">
-          </div>
-          <div class="med-form-row">
-            <div class="med-form-group">
-              <label class="med-form-label">Generic Name</label>
-              <input type="text" class="med-form-input" id="medGeneric" placeholder="Optional">
+          <!-- Drug Search -->
+          <div class="pharmacy-search-section">
+            <div class="pharmacy-search-box">
+              ${medIcons.search}
+              <input type="text" class="pharmacy-search-input" id="medName" placeholder="Search drug name (e.g., Lasix, Metformin)..." oninput="filterMedSuggestions(this.value)" autocomplete="off">
             </div>
-            <div class="med-form-group">
-              <label class="med-form-label">Dose <span class="required">*</span></label>
-              <input type="text" class="med-form-input" id="medDose" placeholder="e.g., 500mg">
+            <div class="pharmacy-suggestions" id="medSuggestionChips"></div>
+          </div>
+          
+          <!-- Dose & Frequency Row -->
+          <div class="pharmacy-dose-row">
+            <div class="pharmacy-field">
+              <label class="pharmacy-label">Dose</label>
+              <input type="text" class="pharmacy-input" id="medDose" placeholder="e.g., 40mg">
+            </div>
+            <div class="pharmacy-field">
+              <label class="pharmacy-label">Generic</label>
+              <input type="text" class="pharmacy-input" id="medGeneric" placeholder="Optional">
             </div>
           </div>
-        </div>
-        
-        <div class="med-form-section">
-          <div class="med-form-section-title">Administration</div>
-          <div class="med-form-group">
-            <label class="med-form-label">Route</label>
-            <div class="med-route-chips" id="medRouteChips">
-              <button type="button" class="med-route-chip selected" data-value="PO">PO</button>
-              <button type="button" class="med-route-chip" data-value="IV">IV</button>
-              <button type="button" class="med-route-chip" data-value="IM">IM</button>
-              <button type="button" class="med-route-chip" data-value="SC">SC</button>
-              <button type="button" class="med-route-chip" data-value="INH">INH</button>
-              <button type="button" class="med-route-chip" data-value="TOP">TOP</button>
-              <button type="button" class="med-route-chip" data-value="SL">SL</button>
-              <button type="button" class="med-route-chip" data-value="PR">PR</button>
+          
+          <!-- Route Selection -->
+          <div class="pharmacy-field">
+            <label class="pharmacy-label">Route</label>
+            <div class="pharmacy-chips" id="medRouteChips">
+              <button type="button" class="pharmacy-chip selected" data-value="PO">PO</button>
+              <button type="button" class="pharmacy-chip" data-value="IV">IV</button>
+              <button type="button" class="pharmacy-chip" data-value="IM">IM</button>
+              <button type="button" class="pharmacy-chip" data-value="SC">SC</button>
+              <button type="button" class="pharmacy-chip" data-value="INH">INH</button>
+              <button type="button" class="pharmacy-chip" data-value="TOP">TOP</button>
+              <button type="button" class="pharmacy-chip" data-value="SL">SL</button>
             </div>
             <input type="hidden" id="medRoute" value="PO">
           </div>
-          <div class="med-form-group">
-            <label class="med-form-label">Frequency <span class="required">*</span></label>
-            <div class="med-freq-chips" id="medFreqChips">
-              <button type="button" class="med-freq-chip selected" data-value="OD">OD</button>
-              <button type="button" class="med-freq-chip" data-value="BD">BD</button>
-              <button type="button" class="med-freq-chip" data-value="TDS">TDS</button>
-              <button type="button" class="med-freq-chip" data-value="QID">QID</button>
-              <button type="button" class="med-freq-chip" data-value="Q4H">Q4H</button>
-              <button type="button" class="med-freq-chip" data-value="Q6H">Q6H</button>
-              <button type="button" class="med-freq-chip" data-value="Q8H">Q8H</button>
-              <button type="button" class="med-freq-chip" data-value="PRN">PRN</button>
+          
+          <!-- Frequency Selection -->
+          <div class="pharmacy-field">
+            <label class="pharmacy-label">Frequency</label>
+            <div class="pharmacy-chips" id="medFreqChips">
+              <button type="button" class="pharmacy-chip selected" data-value="OD">OD</button>
+              <button type="button" class="pharmacy-chip" data-value="BD">BD</button>
+              <button type="button" class="pharmacy-chip" data-value="TDS">TDS</button>
+              <button type="button" class="pharmacy-chip" data-value="QID">QID</button>
+              <button type="button" class="pharmacy-chip" data-value="Q6H">Q6H</button>
+              <button type="button" class="pharmacy-chip" data-value="Q8H">Q8H</button>
+              <button type="button" class="pharmacy-chip" data-value="PRN">PRN</button>
             </div>
             <input type="hidden" id="medFreq" value="OD">
           </div>
-        </div>
-        
-        <div class="med-form-section">
-          <div class="med-form-section-title">Clinical Details</div>
-          <div class="med-form-group med-form-full">
-            <label class="med-form-label">Indication</label>
-            <input type="text" class="med-form-input" id="medIndication" placeholder="e.g., Type 2 Diabetes Mellitus">
+          
+          <!-- Indication -->
+          <div class="pharmacy-field">
+            <label class="pharmacy-label">Indication</label>
+            <input type="text" class="pharmacy-input" id="medIndication" placeholder="e.g., Hypertension, Heart Failure">
           </div>
-          <div class="med-form-group">
-            <label class="med-form-label">Status</label>
-            <div class="med-status-options" id="medStatusOptions">
-              <button type="button" class="med-status-option selected" data-value="active">
-                <span class="status-dot active"></span> Active
-              </button>
-              <button type="button" class="med-status-option" data-value="new">
-                <span class="status-dot new"></span> New
-              </button>
-              <button type="button" class="med-status-option" data-value="prn">
-                <span class="status-dot prn"></span> PRN
-              </button>
-              <button type="button" class="med-status-option" data-value="discontinued">
-                <span class="status-dot discontinued"></span> Stopped
-              </button>
+          
+          <!-- Status -->
+          <div class="pharmacy-field">
+            <label class="pharmacy-label">Status</label>
+            <div class="pharmacy-status-chips" id="medStatusOptions">
+              <button type="button" class="pharmacy-status active selected" data-value="active">Active</button>
+              <button type="button" class="pharmacy-status new" data-value="new">New</button>
+              <button type="button" class="pharmacy-status prn" data-value="prn">PRN</button>
             </div>
             <input type="hidden" id="medStatus" value="active">
           </div>
-        </div>
-        
-        <div class="med-form-actions">
-          <button class="btn btn-secondary med-form-btn" onclick="hideAddMedForm()">Cancel</button>
-          <button class="btn btn-primary med-form-btn" onclick="saveMedication()">
-            <span>💾</span> Save Medication
-          </button>
+          
+          <!-- Actions -->
+          <div class="pharmacy-form-actions">
+            <button class="btn btn-secondary" onclick="hideAddMedForm()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveMedication()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
+              Save
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -7254,10 +7627,11 @@ async function handleMedsUpload(file) {
 window.showAddMedForm = function() {
   state.editingMedIdx = null;
   
-  // Show inline form
+  // Show overlay form
   const form = $('medAddForm');
   if (form) {
-    form.style.display = 'block';
+    form.style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // Prevent background scroll
     
     // Reset values
     $('medName').value = '';
@@ -7268,15 +7642,15 @@ window.showAddMedForm = function() {
     $('medFreq').value = 'OD';
     $('medStatus').value = 'active';
     
-    // Reset chip selections
-    document.querySelectorAll('#medRouteChips .med-route-chip').forEach(c => c.classList.remove('selected'));
-    document.querySelector('#medRouteChips .med-route-chip[data-value="PO"]')?.classList.add('selected');
+    // Reset chip selections - support both old and new class names
+    document.querySelectorAll('#medRouteChips .pharmacy-chip, #medRouteChips .med-route-chip').forEach(c => c.classList.remove('selected'));
+    document.querySelector('#medRouteChips .pharmacy-chip[data-value="PO"], #medRouteChips .med-route-chip[data-value="PO"]')?.classList.add('selected');
     
-    document.querySelectorAll('#medFreqChips .med-freq-chip').forEach(c => c.classList.remove('selected'));
-    document.querySelector('#medFreqChips .med-freq-chip[data-value="OD"]')?.classList.add('selected');
+    document.querySelectorAll('#medFreqChips .pharmacy-chip, #medFreqChips .med-freq-chip').forEach(c => c.classList.remove('selected'));
+    document.querySelector('#medFreqChips .pharmacy-chip[data-value="OD"], #medFreqChips .med-freq-chip[data-value="OD"]')?.classList.add('selected');
     
-    document.querySelectorAll('#medStatusOptions .med-status-option').forEach(c => c.classList.remove('selected'));
-    document.querySelector('#medStatusOptions .med-status-option[data-value="active"]')?.classList.add('selected');
+    document.querySelectorAll('#medStatusOptions .pharmacy-status, #medStatusOptions .med-status-option').forEach(c => c.classList.remove('selected'));
+    document.querySelector('#medStatusOptions .pharmacy-status[data-value="active"], #medStatusOptions .med-status-option[data-value="active"]')?.classList.add('selected');
     
     // Initialize chip handlers
     initMedFormChipHandlers();
@@ -7284,34 +7658,34 @@ window.showAddMedForm = function() {
     // Render AI suggestions
     renderMedSuggestions();
     
-    // Scroll to form
-    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Focus on search input
+    setTimeout(() => $('medName')?.focus(), 100);
   }
 };
 
 function initMedFormChipHandlers() {
-  // Route chips
-  document.querySelectorAll('#medRouteChips .med-route-chip').forEach(chip => {
+  // Route chips - support both class names
+  document.querySelectorAll('#medRouteChips .pharmacy-chip, #medRouteChips .med-route-chip').forEach(chip => {
     chip.onclick = function() {
-      document.querySelectorAll('#medRouteChips .med-route-chip').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll('#medRouteChips .pharmacy-chip, #medRouteChips .med-route-chip').forEach(c => c.classList.remove('selected'));
       this.classList.add('selected');
       $('medRoute').value = this.dataset.value;
     };
   });
   
   // Frequency chips
-  document.querySelectorAll('#medFreqChips .med-freq-chip').forEach(chip => {
+  document.querySelectorAll('#medFreqChips .pharmacy-chip, #medFreqChips .med-freq-chip').forEach(chip => {
     chip.onclick = function() {
-      document.querySelectorAll('#medFreqChips .med-freq-chip').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll('#medFreqChips .pharmacy-chip, #medFreqChips .med-freq-chip').forEach(c => c.classList.remove('selected'));
       this.classList.add('selected');
       $('medFreq').value = this.dataset.value;
     };
   });
   
-  // Status options
-  document.querySelectorAll('#medStatusOptions .med-status-option').forEach(option => {
+  // Status options - support both old and new class names
+  document.querySelectorAll('#medStatusOptions .pharmacy-status, #medStatusOptions .med-status-option').forEach(option => {
     option.onclick = function() {
-      document.querySelectorAll('#medStatusOptions .med-status-option').forEach(o => o.classList.remove('selected'));
+      document.querySelectorAll('#medStatusOptions .pharmacy-status, #medStatusOptions .med-status-option').forEach(o => o.classList.remove('selected'));
       this.classList.add('selected');
       $('medStatus').value = this.dataset.value;
     };
@@ -7347,7 +7721,10 @@ function initMedPillHandlers() {
 
 window.hideAddMedForm = function() {
   const form = $('medAddForm');
-  if (form) form.style.display = 'none';
+  if (form) {
+    form.style.display = 'none';
+    document.body.style.overflow = ''; // Restore scroll
+  }
 };
 
 window.saveMedication = function() {
