@@ -5575,19 +5575,19 @@ window.doLogout = doLogout;
 // Generate session ID
 state.sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ⚡ OPTIMIZED SYNC STATE WITH REVISION TRACKING
-// ═══════════════════════════════════════════════════════════════════════════════
+// Sync state tracking for reactive auto-sync
 let syncState = {
   status: 'synced',
   lastSyncTime: null,
   pendingChanges: false,
   syncTimeout: null,
   errorCount: 0,
-  clientRev: 0,           // Track client revision for conditional loads
-  dirtyCounter: 0,        // Fingerprint to prevent redundant saves
-  lastSavedCounter: 0,    // Last saved dirty counter
-  pendingPatches: []      // Queue of patches for delta sync
+  // ═══════════════════════════════════════════════════════════════════
+  // DELTA SYNC: Patch queue and revision tracking
+  // ═══════════════════════════════════════════════════════════════════
+  clientRev: parseInt(localStorage.getItem('MW_REV') || '0', 10),
+  patchQueue: [],  // Accumulates patches for batched sync
+  isSyncing: false // Prevents concurrent syncs
 };
 
 const $ = id => document.getElementById(id);
@@ -5631,43 +5631,6 @@ async function fetchWithRetry(url, options = {}, retries = CONFIG.MAX_RETRIES) {
     throw error;
   }
 }
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// ⚡ STRIP HEAVY FIELDS - Remove large blobs from sync payload
-// ═══════════════════════════════════════════════════════════════════════════════
-function stripHeavyFields(patient) {
-  // Create shallow copy to avoid modifying original
-  const light = { ...patient };
-  
-  // Remove base64 images (can be megabytes)
-  delete light.labImages;
-  delete light.documentScans;
-  delete light.rawOCR;
-  delete light.attachmentData;
-  
-  // Keep lab data but limit to essentials
-  if (light.labData && light.labData.parameters) {
-    light.labData = {
-      ...light.labData,
-      // Keep only latest 3 values per parameter
-      parameters: light.labData.parameters.map(p => ({
-        name: p.name,
-        unit: p.unit,
-        refMin: p.refMin,
-        refMax: p.refMax,
-        values: (p.values || []).slice(0, 3)
-      }))
-    };
-  }
-  
-  // Truncate very long notes
-  if (light.notes && light.notes.length > 5000) {
-    light.notes = light.notes.substring(0, 5000) + '... [truncated]';
-  }
-  
-  return light;
-}
-
 const initials = n => { if (!n) return '?'; const p = n.trim().split(/\s+/); return p.length >= 2 ? (p[0][0] + p[p.length-1][0]).toUpperCase() : n.substring(0, 2).toUpperCase(); };
 
 function toast(msg, isError = false) {
@@ -6007,12 +5970,50 @@ function loadLocal() {
   state.settings.apiUrl = CONFIG.API_URL;
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// NON-BLOCKING LOCAL STORAGE (Prevents UI lag)
+// ═══════════════════════════════════════════════════════════════════
+
 function saveLocal() {
+  // Use requestIdleCallback for non-blocking writes (or setTimeout fallback)
+  const saveTask = () => {
+    try {
+      localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify({
+        units: state.units, 
+        settings: state.settings, 
+        patients: state.patients, 
+        unitRequests: state.unitRequests, 
+        trash: state.trash, 
+        lastUpdated: new Date().toISOString()
+      }));
+    } catch (e) {
+      console.warn('⚠️ localStorage save failed:', e);
+    }
+  };
+  
+  // Schedule off main thread to prevent UI jank
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(saveTask, { timeout: 1000 });
+  } else {
+    setTimeout(saveTask, 0);
+  }
+}
+
+// Lightweight session save (just essentials, synchronous for critical data)
+function saveSessionLite() {
   try {
-    localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify({
-      units: state.units, settings: state.settings, patients: state.patients, unitRequests: state.unitRequests, trash: state.trash, lastUpdated: new Date().toISOString()
-    }));
+    localStorage.setItem('MW_REV', String(syncState.clientRev));
+    localStorage.setItem('MW_LAST_SYNC', new Date().toISOString());
   } catch (e) {}
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PATCH QUEUE SYSTEM (Delta Sync)
+// ═══════════════════════════════════════════════════════════════════
+
+function enqueuePatch(operation, payload) {
+  syncState.patchQueue.push({ operation, payload });
+  markDirty();
 }
 
 async function syncCloud() {
@@ -6048,33 +6049,26 @@ function updateSyncStatus(status, message) {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ⚡ OPTIMIZED SYNC - Local instant, Cloud background
-// ═══════════════════════════════════════════════════════════════════════════════
-
 function markDirty() {
-  syncState.dirtyCounter++;
   syncState.pendingChanges = true;
+  updateSyncStatus('pending', 'Saving...');
   
-  // INSTANT local save (user sees "Saved" immediately)
-  saveLocal();
-  updateSyncStatus('pending', 'Saved locally');
-  
-  // Debounced cloud sync (background, doesn't block UI)
   if (syncState.syncTimeout) {
     clearTimeout(syncState.syncTimeout);
   }
   
   syncState.syncTimeout = setTimeout(() => {
     performSync();
-  }, 500); // Short debounce for batching rapid changes
+  }, CONFIG.SYNC_DEBOUNCE_MS);
 }
 
 async function performSync() {
-  // Skip if no real changes (dirty fingerprint check)
-  if (!syncState.pendingChanges || syncState.dirtyCounter === syncState.lastSavedCounter) {
-    return;
-  }
+  if (!syncState.pendingChanges) return;
+  if (syncState.isSyncing) return; // Prevent concurrent syncs
+  
+  // Always save locally first (non-blocking)
+  saveLocal();
+  saveSessionLite();
   
   if (!state.settings.apiUrl || state.settings.apiUrl === 'YOUR_API_URL_HERE') {
     syncState.pendingChanges = false;
@@ -6082,45 +6076,53 @@ async function performSync() {
     return;
   }
   
+  // ═══════════════════════════════════════════════════════════════════
+  // DELTA SYNC: Use patches if available, otherwise fall back to snapshot
+  // ═══════════════════════════════════════════════════════════════════
+  
+  syncState.isSyncing = true;
   updateSyncStatus('syncing', 'Syncing...');
   
   try {
-    // Strip heavy data from patients for faster sync
-    const lightPatients = state.patients.map(p => stripHeavyFields(p));
+    let res;
     
-    const res = await fetch(state.settings.apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({
-        action: 'saveData',
-        username: AUTH.user,
-        password: AUTH.pass,
-        payload: { 
-          units: state.units, 
-          settings: { 
-            adminPassword: state.settings.adminPassword,
-            apiUrl: state.settings.apiUrl
-          }, 
-          patients: lightPatients,
-          unitRequests: state.unitRequests
-        }
-      })
-    });
-    
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    
-    const result = await res.json();
+    if (syncState.patchQueue.length > 0) {
+      // DELTA SYNC: Send only patches (fast, minimal data)
+      console.log('⚡ Delta sync:', syncState.patchQueue.length, 'patches');
+      
+      res = await fetch(state.settings.apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({
+          action: 'patches',
+          username: AUTH.user,
+          password: AUTH.pass,
+          patches: syncState.patchQueue
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        // Clear patch queue on success
+        syncState.patchQueue = [];
+        syncState.clientRev = data.rev || syncState.clientRev;
+        localStorage.setItem('MW_REV', String(syncState.clientRev));
+        console.log('✅ Delta sync complete, rev:', syncState.clientRev);
+      } else {
+        // Patches failed - fall back to full snapshot
+        console.warn('⚠️ Patch sync failed, falling back to snapshot:', data.error);
+        await performSnapshotSync();
+      }
+      
+    } else {
+      // No patches queued - do a lightweight snapshot sync
+      await performSnapshotSync();
+    }
     
     syncState.pendingChanges = false;
     syncState.lastSyncTime = Date.now();
-    syncState.lastSavedCounter = syncState.dirtyCounter;
     syncState.errorCount = 0;
-    
-    // Update client revision from server
-    if (result.rev) {
-      syncState.clientRev = result.rev;
-    }
-    
     updateSyncStatus('synced', 'Synced');
     
   } catch (e) {
@@ -6133,6 +6135,43 @@ async function performSync() {
       setTimeout(() => performSync(), 5000);
       updateSyncStatus('pending', 'Retrying...');
     }
+  } finally {
+    syncState.isSyncing = false;
+  }
+}
+
+// Full snapshot sync (fallback when patches fail or for initial sync)
+async function performSnapshotSync() {
+  console.log('📦 Snapshot sync:', state.patients.length, 'patients');
+  
+  const res = await fetch(state.settings.apiUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({
+      action: 'saveData',
+      username: AUTH.user,
+      password: AUTH.pass,
+      payload: { 
+        units: state.units, 
+        settings: { 
+          adminPassword: state.settings.adminPassword,
+          apiUrl: state.settings.apiUrl
+        }, 
+        patients: state.patients,
+        unitRequests: state.unitRequests,
+        trash: state.trash
+      }
+    })
+  });
+  
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  
+  const data = await res.json();
+  if (data.success && data.rev) {
+    syncState.clientRev = data.rev;
+    localStorage.setItem('MW_REV', String(syncState.clientRev));
+    // Clear patch queue since snapshot includes everything
+    syncState.patchQueue = [];
   }
 }
 
@@ -6148,8 +6187,9 @@ async function forceSync() {
     syncState.syncTimeout = null;
   }
   
-  // Save locally first
+  // Save locally first (non-blocking)
   saveLocal();
+  saveSessionLite();
   
   if (!state.settings.apiUrl || state.settings.apiUrl === 'YOUR_API_URL_HERE') {
     console.log('⚠️ No API URL configured - saved locally only');
@@ -6176,7 +6216,8 @@ async function forceSync() {
         apiUrl: state.settings.apiUrl  // Include API URL so all users get it
       }, 
       patients: state.patients,
-      unitRequests: state.unitRequests
+      unitRequests: state.unitRequests,
+      trash: state.trash
     };
     
     console.log('📤 Sending payload size:', JSON.stringify(payload).length, 'bytes');
@@ -6204,6 +6245,14 @@ async function forceSync() {
     
     if (!res.ok || !result.success) {
       throw new Error(result.error || 'Save failed');
+    }
+    
+    // Update revision tracking
+    if (result.rev) {
+      syncState.clientRev = result.rev;
+      localStorage.setItem('MW_REV', String(syncState.clientRev));
+      // Clear patch queue since snapshot includes everything
+      syncState.patchQueue = [];
     }
     
     syncState.pendingChanges = false;
@@ -6242,7 +6291,7 @@ async function manualSync() {
 async function syncFromCloud() {
   if (!state.settings.apiUrl || state.settings.apiUrl === 'YOUR_API_URL_HERE') return;
   
-  console.log('🔄 Checking cloud for updates...');
+  console.log('🔄 Loading data from cloud (rev:', syncState.clientRev, ')...');
   
   try {
     const res = await fetch(state.settings.apiUrl, {
@@ -6252,26 +6301,28 @@ async function syncFromCloud() {
         action: 'loadData',
         username: AUTH.user,
         password: AUTH.pass,
-        clientRev: syncState.clientRev  // Send current rev for conditional load
+        clientRev: syncState.clientRev  // Send our revision for conditional load
       })
     });
     
     const data = await res.json();
     
-    // ⚡ CONDITIONAL LOAD - Skip processing if unchanged
+    // ═══════════════════════════════════════════════════════════════════
+    // CONDITIONAL LOAD: Server returns "unchanged" if we have latest rev
+    // ═══════════════════════════════════════════════════════════════════
     if (data.success && data.unchanged) {
-      console.log('✅ Data unchanged (rev:', syncState.clientRev, ')');
-      return;
+      console.log('⚡ Already in sync (rev:', data.rev, ') - no download needed');
+      return state; // Return current state, nothing changed
     }
     
-    console.log('📥 Cloud data received:', data.success ? 'success' : 'failed', 'rev:', data.rev);
+    console.log('📥 Cloud data received:', data.success ? 'success' : 'failed');
     
     if (data.success && data.data) {
-      // Update client revision
+      // Update revision tracking
       if (data.rev) {
         syncState.clientRev = data.rev;
+        localStorage.setItem('MW_REV', String(syncState.clientRev));
       }
-      
       // Update units - MERGE instead of overwrite to preserve local units
       if (data.data.units?.length) {
         const cloudIds = new Set(data.data.units.map(u => u.id));
@@ -6295,6 +6346,13 @@ async function syncFromCloud() {
       if (data.data.patients) {
         state.patients = data.data.patients;
         console.log('   Patients loaded:', state.patients.length);
+        
+        // Log lab data for debugging
+        state.patients.forEach(p => {
+          if (p.labData?.parameters?.length) {
+            console.log(`   → ${p.name}: ${p.labData.parameters.length} lab parameters`);
+          }
+        });
         
         // If we have a current patient open, refresh their reference
         if (state.currentPatient) {
@@ -12258,6 +12316,7 @@ window.editCurrentPatient = function() {
 window.deleteCurrentPatient = function() {
   if (!confirm('Delete patient? They can be restored from Trash.')) return;
   const patient = state.currentPatient;
+  const patientId = patient?.id;
   if (patient) {
     // Move to trash instead of permanent delete
     patient.deletedAt = new Date().toISOString();
@@ -12266,6 +12325,10 @@ window.deleteCurrentPatient = function() {
     state.trash.patients.push({...patient});
   }
   state.patients = state.patients.filter(p => p.id !== state.currentPatient.id);
+  // DELTA SYNC: Queue delete patch
+  if (patientId) {
+    enqueuePatch('deletePatient', { id: patientId });
+  }
   saveCloud();
   closePatientProfile();
   toast('Patient moved to trash');
@@ -12608,6 +12671,9 @@ window.restorePatient = function(idx) {
   // Restore to patients list
   state.patients.push(patient);
   state.trash.patients.splice(idx, 1);
+  
+  // DELTA SYNC: Queue add patch for restored patient
+  enqueuePatch('addPatient', patient);
   
   saveCloud();
   renderTrash();
@@ -13206,11 +13272,13 @@ window.savePatient = function() {
       if (state.currentPatient?.id === parseInt(id)) { 
         state.currentPatient = state.patients[i]; 
         renderPatientProfile(); 
-      } 
+      }
+      // DELTA SYNC: Queue update patch instead of full snapshot
+      enqueuePatch('updatePatient', { id: parseInt(id), ...data });
     } 
   } else { 
     // NEW PATIENT - Include unitId
-    state.patients.push({ 
+    const newPatient = { 
       id: Date.now(), 
       unitId: state.currentUnit.id,  // CRITICAL: Associate patient with current unit
       ...data, 
@@ -13221,8 +13289,11 @@ window.savePatient = function() {
       planItems: [],
       history: '', 
       vitals: {} 
-    }); 
+    };
+    state.patients.push(newPatient); 
     console.log('➕ New patient added to unit:', state.currentUnit.name);
+    // DELTA SYNC: Queue add patch instead of full snapshot
+    enqueuePatch('addPatient', newPatient);
   } 
   saveCloud(); 
   renderPatients(); 
