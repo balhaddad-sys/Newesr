@@ -920,34 +920,31 @@ async function loadInbox() {
   } catch (e) { console.error(e); }
 }
 
+// ⚡ ATOMIC INBOX ACCEPT - Single server call instead of 4 roundtrips
 async function acceptPt(id) {
   showLoad('Accepting...');
   
   try {
-    const inbox = await callAPI('checkInbox');
-    if (!inbox.success) throw new Error();
+    // Single atomic call - server handles everything
+    const result = await callAPI('acceptInboxPatient', { patientId: id });
     
-    const pt = inbox.inbox?.find(p => p.id === id);
-    if (!pt) throw new Error('Not found');
-    
-    patients.push(pt);
-    
-    const load = await callAPI('loadData');
-    let data = { units: [], patients: [], settings: {} };
-    if (load.success && load.data) {
-      data = typeof load.data === 'string' ? JSON.parse(load.data) : load.data;
+    if (!result.success) {
+      throw new Error(result.error || 'Accept failed');
     }
-    data.patients = patients;
     
-    await callAPI('saveData', { payload: data });
-    await callAPI('clearInbox');
+    // Update local state
+    if (result.patient) {
+      patients.push(result.patient);
+    }
     
     hideLoad();
     toast('✅ Patient accepted');
-    loadInbox();
+    loadInbox(); // Refresh inbox count
+    
   } catch (e) {
     hideLoad();
-    toast('❌ Failed');
+    console.error('Accept error:', e);
+    toast('❌ ' + (e.message || 'Failed'));
   }
 }
 
