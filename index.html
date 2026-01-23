@@ -2724,31 +2724,48 @@ body {
      AUTHENTICATION OVERLAY - Login/Register Screen
      ═══════════════════════════════════════════════════════════════════════════ -->
 <div id="auth-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-app); z-index:10000; display:flex; align-items:center; justify-content:center; flex-direction:column;">
-    <div class="card" style="width:320px; padding:30px; text-align:center; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.15);">
+    <div class="card" id="auth-card" style="width:320px; padding:30px; text-align:center; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.15);">
         <div style="font-size:3rem; margin-bottom:10px;">⚕️</div>
         <h1 style="color:var(--primary); margin-bottom:8px; font-size:1.5rem;">MedWard Pro</h1>
         <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:24px;">Multi-User Clinical Platform</p>
         
-        <input type="text" id="auth-user" class="med-input" placeholder="Username" style="margin-bottom:12px; width:100%; padding:14px; border-radius:10px; border:1px solid var(--border); background:var(--bg-input); color:var(--text-main); font-size:1rem;">
-        <input type="password" id="auth-pass" class="med-input" placeholder="Password" style="margin-bottom:12px; width:100%; padding:14px; border-radius:10px; border:1px solid var(--border); background:var(--bg-input); color:var(--text-main); font-size:1rem;">
-        
-        <div style="display:flex; align-items:center; justify-content:flex-start; margin-bottom:20px; font-size:0.9rem; color:var(--text-secondary);">
-            <input type="checkbox" id="auth-remember" style="width:auto; margin-right:8px; cursor:pointer;">
-            <label for="auth-remember" style="cursor:pointer;">Keep me logged in</label>
+        <div id="auth-form">
+            <input type="text" id="auth-user" class="med-input" placeholder="Username" autocomplete="username" style="margin-bottom:12px; width:100%; padding:14px; border-radius:10px; border:1px solid var(--border); background:var(--bg-input); color:var(--text-main); font-size:1rem;" onkeydown="if(event.key==='Enter')document.getElementById('auth-pass').focus()">
+            <input type="password" id="auth-pass" class="med-input" placeholder="Password" autocomplete="current-password" style="margin-bottom:12px; width:100%; padding:14px; border-radius:10px; border:1px solid var(--border); background:var(--bg-input); color:var(--text-main); font-size:1rem;" onkeydown="if(event.key==='Enter')doLogin()">
+            
+            <div style="display:flex; align-items:center; justify-content:flex-start; margin-bottom:20px; font-size:0.9rem; color:var(--text-secondary);">
+                <input type="checkbox" id="auth-remember" style="width:auto; margin-right:8px; cursor:pointer;">
+                <label for="auth-remember" style="cursor:pointer;">Keep me logged in</label>
+            </div>
+            
+            <button id="auth-login-btn" class="btn-primary" onclick="doLogin()" style="width:100%; margin-bottom:12px; padding:14px; border-radius:10px; font-size:1rem; font-weight:600; cursor:pointer; border:none; background:var(--primary); color:#fff; transition:opacity 0.2s;">Login</button>
+            <button id="auth-register-btn" class="btn-secondary" onclick="doRegister()" style="width:100%; padding:12px; border-radius:10px; font-size:0.9rem; cursor:pointer; border:1px solid var(--border); background:var(--bg-surface); color:var(--text-main); transition:opacity 0.2s;">Create Account</button>
         </div>
         
-        <button class="btn-primary" onclick="doLogin()" style="width:100%; margin-bottom:12px; padding:14px; border-radius:10px; font-size:1rem; font-weight:600; cursor:pointer; border:none; background:var(--primary); color:#fff;">Login</button>
-        <button class="btn-secondary" onclick="doRegister()" style="width:100%; padding:12px; border-radius:10px; font-size:0.9rem; cursor:pointer; border:1px solid var(--border); background:var(--bg-surface); color:var(--text-main);">Create Account</button>
+        <!-- Inline Loading Spinner -->
+        <div id="auth-loading" style="display:none; padding:20px;">
+            <div style="width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 15px;"></div>
+            <p id="auth-loading-text" style="color:var(--text-secondary); font-size:0.9rem; margin:0;">Signing in...</p>
+        </div>
         
-        <div id="auth-msg" style="margin-top:15px; color:#dc2626; font-size:0.85rem; min-height:20px;"></div>
+        <div id="auth-msg" style="margin-top:15px; font-size:0.85rem; min-height:20px;"></div>
     </div>
     <p style="color:var(--text-muted); font-size:0.75rem; margin-top:20px;">v16.1 • Multi-User Edition</p>
 </div>
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+#auth-msg.error { color: #dc2626; }
+#auth-msg.success { color: #16a34a; }
+</style>
 
 <!-- CLINICAL HEADER -->
 <header class="app-header" id="appHeader" style="display:none">
     <div class="brand-title">MedWard Pro</div>
     <div class="header-actions">
+        <span id="userDisplay" style="font-size:0.8rem;color:var(--text-secondary);margin-right:8px;"></span>
+        <button class="icon-btn" onclick="doLogout()" aria-label="Logout" title="Logout" style="font-size:1rem;">
+            🚪
+        </button>
         <button class="icon-btn" onclick="toggleTheme()" aria-label="Toggle Dark Mode" title="Night Shift">
             <span id="theme-icon" style="font-size:1.2rem">🌙</span>
         </button>
@@ -4720,7 +4737,20 @@ function clearAuthMessage() {
   }
 }
 
-// Login function
+// Auth loading helpers
+function showAuthLoading(msg) {
+  document.getElementById('auth-form').style.display = 'none';
+  document.getElementById('auth-loading').style.display = 'block';
+  document.getElementById('auth-loading-text').textContent = msg || 'Please wait...';
+  clearAuthMessage();
+}
+
+function hideAuthLoading() {
+  document.getElementById('auth-form').style.display = 'block';
+  document.getElementById('auth-loading').style.display = 'none';
+}
+
+// Login function - optimized for speed
 async function doLogin() {
   const u = document.getElementById('auth-user').value.trim();
   const p = document.getElementById('auth-pass').value.trim();
@@ -4731,35 +4761,50 @@ async function doLogin() {
     return;
   }
   
-  clearAuthMessage();
-  showLoading("Signing in...");
+  showAuthLoading("Signing in...");
   
   try {
-    const res = await callCloud('login', { username: u, password: p });
-    hideLoading();
+    // Use AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    
+    const res = await fetch(CONFIG.API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'login', username: u, password: p }),
+      signal: controller.signal
+    }).then(r => r.json());
+    
+    clearTimeout(timeoutId);
     
     if (res.success) {
-      // Set Global State
+      // Set Global State immediately
       AUTH.user = u;
       AUTH.pass = p;
       
       // Storage Logic based on "Remember Me"
       if (remember) {
-        // Permanent Storage (survives browser close)
         localStorage.setItem('MW_USER', u);
         localStorage.setItem('MW_PASS', p);
         sessionStorage.removeItem('MW_USER');
         sessionStorage.removeItem('MW_PASS');
       } else {
-        // Session Storage (deleted on browser close)
         sessionStorage.setItem('MW_USER', u);
         sessionStorage.setItem('MW_PASS', p);
         localStorage.removeItem('MW_USER');
         localStorage.removeItem('MW_PASS');
       }
       
-      // Hide Login Screen
+      // Hide Login Screen immediately
       document.getElementById('auth-overlay').classList.add('hidden');
+      
+      // Show app header
+      const appHeader = document.getElementById('appHeader');
+      if (appHeader) appHeader.style.display = '';
+      
+      // Display current user
+      const userDisplay = document.getElementById('userDisplay');
+      if (userDisplay) userDisplay.textContent = `Dr. ${u}`;
       
       // Load user data
       if (res.data) {
@@ -4767,14 +4812,14 @@ async function doLogin() {
         state.units = res.data.units || [];
         state.settings = res.data.settings || { adminPassword: 'admin123' };
         state.unitRequests = res.data.unitRequests || [];
+        state.trash = res.data.trash || { patients: [], units: [], medications: [] };
         
-        // Set default API URL if not in settings
         if (!state.settings.apiUrl) {
           state.settings.apiUrl = CONFIG.API_URL;
         }
       }
       
-      // Save to local storage as backup
+      // Save locally as backup
       saveLocal();
       
       // Render the app
@@ -4783,16 +4828,21 @@ async function doLogin() {
       
       toast(`Welcome, Dr. ${u}! 👋`);
     } else {
+      hideAuthLoading();
       showAuthMessage(res.error || "Invalid credentials");
     }
   } catch (e) {
-    hideLoading();
-    showAuthMessage("Connection error. Please try again.");
+    hideAuthLoading();
+    if (e.name === 'AbortError') {
+      showAuthMessage("Connection timed out. Please try again.");
+    } else {
+      showAuthMessage("Connection error. Please try again.");
+    }
     console.error('Login error:', e);
   }
 }
 
-// Register function
+// Register function - optimized for speed
 async function doRegister() {
   const u = document.getElementById('auth-user').value.trim();
   const p = document.getElementById('auth-pass').value.trim();
@@ -4812,22 +4862,37 @@ async function doRegister() {
     return;
   }
   
-  clearAuthMessage();
-  showLoading("Creating account...");
+  showAuthLoading("Creating account...");
   
   try {
-    const res = await callCloud('register', { username: u, password: p });
-    hideLoading();
+    // Use AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    
+    const res = await fetch(CONFIG.API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'register', username: u, password: p }),
+      signal: controller.signal
+    }).then(r => r.json());
+    
+    clearTimeout(timeoutId);
+    hideAuthLoading();
     
     if (res.success) {
-      showAuthMessage("Account created! Please sign in.", false);
+      showAuthMessage("✓ Account created! Please sign in.", false);
       document.getElementById('auth-pass').value = '';
+      document.getElementById('auth-user').focus();
     } else {
       showAuthMessage(res.error || "Registration failed");
     }
   } catch (e) {
-    hideLoading();
-    showAuthMessage("Connection error. Please try again.");
+    hideAuthLoading();
+    if (e.name === 'AbortError') {
+      showAuthMessage("Connection timed out. Please try again.");
+    } else {
+      showAuthMessage("Connection error. Please try again.");
+    }
     console.error('Register error:', e);
   }
 }
@@ -5054,6 +5119,8 @@ window.emptyTrashPermanently = emptyTrashPermanently;
 window.doLogin = doLogin;
 window.doRegister = doRegister;
 window.doLogout = doLogout;
+window.showAuthLoading = showAuthLoading;
+window.hideAuthLoading = hideAuthLoading;
 
 // Generate session ID
 state.sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -5429,9 +5496,15 @@ function generateSparkline(param, maxPoints = 7) {
 
 let isSyncing = false;
 
+// Get user-specific storage key
+function getUserStorageKey() {
+  return AUTH.user ? `${CONFIG.STORAGE_KEY}_${AUTH.user}` : CONFIG.STORAGE_KEY;
+}
+
 function loadLocal() {
   try {
-    const s = localStorage.getItem(CONFIG.STORAGE_KEY);
+    const storageKey = getUserStorageKey();
+    const s = localStorage.getItem(storageKey);
     if (s) {
       const d = JSON.parse(s);
       if (d.units?.length) state.units = d.units;
@@ -5449,7 +5522,8 @@ function loadLocal() {
 
 function saveLocal() {
   try {
-    localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify({
+    const storageKey = getUserStorageKey();
+    localStorage.setItem(storageKey, JSON.stringify({
       units: state.units, settings: state.settings, patients: state.patients, unitRequests: state.unitRequests, trash: state.trash, lastUpdated: new Date().toISOString()
     }));
   } catch (e) {}
@@ -5507,6 +5581,13 @@ async function performSync() {
   // Always save locally first
   saveLocal();
   
+  // Check if user is authenticated
+  if (!AUTH.user || !AUTH.pass) {
+    syncState.pendingChanges = false;
+    updateSyncStatus('synced', 'Saved locally');
+    return;
+  }
+  
   if (!state.settings.apiUrl || state.settings.apiUrl === 'YOUR_API_URL_HERE') {
     syncState.pendingChanges = false;
     updateSyncStatus('synced', 'Saved locally');
@@ -5521,14 +5602,17 @@ async function performSync() {
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: 'saveData',
+        username: AUTH.user,
+        password: AUTH.pass,
         payload: { 
           units: state.units, 
           settings: { 
             adminPassword: state.settings.adminPassword,
-            apiUrl: state.settings.apiUrl  // Include API URL so all users get it
+            apiUrl: state.settings.apiUrl
           }, 
           patients: state.patients,
-          unitRequests: state.unitRequests
+          unitRequests: state.unitRequests,
+          trash: state.trash
         }
       })
     });
@@ -5568,6 +5652,13 @@ async function forceSync() {
   // Save locally first
   saveLocal();
   
+  // Check if user is authenticated
+  if (!AUTH.user || !AUTH.pass) {
+    console.log('⚠️ Not authenticated - saved locally only');
+    updateSyncStatus('synced', 'Saved locally');
+    return true;
+  }
+  
   if (!state.settings.apiUrl || state.settings.apiUrl === 'YOUR_API_URL_HERE') {
     console.log('⚠️ No API URL configured - saved locally only');
     updateSyncStatus('synced', 'Saved locally');
@@ -5575,7 +5666,7 @@ async function forceSync() {
   }
   
   updateSyncStatus('syncing', 'Saving to cloud...');
-  console.log('☁️ Force syncing to cloud...');
+  console.log('☁️ Force syncing to cloud for user:', AUTH.user);
   console.log('📦 Patients to save:', state.patients.length);
   
   // Log lab data for debugging
@@ -5590,10 +5681,11 @@ async function forceSync() {
       units: state.units, 
       settings: { 
         adminPassword: state.settings.adminPassword,
-        apiUrl: state.settings.apiUrl  // Include API URL so all users get it
+        apiUrl: state.settings.apiUrl
       }, 
       patients: state.patients,
-      unitRequests: state.unitRequests
+      unitRequests: state.unitRequests,
+      trash: state.trash
     };
     
     console.log('📤 Sending payload size:', JSON.stringify(payload).length, 'bytes');
@@ -5603,6 +5695,8 @@ async function forceSync() {
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: 'saveData',
+        username: AUTH.user,
+        password: AUTH.pass,
         payload: payload
       })
     });
@@ -5655,15 +5749,25 @@ async function manualSync() {
 }
 
 async function syncFromCloud() {
+  // Check if user is authenticated
+  if (!AUTH.user || !AUTH.pass) {
+    console.log('⚠️ Not authenticated - cannot sync from cloud');
+    return;
+  }
+  
   if (!state.settings.apiUrl || state.settings.apiUrl === 'YOUR_API_URL_HERE') return;
   
-  console.log('🔄 Loading data from cloud...');
+  console.log('🔄 Loading data from cloud for user:', AUTH.user);
   
   try {
     const res = await fetch(state.settings.apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'loadData' })
+      body: JSON.stringify({ 
+        action: 'loadData',
+        username: AUTH.user,
+        password: AUTH.pass
+      })
     });
     
     const data = await res.json();
@@ -12857,4 +12961,3 @@ else init();
 </script>
 </body>
 </html>
-
