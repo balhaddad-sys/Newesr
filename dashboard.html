@@ -5575,13 +5575,21 @@ window.doLogout = doLogout;
 // Generate session ID
 state.sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
-// Sync state tracking for reactive auto-sync
+// ═══════════════════════════════════════════════════════════════════
+// SYNC STATE - The Gatekeeper for Safe Synchronization
+// ═══════════════════════════════════════════════════════════════════
 let syncState = {
   status: 'synced',
   lastSyncTime: null,
   pendingChanges: false,
   syncTimeout: null,
   errorCount: 0,
+  // ═══════════════════════════════════════════════════════════════════
+  // HYDRATION GATE - Prevents saving before cloud data is loaded
+  // ═══════════════════════════════════════════════════════════════════
+  isHydrated: false,           // Set true ONLY after successful cloud load
+  lastServerPatientCount: 0,   // Track server state to detect accidental wipes
+  lastServerUnitCount: 0,
   // ═══════════════════════════════════════════════════════════════════
   // DELTA SYNC: Patch queue and revision tracking
   // ═══════════════════════════════════════════════════════════════════
@@ -6161,6 +6169,28 @@ async function performSync() {
     return;
   }
   
+  // ═══════════════════════════════════════════════════════════════════
+  // HYDRATION GATE - Block sync until we've loaded from cloud
+  // ═══════════════════════════════════════════════════════════════════
+  if (!syncState.isHydrated) {
+    console.warn('⛔ Sync blocked: App not yet hydrated from cloud');
+    // Don't clear pendingChanges - will retry after hydration
+    return;
+  }
+  
+  // ═══════════════════════════════════════════════════════════════════
+  // CLIENT-SIDE WIPE GUARD - Extra safety layer
+  // ═══════════════════════════════════════════════════════════════════
+  const currentPatientCount = state.patients?.length || 0;
+  const currentUnitCount = state.units?.length || 0;
+  
+  if (currentPatientCount === 0 && syncState.lastServerPatientCount > 0) {
+    console.warn('⛔ Sync blocked: Would wipe', syncState.lastServerPatientCount, 'patients with empty state');
+    syncState.pendingChanges = false;
+    updateSyncStatus('error', 'Wipe blocked');
+    return;
+  }
+  
   syncState.isSyncing = true;
   
   // Compress patch queue to minimize payload
@@ -6190,6 +6220,7 @@ async function performSync() {
       
       const res = await fetch(state.settings.apiUrl, {
         method: 'POST',
+        cache: 'no-store',
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({
           action: 'patches',
@@ -6202,14 +6233,27 @@ async function performSync() {
         })
       });
       
-      const data = await res.json();
+      // Check for HTML response (wrong URL or deployment error)
+      const text = await res.text();
+      if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+        throw new Error('Server returned HTML - check API URL');
+      }
+      
+      const data = JSON.parse(text);
       
       if (data.success) {
         syncState.patchQueue = []; // Clear queue
         syncState.clientRev = data.rev || syncState.clientRev;
         localStorage.setItem('MW_REV', String(syncState.clientRev));
+        // Update server counts
+        syncState.lastServerPatientCount = currentPatientCount;
+        syncState.lastServerUnitCount = currentUnitCount;
         console.log('✅ Delta sync complete, rev:', syncState.clientRev, 'applied:', data.applied);
         success = true;
+      } else if (data.retryable) {
+        // Server busy - retry
+        console.warn('⚠️ Server busy, will retry');
+        setTimeout(() => performSync(), 2000);
       } else {
         console.warn('⚠️ Patch sync failed:', data.error);
         // Fall back to snapshot on next sync
@@ -6315,6 +6359,14 @@ async function saveCloud() {
 // Force immediate sync - bypasses debounce for critical operations like lab saves
 async function forceSync() {
   // ═══════════════════════════════════════════════════════════════════
+  // HYDRATION GATE - Block sync until we've loaded from cloud
+  // ═══════════════════════════════════════════════════════════════════
+  if (!syncState.isHydrated) {
+    console.warn('⛔ forceSync blocked: App not yet hydrated from cloud');
+    return false;
+  }
+  
+  // ═══════════════════════════════════════════════════════════════════
   // SAFEGUARD: Never overwrite cloud with empty state
   // ═══════════════════════════════════════════════════════════════════
   if (!state.patients || state.patients.length === 0) {
@@ -6359,12 +6411,15 @@ async function forceSync() {
   });
   
   try {
+    // ═══════════════════════════════════════════════════════════════════
+    // STRIP apiUrl - Never send to cloud (device-local only)
+    // ═══════════════════════════════════════════════════════════════════
+    const settingsToSave = { ...state.settings };
+    delete settingsToSave.apiUrl;  // CRITICAL: apiUrl stays local only
+    
     const payload = { 
       units: state.units, 
-      settings: { 
-        adminPassword: state.settings.adminPassword,
-        apiUrl: state.settings.apiUrl  // Include API URL so all users get it
-      }, 
+      settings: settingsToSave, 
       patients: state.patients,
       unitRequests: state.unitRequests,
       trash: state.trash
@@ -6374,6 +6429,7 @@ async function forceSync() {
     
     const res = await fetch(state.settings.apiUrl, {
       method: 'POST',
+      cache: 'no-store',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: 'saveData',
@@ -6386,6 +6442,11 @@ async function forceSync() {
     const responseText = await res.text();
     console.log('📥 Response:', responseText);
     
+    // Check for HTML response
+    if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+      throw new Error('Server returned HTML - check API URL');
+    }
+    
     let result;
     try {
       result = JSON.parse(responseText);
@@ -6394,6 +6455,12 @@ async function forceSync() {
     }
     
     if (!res.ok || !result.success) {
+      // Check for retryable error
+      if (result.retryable) {
+        console.log('⏳ Server busy, retrying in 2s...');
+        setTimeout(() => forceSync(), 2000);
+        return false;
+      }
       throw new Error(result.error || 'Save failed');
     }
     
@@ -6404,6 +6471,10 @@ async function forceSync() {
       // Clear patch queue since snapshot includes everything
       syncState.patchQueue = [];
     }
+    
+    // Update server counts
+    syncState.lastServerPatientCount = state.patients.length;
+    syncState.lastServerUnitCount = state.units.length;
     
     syncState.pendingChanges = false;
     syncState.lastSyncTime = Date.now();
@@ -6439,13 +6510,20 @@ async function manualSync() {
 }
 
 async function syncFromCloud() {
-  if (!state.settings.apiUrl || state.settings.apiUrl === 'YOUR_API_URL_HERE') return;
+  if (!state.settings.apiUrl || state.settings.apiUrl === 'YOUR_API_URL_HERE') {
+    // No cloud configured - hydrate from local only
+    syncState.isHydrated = true;
+    syncState.lastServerPatientCount = state.patients?.length || 0;
+    syncState.lastServerUnitCount = state.units?.length || 0;
+    return;
+  }
   
   console.log('🔄 Loading data from cloud (rev:', syncState.clientRev, ')...');
   
   try {
     const res = await fetch(state.settings.apiUrl, {
       method: 'POST',
+      cache: 'no-store',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ 
         action: 'loadData',
@@ -6455,13 +6533,26 @@ async function syncFromCloud() {
       })
     });
     
-    const data = await res.json();
+    // Check for HTML response (wrong URL)
+    const text = await res.text();
+    if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+      console.error('❌ Server returned HTML - check API URL');
+      // Still hydrate from local to allow offline use
+      syncState.isHydrated = true;
+      return;
+    }
+    
+    const data = JSON.parse(text);
     
     // ═══════════════════════════════════════════════════════════════════
     // CONDITIONAL LOAD: Server returns "unchanged" if we have latest rev
     // ═══════════════════════════════════════════════════════════════════
     if (data.success && data.unchanged) {
       console.log('⚡ Already in sync (rev:', data.rev, ') - no download needed');
+      // ✅ OPEN THE GATES - we're in sync
+      syncState.isHydrated = true;
+      syncState.lastServerPatientCount = state.patients?.length || 0;
+      syncState.lastServerUnitCount = state.units?.length || 0;
       return state; // Return current state, nothing changed
     }
     
@@ -6481,15 +6572,13 @@ async function syncFromCloud() {
         console.log('   Units loaded:', state.units.length);
       }
       
-      // Update settings - IMPORTANT: preserve local apiUrl if cloud doesn't have it
+      // Update settings - IMPORTANT: apiUrl stays LOCAL ONLY (never from cloud)
       if (data.data.settings) {
-        const cloudApiUrl = data.data.settings.apiUrl;
+        const localApiUrl = state.settings.apiUrl; // Preserve local
         state.settings = { ...state.settings, ...data.data.settings };
-        // If cloud has apiUrl, use it; otherwise keep local
-        if (cloudApiUrl && cloudApiUrl !== 'YOUR_API_URL_HERE') {
-          state.settings.apiUrl = cloudApiUrl;
-        }
-        console.log('   Settings loaded, apiUrl:', state.settings.apiUrl ? 'configured' : 'not set');
+        // ALWAYS keep local apiUrl - never trust cloud for this
+        state.settings.apiUrl = localApiUrl;
+        console.log('   Settings loaded (apiUrl preserved locally)');
       }
       
       // Update patients - THIS IS KEY FOR MULTI-USER SYNC
@@ -6522,6 +6611,14 @@ async function syncFromCloud() {
         state.unitRequests = [...data.data.unitRequests, ...localOnly];
       }
       
+      // ═══════════════════════════════════════════════════════════════════
+      // ✅ OPEN THE GATES - Successfully hydrated from cloud
+      // ═══════════════════════════════════════════════════════════════════
+      syncState.isHydrated = true;
+      syncState.lastServerPatientCount = state.patients?.length || 0;
+      syncState.lastServerUnitCount = state.units?.length || 0;
+      console.log('✅ Hydration complete: isHydrated=true, serverCounts:', syncState.lastServerPatientCount, 'patients,', syncState.lastServerUnitCount, 'units');
+      
       // Save to local storage
       saveLocal();
       
@@ -6535,9 +6632,19 @@ async function syncFromCloud() {
       }
       
       console.log('✅ Cloud sync complete, last updated:', data.data.lastUpdated || 'unknown');
+    } else {
+      // Load failed but we have local data - allow offline use
+      console.warn('⚠️ Cloud load returned no data, using local');
+      syncState.isHydrated = true;
+      syncState.lastServerPatientCount = state.patients?.length || 0;
+      syncState.lastServerUnitCount = state.units?.length || 0;
     }
   } catch (e) {
     console.error('❌ Load from cloud failed:', e);
+    // Still hydrate from local to allow offline use
+    syncState.isHydrated = true;
+    syncState.lastServerPatientCount = state.patients?.length || 0;
+    syncState.lastServerUnitCount = state.units?.length || 0;
   }
 }
 
