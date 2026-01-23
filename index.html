@@ -2718,6 +2718,32 @@ body {
   }
 })();
 </script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     AUTHENTICATION OVERLAY - Login/Register Screen
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="auth-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-app); z-index:10000; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+    <div class="card" style="width:320px; padding:30px; text-align:center; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.15);">
+        <div style="font-size:3rem; margin-bottom:10px;">⚕️</div>
+        <h1 style="color:var(--primary); margin-bottom:8px; font-size:1.5rem;">MedWard Pro</h1>
+        <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:24px;">Multi-User Clinical Platform</p>
+        
+        <input type="text" id="auth-user" class="med-input" placeholder="Username" style="margin-bottom:12px; width:100%; padding:14px; border-radius:10px; border:1px solid var(--border); background:var(--bg-input); color:var(--text-main); font-size:1rem;">
+        <input type="password" id="auth-pass" class="med-input" placeholder="Password" style="margin-bottom:12px; width:100%; padding:14px; border-radius:10px; border:1px solid var(--border); background:var(--bg-input); color:var(--text-main); font-size:1rem;">
+        
+        <div style="display:flex; align-items:center; justify-content:flex-start; margin-bottom:20px; font-size:0.9rem; color:var(--text-secondary);">
+            <input type="checkbox" id="auth-remember" style="width:auto; margin-right:8px; cursor:pointer;">
+            <label for="auth-remember" style="cursor:pointer;">Keep me logged in</label>
+        </div>
+        
+        <button class="btn-primary" onclick="doLogin()" style="width:100%; margin-bottom:12px; padding:14px; border-radius:10px; font-size:1rem; font-weight:600; cursor:pointer; border:none; background:var(--primary); color:#fff;">Login</button>
+        <button class="btn-secondary" onclick="doRegister()" style="width:100%; padding:12px; border-radius:10px; font-size:0.9rem; cursor:pointer; border:1px solid var(--border); background:var(--bg-surface); color:var(--text-main);">Create Account</button>
+        
+        <div id="auth-msg" style="margin-top:15px; color:#dc2626; font-size:0.85rem; min-height:20px;"></div>
+    </div>
+    <p style="color:var(--text-muted); font-size:0.75rem; margin-top:20px;">v16.1 • Multi-User Edition</p>
+</div>
+
 <!-- CLINICAL HEADER -->
 <header class="app-header" id="appHeader" style="display:none">
     <div class="brand-title">MedWard Pro</div>
@@ -2758,21 +2784,21 @@ body {
 </div>
 
 <!-- OnCall Assistant Button -->
-<a href="https://balhaddad-sys.github.io/Final-app/oncall_assistant.html" class="oncall-landing-btn">
+<a href="https://balhaddad-sys.github.io/Newesr/oncall_assistant.html" class="oncall-landing-btn">
   <span class="oncall-btn-icon">⚡</span>
   <span class="oncall-btn-text">OnCall Assistant</span>
   <span class="oncall-btn-arrow">→</span>
 </a>
 
 <!-- AI Assistant Button -->
-<a href="https://balhaddad-sys.github.io/Final-app/ai_assistant.html" class="ai-landing-btn">
+<a href="https://balhaddad-sys.github.io/Newesr/ai_assistant.html" class="ai-landing-btn">
   <span class="oncall-btn-icon">🤖</span>
   <span class="oncall-btn-text">AI Assistant</span>
   <span class="oncall-btn-arrow">→</span>
 </a>
 
 <!-- Antibiotic Stewardship Button -->
-<a href="https://balhaddad-sys.github.io/Final-app/antibiotic_guide.html" class="abx-landing-btn">
+<a href="https://balhaddad-sys.github.io/Newesr/antibiotic_guide.html" class="abx-landing-btn">
   <span class="oncall-btn-icon">🛡️</span>
   <span class="oncall-btn-text">Antibiotic Guide</span>
   <span class="oncall-btn-arrow">→</span>
@@ -2999,12 +3025,12 @@ Request New Unit Access
 
 <div class="admin-tab-panel" id="adminTrash">
 <div class="admin-section">
-<div class="section-header"><div class="section-title">🗑️ Trash</div><button class="btn btn-danger btn-sm" onclick="emptyTrash()">Empty Trash</button></div>
+<div class="section-header"><div class="section-title">🗑️ Trash</div><button class="btn btn-danger btn-sm" onclick="emptyTrashPermanently()">Empty Trash</button></div>
 <div class="section-body" id="trashContent">
 <div class="admin-empty-state">
 <div class="admin-empty-icon">🗑️</div>
 <div class="admin-empty-text">Trash is empty</div>
-<div class="admin-empty-hint">Deleted items will appear here for 30 days</div>
+<div class="admin-empty-hint">Deleted items will appear here for recovery</div>
 </div>
 </div>
 </div>
@@ -3027,6 +3053,58 @@ Request New Unit Access
 <button class="btn btn-primary" onclick="saveSettings()" style="width:100%;margin-top:8px">💾 Save Settings</button>
 </div>
 </div>
+
+<!-- TRASH MANAGEMENT SECTION -->
+<div class="admin-section">
+<div class="section-header"><div class="section-title">🗑️ Trash Bin</div></div>
+<div class="section-body">
+<p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:12px">Deleted patients are stored safely here. You can restore them or permanently delete.</p>
+<button class="btn btn-secondary" onclick="openTrashView()" style="width:100%">
+  <span style="margin-right:8px">🗑️</span> View Deleted Items
+</button>
+</div>
+</div>
+
+<!-- USER SESSION SECTION -->
+<div class="admin-section">
+<div class="section-header"><div class="section-title">👤 User Session</div></div>
+<div class="section-body">
+<div id="currentUserInfo" style="background:var(--bg-elevated);padding:12px;border-radius:8px;margin-bottom:12px;font-size:0.85rem;">
+  <div style="color:var(--text-secondary);margin-bottom:4px">Logged in as:</div>
+  <div id="authUserDisplay" style="font-weight:600;color:var(--text-main)">—</div>
+</div>
+<button class="btn btn-danger" onclick="doLogout()" style="width:100%;border-left:4px solid #dc2626;">
+  <span style="margin-right:8px">🚪</span> Log Out
+</button>
+<p style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">This will clear your session on this device</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- TRASH VIEW MODAL -->
+<div class="modal" id="trashModal">
+<div class="modal-box" style="max-width:500px;max-height:80vh;display:flex;flex-direction:column;">
+<div class="modal-header">
+<div class="modal-title">🗑️ Trash Bin</div>
+<button class="btn-icon" onclick="closeModal('trashModal')" style="color:var(--text-secondary)">&times;</button>
+</div>
+<div class="modal-body" style="flex:1;overflow-y:auto;padding:0;">
+<div style="padding:12px 16px;background:var(--bg-elevated);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+  <span style="font-size:0.85rem;color:var(--text-secondary)">Deleted items are stored here safely</span>
+  <button class="btn btn-ghost btn-sm" onclick="fetchTrash()" style="padding:6px 10px;font-size:0.75rem">🔄 Refresh</button>
+</div>
+<div id="trash-list" style="padding:12px;min-height:200px;">
+  <div style="text-align:center;color:var(--text-muted);padding:40px 20px;">
+    <div style="font-size:2rem;margin-bottom:8px;">📭</div>
+    <div>Loading trash...</div>
+  </div>
+</div>
+</div>
+<div class="modal-footer" style="border-top:1px solid var(--border);padding:12px 16px;display:flex;justify-content:space-between;">
+<button class="btn btn-danger btn-sm" onclick="emptyTrashConfirm()" style="font-size:0.8rem">🗑️ Empty Trash</button>
+<button class="btn btn-secondary btn-sm" onclick="closeModal('trashModal')">Close</button>
 </div>
 </div>
 </div>
@@ -3711,7 +3789,7 @@ const CONFIG = {
   // ═══════════════════════════════════════════════════════════════════
   // API CONFIGURATION
   // ═══════════════════════════════════════════════════════════════════
-  API_URL: 'https://script.google.com/macros/s/AKfycbznXa9YNna26Srt1eZVEnSV-dIiubFLTwg3ryLdE-maGNCQhydP_8E6AK4QPXkeQrw7lA/exec',
+  API_URL: 'https://script.google.com/macros/s/AKfycbyewF_EjwJeundXYupFZcAjJF7jyMrd38FPDP7DB0zmjmHqAcXHig08Ycn07oW45l4w-A/exec',
   FORMSUBMIT_URL: 'https://formsubmit.co/ajax/',
   
   // ═══════════════════════════════════════════════════════════════════
@@ -3747,6 +3825,28 @@ const CONFIG = {
   // ═══════════════════════════════════════════════════════════════════
   REQUIRED_ELEMENTS: ['landing', 'dashboard', 'patientsList']
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GLOBAL AUTH STATE - Multi-User Authentication
+// ═══════════════════════════════════════════════════════════════════════════
+const AUTH = {
+  user: null,
+  pass: null,
+  isAuthenticated: false
+};
+
+// Initialize AUTH from storage on load
+(function initAuth() {
+  // Check localStorage (permanent) first, then sessionStorage (temporary)
+  const localUser = localStorage.getItem('MW_AUTH_USER');
+  const localPass = localStorage.getItem('MW_AUTH_PASS');
+  const sessUser = sessionStorage.getItem('MW_AUTH_USER');
+  const sessPass = sessionStorage.getItem('MW_AUTH_PASS');
+  
+  AUTH.user = sessUser || localUser || null;
+  AUTH.pass = sessPass || localPass || null;
+  AUTH.isAuthenticated = !!(AUTH.user && AUTH.pass);
+})();
 
 // ═══════════════════════════════════════════════════════════════════════════
 // BOOT DIAGNOSTICS - Validates app configuration and DOM before initialization
@@ -4596,6 +4696,380 @@ const state = {
   pendingLabData: null, pendingLabImage: null, labExtractionConfidence: 0, isAnalyzingMeds: false, dischargePatientId: null,
   trash: { patients: [], units: [], medications: [] } // Recycle bin for deleted items
 };
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MULTI-USER AUTHENTICATION SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const AUTH = {
+  user: null,
+  pass: null
+};
+
+// Initialize AUTH from storage on load
+(function initAuth() {
+  // Check localStorage first (persistent), then sessionStorage (session-only)
+  const localUser = localStorage.getItem('MW_USER');
+  const localPass = localStorage.getItem('MW_PASS');
+  const sessUser = sessionStorage.getItem('MW_USER');
+  const sessPass = sessionStorage.getItem('MW_PASS');
+  
+  AUTH.user = sessUser || localUser;
+  AUTH.pass = sessPass || localPass;
+})();
+
+// Show auth message
+function showAuthMessage(msg, isError = true) {
+  const msgEl = document.getElementById('auth-msg');
+  if (msgEl) {
+    msgEl.textContent = msg;
+    msgEl.className = 'auth-message ' + (isError ? 'error' : 'success');
+  }
+}
+
+// Clear auth message
+function clearAuthMessage() {
+  const msgEl = document.getElementById('auth-msg');
+  if (msgEl) {
+    msgEl.className = 'auth-message';
+    msgEl.textContent = '';
+  }
+}
+
+// Login function
+async function doLogin() {
+  const u = document.getElementById('auth-user').value.trim();
+  const p = document.getElementById('auth-pass').value.trim();
+  const remember = document.getElementById('auth-remember').checked;
+  
+  if (!u || !p) {
+    showAuthMessage("Please enter username and password");
+    return;
+  }
+  
+  clearAuthMessage();
+  showLoading("Signing in...");
+  
+  try {
+    const res = await callCloud('login', { username: u, password: p });
+    hideLoading();
+    
+    if (res.success) {
+      // Set Global State
+      AUTH.user = u;
+      AUTH.pass = p;
+      
+      // Storage Logic based on "Remember Me"
+      if (remember) {
+        // Permanent Storage (survives browser close)
+        localStorage.setItem('MW_USER', u);
+        localStorage.setItem('MW_PASS', p);
+        sessionStorage.removeItem('MW_USER');
+        sessionStorage.removeItem('MW_PASS');
+      } else {
+        // Session Storage (deleted on browser close)
+        sessionStorage.setItem('MW_USER', u);
+        sessionStorage.setItem('MW_PASS', p);
+        localStorage.removeItem('MW_USER');
+        localStorage.removeItem('MW_PASS');
+      }
+      
+      // Hide Login Screen
+      document.getElementById('auth-overlay').classList.add('hidden');
+      
+      // Load user data
+      if (res.data) {
+        state.patients = res.data.patients || [];
+        state.units = res.data.units || [];
+        state.settings = res.data.settings || { adminPassword: 'admin123' };
+        state.unitRequests = res.data.unitRequests || [];
+        
+        // Set default API URL if not in settings
+        if (!state.settings.apiUrl) {
+          state.settings.apiUrl = CONFIG.API_URL;
+        }
+      }
+      
+      // Save to local storage as backup
+      saveLocal();
+      
+      // Render the app
+      renderUnits();
+      renderPatients();
+      
+      toast(`Welcome, Dr. ${u}! 👋`);
+    } else {
+      showAuthMessage(res.error || "Invalid credentials");
+    }
+  } catch (e) {
+    hideLoading();
+    showAuthMessage("Connection error. Please try again.");
+    console.error('Login error:', e);
+  }
+}
+
+// Register function
+async function doRegister() {
+  const u = document.getElementById('auth-user').value.trim();
+  const p = document.getElementById('auth-pass').value.trim();
+  
+  if (!u || !p) {
+    showAuthMessage("Please enter username and password");
+    return;
+  }
+  
+  if (u.length < 3) {
+    showAuthMessage("Username must be at least 3 characters");
+    return;
+  }
+  
+  if (p.length < 4) {
+    showAuthMessage("Password must be at least 4 characters");
+    return;
+  }
+  
+  clearAuthMessage();
+  showLoading("Creating account...");
+  
+  try {
+    const res = await callCloud('register', { username: u, password: p });
+    hideLoading();
+    
+    if (res.success) {
+      showAuthMessage("Account created! Please sign in.", false);
+      document.getElementById('auth-pass').value = '';
+    } else {
+      showAuthMessage(res.error || "Registration failed");
+    }
+  } catch (e) {
+    hideLoading();
+    showAuthMessage("Connection error. Please try again.");
+    console.error('Register error:', e);
+  }
+}
+
+// Logout function  
+function doLogout() {
+  if (!confirm("Log out of MedWard Pro?")) return;
+  
+  // Clear ALL storage
+  localStorage.removeItem('MW_USER');
+  localStorage.removeItem('MW_PASS');
+  sessionStorage.removeItem('MW_USER');
+  sessionStorage.removeItem('MW_PASS');
+  AUTH.user = null;
+  AUTH.pass = null;
+  
+  // Reload page to show login screen
+  location.reload();
+}
+
+// Cloud caller - injects credentials into all authenticated requests
+async function callCloud(action, payload = {}) {
+  // Inject credentials for non-auth actions
+  if (action !== 'login' && action !== 'register') {
+    if (AUTH.user && AUTH.pass) {
+      payload.username = AUTH.user;
+      payload.password = AUTH.pass;
+    }
+  }
+  
+  payload.action = action;
+  
+  const apiUrl = state.settings?.apiUrl || CONFIG.API_URL;
+  
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(payload)
+  });
+  
+  return await response.json();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TRASH MANAGEMENT FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Move item to trash (soft delete)
+async function movePatientToTrash(id) {
+  if (!confirm("Move this patient to Trash? You can restore them later.")) return;
+  
+  // Optimistic local update
+  const patient = state.patients.find(p => p.id === id);
+  if (patient) {
+    patient.deletedAt = new Date().toISOString();
+    if (!state.trash.patients) state.trash.patients = [];
+    state.trash.patients.push(patient);
+  }
+  state.patients = state.patients.filter(p => p.id !== id);
+  renderPatients();
+  saveLocal();
+  
+  // Cloud sync
+  try {
+    await callCloud('moveToTrash', { itemIds: [id], itemType: 'patients' });
+    toast("Moved to Trash");
+  } catch (e) {
+    console.error('Trash error:', e);
+    toast("Moved locally (sync pending)", true);
+  }
+}
+
+// Fetch trash contents from cloud
+async function fetchTrash() {
+  showLoading("Loading Trash...");
+  try {
+    const res = await callCloud('getTrash');
+    hideLoading();
+    
+    if (res.success && res.trash) {
+      state.trash = res.trash;
+      renderTrashContent();
+    } else {
+      toast("Failed to load trash", true);
+    }
+  } catch (e) {
+    hideLoading();
+    // Use local trash
+    renderTrashContent();
+  }
+}
+
+// Render trash content in admin panel
+function renderTrashContent() {
+  const container = document.getElementById('trashContent');
+  if (!container) return;
+  
+  const patients = state.trash?.patients || [];
+  const units = state.trash?.units || [];
+  
+  if (patients.length === 0 && units.length === 0) {
+    container.innerHTML = `
+      <div class="admin-empty-state">
+        <div class="admin-empty-icon">🗑️</div>
+        <div class="admin-empty-text">Trash is empty</div>
+        <div class="admin-empty-hint">Deleted items will appear here</div>
+      </div>
+    `;
+    return;
+  }
+  
+  let html = '';
+  
+  // Patients in trash
+  if (patients.length > 0) {
+    html += '<div style="margin-bottom:16px"><h4 style="font-size:0.85rem;color:var(--text-muted);margin-bottom:8px">👥 Patients</h4>';
+    patients.forEach(p => {
+      const deletedDate = p.deletedAt ? new Date(p.deletedAt).toLocaleDateString() : 'Unknown';
+      html += `
+        <div class="trash-item" style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg);border-radius:8px;margin-bottom:8px;opacity:0.8">
+          <div>
+            <div style="font-weight:600">${esc(p.name)}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted)">Deleted: ${deletedDate}</div>
+          </div>
+          <button class="btn btn-success btn-sm" onclick="restorePatientFromTrash('${p.id}')" style="padding:6px 12px;font-size:0.75rem">♻️ Restore</button>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+  
+  // Units in trash
+  if (units.length > 0) {
+    html += '<div><h4 style="font-size:0.85rem;color:var(--text-muted);margin-bottom:8px">🏥 Units</h4>';
+    units.forEach(u => {
+      const deletedDate = u.deletedAt ? new Date(u.deletedAt).toLocaleDateString() : 'Unknown';
+      html += `
+        <div class="trash-item" style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg);border-radius:8px;margin-bottom:8px;opacity:0.8">
+          <div>
+            <div style="font-weight:600">${esc(u.name)}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted)">Deleted: ${deletedDate}</div>
+          </div>
+          <button class="btn btn-success btn-sm" onclick="restoreUnitFromTrash('${u.id}')" style="padding:6px 12px;font-size:0.75rem">♻️ Restore</button>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+  
+  container.innerHTML = html;
+}
+
+// Restore patient from trash
+async function restorePatientFromTrash(id) {
+  showLoading("Restoring...");
+  try {
+    const res = await callCloud('restoreTrash', { itemIds: [id], itemType: 'patients' });
+    hideLoading();
+    
+    if (res.success) {
+      toast("Patient restored!");
+      // Refresh data
+      await syncFromCloud();
+      fetchTrash();
+      renderPatients();
+    } else {
+      toast("Restore failed", true);
+    }
+  } catch (e) {
+    hideLoading();
+    toast("Restore failed", true);
+  }
+}
+
+// Restore unit from trash
+async function restoreUnitFromTrash(id) {
+  showLoading("Restoring...");
+  try {
+    const res = await callCloud('restoreTrash', { itemIds: [id], itemType: 'units' });
+    hideLoading();
+    
+    if (res.success) {
+      toast("Unit restored!");
+      await syncFromCloud();
+      fetchTrash();
+      renderUnits();
+    } else {
+      toast("Restore failed", true);
+    }
+  } catch (e) {
+    hideLoading();
+    toast("Restore failed", true);
+  }
+}
+
+// Empty trash permanently
+async function emptyTrashPermanently() {
+  if (!confirm("⚠️ Permanently delete all items in Trash?\n\nThis action cannot be undone!")) return;
+  
+  showLoading("Emptying Trash...");
+  try {
+    const res = await callCloud('emptyTrash');
+    hideLoading();
+    
+    if (res.success) {
+      state.trash = { patients: [], units: [], medications: [] };
+      renderTrashContent();
+      toast("Trash emptied permanently");
+    } else {
+      toast("Failed to empty trash", true);
+    }
+  } catch (e) {
+    hideLoading();
+    toast("Failed to empty trash", true);
+  }
+}
+
+// Make functions globally available
+window.movePatientToTrash = movePatientToTrash;
+window.fetchTrash = fetchTrash;
+window.restorePatientFromTrash = restorePatientFromTrash;
+window.restoreUnitFromTrash = restoreUnitFromTrash;
+window.emptyTrashPermanently = emptyTrashPermanently;
+window.doLogin = doLogin;
+window.doRegister = doRegister;
+window.doLogout = doLogout;
 
 // Generate session ID
 state.sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -11642,7 +12116,7 @@ Access Code: ${code}
 HOW TO ACCESS
 ═══════════════════════════════════════════
 
-1. Go to MedWard Pro: https://balhaddad-sys.github.io/Final-app/
+1. Go to MedWard Pro: https://balhaddad-sys.github.io/Newesr/
 2. Click "Switch Unit" from the landing page
 3. Select "${unitName}" from the list
 4. Enter access code: ${code}
@@ -12267,7 +12741,7 @@ async function init() {
   /*
   const onboardingVersion = 'v4_sparklines';
   if (localStorage.getItem(CONFIG.ONBOARDING_KEY) !== onboardingVersion) {
-    window.location.href = 'https://balhaddad-sys.github.io/Final-app/onboarding_demo.html';
+    window.location.href = 'https://balhaddad-sys.github.io/Newesr/onboarding_demo.html';
     return;
   }
   */
