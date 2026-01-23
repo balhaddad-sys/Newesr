@@ -3745,15 +3745,6 @@ Request New Unit Access
 <input type="file" id="labFileInputHidden" accept="image/*" multiple style="display:none">
 <input type="file" id="imagingFileInput" accept="image/*" style="display:none">
 <script>
-// ═══════════════════════════════════════════════════════════════════════════════
-// EARLY GLOBAL AUTH FUNCTIONS - Ensures buttons work immediately
-// These are placeholders that get replaced by the full implementations below
-// ═══════════════════════════════════════════════════════════════════════════════
-window.doLogin = function() { console.log('doLogin loading...'); };
-window.doRegister = function() { console.log('doRegister loading...'); };
-window.doLogout = function() { console.log('doLogout loading...'); };
-</script>
-<script>
 (function(){
 'use strict';
 
@@ -3848,10 +3839,10 @@ const AUTH = {
 // Initialize AUTH from storage on load
 (function initAuth() {
   // Check localStorage (permanent) first, then sessionStorage (temporary)
-  const localUser = localStorage.getItem('MW_AUTH_USER');
-  const localPass = localStorage.getItem('MW_AUTH_PASS');
-  const sessUser = sessionStorage.getItem('MW_AUTH_USER');
-  const sessPass = sessionStorage.getItem('MW_AUTH_PASS');
+  const localUser = localStorage.getItem('MW_USER');
+  const localPass = localStorage.getItem('MW_PASS');
+  const sessUser = sessionStorage.getItem('MW_USER');
+  const sessPass = sessionStorage.getItem('MW_PASS');
   
   AUTH.user = sessUser || localUser || null;
   AUTH.pass = sessPass || localPass || null;
@@ -4711,23 +4702,6 @@ const state = {
 // MULTI-USER AUTHENTICATION SYSTEM
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const AUTH = {
-  user: null,
-  pass: null
-};
-
-// Initialize AUTH from storage on load
-(function initAuth() {
-  // Check localStorage first (persistent), then sessionStorage (session-only)
-  const localUser = localStorage.getItem('MW_USER');
-  const localPass = localStorage.getItem('MW_PASS');
-  const sessUser = sessionStorage.getItem('MW_USER');
-  const sessPass = sessionStorage.getItem('MW_PASS');
-  
-  AUTH.user = sessUser || localUser;
-  AUTH.pass = sessPass || localPass;
-})();
-
 // Show auth message
 function showAuthMessage(msg, isError = true) {
   const msgEl = document.getElementById('auth-msg');
@@ -4873,14 +4847,6 @@ function doLogout() {
   // Reload page to show login screen
   location.reload();
 }
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// IMMEDIATELY EXPOSE AUTH FUNCTIONS TO GLOBAL SCOPE
-// This ensures onclick handlers work even if later code has errors
-// ═══════════════════════════════════════════════════════════════════════════════
-window.doLogin = doLogin;
-window.doRegister = doRegister;
-window.doLogout = doLogout;
 
 // Cloud caller - injects credentials into all authenticated requests
 async function callCloud(action, payload = {}) {
@@ -12891,3 +12857,4 @@ else init();
 </script>
 </body>
 </html>
+
