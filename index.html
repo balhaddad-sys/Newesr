@@ -12,21 +12,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
 <style>
-   MEDWARD PRO v16 - CLINICAL WARD MANAGEMENT SYSTEM
-   ═══════════════════════════════════════════════════════════════════════════
-
-   TABLE OF CONTENTS:
+/*
+/* MEDWARD PRO v16 - CLINICAL WARD MANAGEMENT SYSTEM */
    01. Design Tokens (CSS Variables)
-   02. Dark Mode Overrides
-   03. Global Reset & Accessibility
-   04. Typography & Base Elements
-   05. Layout Components (Header, Nav, Pages)
-   06. UI Components (Cards, Buttons, Badges, Modals)
-   07. Feature-Specific Styles
-   08. Utilities & Helpers
-
-
-   01. DESIGN TOKENS (CSS Variables)
+*/
 :root {
     --primary: #005eb8;       /* NHS/Medical Standard Blue */
     --primary-dark: #003087;  /* Deep Navy for headings */
@@ -77,7 +66,7 @@
     --shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-   02. DARK MODE OVERRIDES (Night Shift)
+/* 02. DARK MODE OVERRIDES (Night Shift) */
 body.dark-theme {
     --primary: #60a5fa;      /* Lighter Blue for dark backgrounds */
     --primary-dark: #93c5fd;
@@ -334,7 +323,7 @@ body {
 .modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .modal-title{font-size:1.1rem;font-weight:700}
 .modal-body{padding:24px;overflow-y:auto;flex:1;padding-bottom:90px}
-   STICKY FOOTER DOCK - Professional Medical Form Standard (Fitts's Law)
+/* STICKY FOOTER DOCK - Professional Medical Form Standard (Fitts's Law) */
 .modal-footer {
     position: sticky;
     bottom: 0;
@@ -862,7 +851,7 @@ body {
 .admin-tab-panel.active{display:block}
 .badge-count{background:var(--rose);color:#fff;padding:2px 8px;border-radius:100px;font-size:0.7rem;margin-left:8px}
 
-   CLINICAL SCORING SYSTEM - PROFESSIONAL MEDICAL UI
+/* CLINICAL SCORING SYSTEM - PROFESSIONAL MEDICAL UI */
 
 #scoreCalcModal{padding:0;align-items:stretch}
 #scoreCalcModal .modal-box{
@@ -1162,7 +1151,7 @@ body {
   border-top-color:#fbbf24;border-radius:50%;animation:spin 1s linear infinite
 }
 
-   MEDICATIONS - PRISTINE PHARMACEUTICAL DESIGN
+/* MEDICATIONS - PRISTINE PHARMACEUTICAL DESIGN */
 
 .meds-container{padding:0}
 
@@ -1222,7 +1211,7 @@ body {
   background:rgba(139,92,246,0.1);padding:3px 8px;border-radius:10px
 }
 
-   MEDICATION SYSTEM - PREMIUM REDESIGN v15
+/* MEDICATION SYSTEM - PREMIUM REDESIGN v15 */
 
 .med-card{
   background:linear-gradient(145deg,#0d1117 0%,#151d2e 100%);
@@ -1297,7 +1286,7 @@ body {
 }
 .med-learn-more .sparkle{font-size:1rem}
 
-   NEURAL MEDICATION SUGGESTIONS - AI Learning System
+/* NEURAL MEDICATION SUGGESTIONS - AI Learning System */
 
 .med-ai-suggestions{
   background:linear-gradient(135deg,rgba(139,92,246,0.08),rgba(59,130,246,0.05));
@@ -1375,7 +1364,7 @@ body {
 }
 .med-ai-empty-icon{font-size:1.5rem;margin-bottom:8px;opacity:0.5}
 
-   ADD MEDICATION FORM - Premium Inline Design v15
+/* ADD MEDICATION FORM - Premium Inline Design v15 */
 
 .med-add-form{
   background:linear-gradient(165deg,#0a101f 0%,#111b2e 50%,#0f1825 100%);
@@ -1549,7 +1538,7 @@ body {
 .meds-list-title{font-size:0.75rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em}
 .meds-count{padding:4px 12px;background:rgba(52,211,153,0.1);border-radius:100px;font-size:0.7rem;font-weight:700;color:#34d399}
 
-   CLINICAL ACTION PLAN - Simple Clean Design
+/* CLINICAL ACTION PLAN - Simple Clean Design */
 
 .plan-section-card{padding:0;overflow:hidden}
 .plan-section-header{padding:16px 20px;border-bottom:1px solid var(--border)}
@@ -1835,7 +1824,7 @@ body {
 }
 .renal-value{font-size:0.8rem;color:var(--text-secondary);line-height:1.4}
 
-   PLAN SECTION - Professional Interactive Design
+/* PLAN SECTION - Professional Interactive Design */
 .plan-card {
   background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
   border: 1px solid #bae6fd;
@@ -2089,7 +2078,7 @@ body {
   color: #16a34a;
 }
 
-   ONCALL ASSISTANT STYLES
+/* ONCALL ASSISTANT STYLES */
 .oncall-tab {
   background: linear-gradient(135deg, #7c3aed, #6d28d9) !important;
   color: white !important;
@@ -3378,19 +3367,7 @@ Add Unit
 (function(){
 'use strict';
 
-   MEDWARD PRO - JAVASCRIPT APPLICATION
-   ═══════════════════════════════════════════════════════════════════════════
-
-   TABLE OF CONTENTS:
-   01. Configuration & Constants
-   02. State Management
-   03. Utility Functions
-   04. API & Data Services
-   05. UI Rendering
-   06. Feature Modules
-   07. Event Handlers
-   08. Initialization
-
+/* MEDWARD PRO - JAVASCRIPT APPLICATION */
 
 const CONFIG = {
   VERSION: '16.1.0',
