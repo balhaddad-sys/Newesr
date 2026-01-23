@@ -1363,6 +1363,97 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
   margin-bottom:16px;transition:all 0.15s
 }
 .history-upload-area:active{background:var(--bg-elevated);border-color:var(--primary)}
+
+/* ═══════════════════════════════════════════════════════════════════
+   UNIFIED HISTORY SUMMARY - Single consolidated view
+   ═══════════════════════════════════════════════════════════════════ */
+.history-upload-zone{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;background:var(--bg);border:1px dashed var(--border);
+  border-radius:10px;cursor:pointer;transition:all 0.2s;margin-bottom:16px
+}
+.history-upload-zone:hover{border-color:var(--primary);background:rgba(0,94,184,0.03)}
+.history-upload-zone.analyzing{border-color:var(--gold);background:rgba(251,191,36,0.05);cursor:default}
+.history-upload-zone svg{color:var(--text-muted);flex-shrink:0}
+.history-upload-zone span{font-size:0.82rem;color:var(--text-muted)}
+.history-upload-zone .upload-spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
+
+.history-empty{text-align:center;padding:32px 20px;color:var(--text-muted)}
+
+.unified-summary{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:12px;padding:20px;margin-bottom:20px
+}
+.unified-summary-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)
+}
+.unified-summary-title{
+  display:flex;align-items:center;gap:8px;
+  font-weight:700;font-size:0.95rem;color:var(--text)
+}
+.unified-summary-title svg{color:var(--primary)}
+.unified-summary-meta{font-size:0.75rem;color:var(--text-muted)}
+.unified-summary-text{
+  font-size:0.9rem;color:var(--text-secondary);line-height:1.7;
+  margin-bottom:16px
+}
+.unified-section{
+  background:var(--bg);border-radius:8px;padding:12px;margin-bottom:12px
+}
+.unified-section-title{
+  font-size:0.72rem;font-weight:700;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px
+}
+.unified-section-content{display:flex;flex-wrap:wrap;gap:6px}
+.unified-tag{
+  display:inline-block;padding:4px 10px;border-radius:100px;
+  font-size:0.75rem;font-weight:500
+}
+.unified-tag.diagnosis{background:rgba(239,68,68,0.1);color:#ef4444}
+.unified-tag.med{background:rgba(139,92,246,0.1);color:#8b5cf6}
+.unified-tag.more{background:var(--bg-card);color:var(--text-muted);border:1px solid var(--border)}
+
+/* Document Gallery */
+.documents-gallery{
+  background:var(--bg);border-radius:10px;padding:14px;
+  border:1px solid var(--border)
+}
+.documents-gallery-header{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:12px
+}
+.documents-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:10px
+}
+.document-thumb{
+  position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;
+  background:var(--bg-card);border:1px solid var(--border);cursor:pointer;
+  transition:all 0.2s
+}
+.document-thumb:hover{border-color:var(--primary);transform:scale(1.02)}
+.document-thumb img{width:100%;height:100%;object-fit:cover}
+.document-thumb-icon{
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;background:var(--bg)
+}
+.document-thumb-overlay{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.5);opacity:0;transition:opacity 0.2s;
+  display:flex;align-items:flex-start;justify-content:flex-end;padding:4px
+}
+.document-thumb:hover .document-thumb-overlay{opacity:1}
+.document-thumb-delete{
+  width:24px;height:24px;border-radius:6px;border:none;
+  background:rgba(255,255,255,0.9);color:#dc2626;cursor:pointer;
+  display:flex;align-items:center;justify-content:center
+}
+.document-thumb-date{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,0.7));
+  color:#fff;font-size:0.6rem;padding:12px 6px 4px;text-align:center
+}
+
 .clinical-notes-list{display:flex;flex-direction:column;gap:10px}
 .clinical-note-card{
   background:var(--bg-surface);border:1px solid var(--border);
@@ -1490,58 +1581,58 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
    MEDICATION SYSTEM - PREMIUM REDESIGN v15
 ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Medication Card - Premium Design */
+/* Medication Card - Professional Design */
 .med-card{
-  background:linear-gradient(145deg,#0d1117 0%,#151d2e 100%);
-  border:1px solid rgba(255,255,255,0.08);
+  background:var(--bg-card);
+  border:1px solid var(--border);
   border-radius:14px;margin-bottom:12px;overflow:hidden;
   transition:all 0.2s cubic-bezier(0.4,0,0.2,1);
-  box-shadow:0 2px 8px rgba(0,0,0,0.2)
+  box-shadow:0 1px 3px rgba(0,0,0,0.05)
 }
-.med-card:hover{border-color:rgba(255,255,255,0.15);box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+.med-card:hover{border-color:var(--primary);box-shadow:0 4px 12px rgba(0,0,0,0.08)}
 .med-card-header{
   display:flex;align-items:flex-start;justify-content:space-between;
   padding:16px 18px 12px;gap:12px
 }
 .med-card-main{flex:1;min-width:0}
 .med-card-name{
-  font-size:1rem;font-weight:700;color:#f0f6fc;
+  font-size:1rem;font-weight:700;color:var(--text);
   margin-bottom:4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap
 }
-.med-card-generic{font-size:0.75rem;color:#8b949e;font-style:italic;margin-top:2px}
+.med-card-generic{font-size:0.75rem;color:var(--text-muted);font-style:italic;margin-top:2px}
 .med-card-actions{display:flex;gap:6px}
 .med-card-action{
-  width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);
-  background:rgba(255,255,255,0.03);color:#8b949e;
+  width:32px;height:32px;border-radius:8px;border:1px solid var(--border);
+  background:var(--bg);color:var(--text-muted);
   font-size:0.85rem;cursor:pointer;display:grid;place-items:center;transition:all 0.2s
 }
-.med-card-action:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.12);color:#c9d1d9}
-.med-card-action.info{background:rgba(96,165,250,0.08);border-color:rgba(96,165,250,0.2);color:#60a5fa}
-.med-card-action.info:hover{background:rgba(96,165,250,0.15);border-color:#60a5fa}
-.med-card-action.delete:hover{background:rgba(248,81,73,0.12);border-color:rgba(248,81,73,0.3);color:#f85149}
+.med-card-action:hover{background:var(--bg-card);border-color:var(--primary);color:var(--primary)}
+.med-card-action.info{background:rgba(0,94,184,0.08);border-color:rgba(0,94,184,0.2);color:var(--primary)}
+.med-card-action.info:hover{background:rgba(0,94,184,0.15);border-color:var(--primary)}
+.med-card-action.delete:hover{background:rgba(220,38,38,0.08);border-color:rgba(220,38,38,0.3);color:#dc2626}
 
 /* Dose & Schedule Pills */
 .med-card-dose{
   display:flex;flex-wrap:wrap;gap:8px;padding:0 18px 14px;
-  border-bottom:1px solid rgba(255,255,255,0.04)
+  border-bottom:1px solid var(--border)
 }
 .med-dose-pill{
   display:inline-flex;align-items:center;gap:6px;
   padding:6px 12px;border-radius:100px;font-size:0.78rem;font-weight:500
 }
-.med-dose-pill.amount{background:rgba(167,139,250,0.1);color:#a78bfa}
-.med-dose-pill.route{background:rgba(96,165,250,0.1);color:#60a5fa}
-.med-dose-pill.frequency{background:rgba(52,211,153,0.1);color:#34d399}
+.med-dose-pill.amount{background:rgba(139,92,246,0.1);color:#8b5cf6}
+.med-dose-pill.route{background:rgba(59,130,246,0.1);color:#3b82f6}
+.med-dose-pill.frequency{background:rgba(16,185,129,0.1);color:#10b981}
 
 /* Indication */
 .med-card-indication{
-  padding:14px 18px;background:rgba(255,255,255,0.015);border-bottom:1px solid rgba(255,255,255,0.04)
+  padding:14px 18px;background:var(--bg);border-bottom:1px solid var(--border)
 }
 .med-indication-label{
-  font-size:0.65rem;font-weight:700;color:#6b7280;
+  font-size:0.65rem;font-weight:700;color:var(--text-muted);
   text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px
 }
-.med-indication-text{font-size:0.85rem;color:#c9d1d9;line-height:1.5}
+.med-indication-text{font-size:0.85rem;color:var(--text-secondary);line-height:1.5}
 
 /* Status Badge */
 .med-status{
@@ -1553,18 +1644,18 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 .med-status.discontinued{background:rgba(107,114,128,0.12);color:#9ca3af}
 .med-status.new{background:rgba(167,139,250,0.12);color:#a78bfa}
 
-/* Learn More Button - NEW */
+/* Learn More Button */
 .med-learn-more{
   display:flex;align-items:center;justify-content:center;gap:8px;
   margin:0 18px 16px;padding:12px 16px;
-  background:linear-gradient(135deg,rgba(96,165,250,0.1),rgba(45,212,191,0.08));
-  border:1px solid rgba(96,165,250,0.2);border-radius:10px;
-  font-family:inherit;font-size:0.8rem;font-weight:600;color:#60a5fa;
+  background:var(--bg);
+  border:1px solid var(--border);border-radius:10px;
+  font-family:inherit;font-size:0.8rem;font-weight:600;color:var(--primary);
   cursor:pointer;transition:all 0.2s;text-decoration:none
 }
 .med-learn-more:hover{
-  background:linear-gradient(135deg,rgba(96,165,250,0.15),rgba(45,212,191,0.12));
-  border-color:#60a5fa;box-shadow:0 4px 16px rgba(96,165,250,0.2)
+  background:rgba(0,94,184,0.05);
+  border-color:var(--primary);box-shadow:0 2px 8px rgba(0,94,184,0.1)
 }
 .med-learn-more .sparkle{font-size:1rem}
 
@@ -9171,88 +9262,135 @@ function renderProfileHistory() {
   const p = state.currentPatient;
   if (!p.clinicalNotes) p.clinicalNotes = [];
   
+  // Collect ALL data from all notes for unified summary
+  const allDiagnoses = [];
+  const allMeds = [];
+  const allFindings = [];
+  
+  p.clinicalNotes.forEach(note => {
+    if (note.diagnoses) allDiagnoses.push(...note.diagnoses);
+    if (note.medsExtracted) allMeds.push(...note.medsExtracted);
+    if (note.aiSummary) allFindings.push(note.aiSummary);
+    if (note.findings?.summary) allFindings.push(note.findings.summary);
+  });
+  
+  // Remove duplicates
+  const uniqueDiagnoses = [...new Set(allDiagnoses)];
+  const uniqueMeds = allMeds.filter((m, i, arr) => arr.findIndex(x => x.name === m.name) === i);
+  
   let html = `
     <div class="section-card">
       <div class="section-header">
-        <div class="section-title">📜 Clinical Notes & Documents</div>
-        <button class="btn btn-primary btn-sm" onclick="addClinicalNote()">+ Add Note</button>
+        <div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align:-3px;margin-right:6px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Clinical History</div>
+        <button class="btn btn-primary btn-sm" onclick="triggerHistoryUpload()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="vertical-align:-2px;margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload
+        </button>
       </div>
       <div class="section-body">
-        <!-- Compact upload zone with loading state -->
-        <div class="upload-zone-compact ${state.isAnalyzingHistory ? 'analyzing' : ''}" onclick="${state.isAnalyzingHistory ? '' : 'triggerHistoryUpload()'}" style="margin-bottom:12px">
-          ${state.isAnalyzingHistory ? `
-            <div class="upload-spinner"></div>
-            <div class="meds-upload-content">
-              <div class="upload-text">Analyzing${state.historyUploadQueue > 1 ? ` (${state.historyUploadComplete + 1}/${state.historyUploadQueue})` : ''}...</div>
-            </div>
-          ` : `
-            <div class="upload-icon">📄</div>
-            <div class="meds-upload-content">
-              <div class="upload-text">Upload Documents</div>
-              <div class="upload-hint">Photos or PDFs • Select multiple</div>
-            </div>
-          `}
-        </div>
+  `;
+  
+  // Upload zone (compact)
+  html += `
+    <div class="history-upload-zone ${state.isAnalyzingHistory ? 'analyzing' : ''}" onclick="${state.isAnalyzingHistory ? '' : 'triggerHistoryUpload()'}">
+      ${state.isAnalyzingHistory ? `
+        <div class="upload-spinner"></div>
+        <span>Analyzing${state.historyUploadQueue > 1 ? ` (${state.historyUploadComplete + 1}/${state.historyUploadQueue})` : ''}...</span>
+      ` : `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span>Upload clinical documents, EMR screenshots, discharge summaries</span>
+      `}
+    </div>
   `;
   
   if (!p.clinicalNotes.length) {
-    html += `<div style="text-align:center;padding:16px;color:#8b949e">
-      <div style="font-size:0.85rem">No clinical notes yet</div>
-    </div>`;
+    html += `
+      <div class="history-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="48" height="48" style="opacity:0.3;margin-bottom:12px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        <div>No clinical documents uploaded yet</div>
+        <div style="font-size:0.8rem;margin-top:4px">Upload photos of clinical notes, discharge summaries, or EMR screenshots</div>
+      </div>
+    `;
   } else {
-    html += `<div class="clinical-notes-list">`;
+    // ═══════════════════════════════════════════════════════════════════
+    // UNIFIED AI SUMMARY - Combines all documents into one view
+    // ═══════════════════════════════════════════════════════════════════
     
-    p.clinicalNotes.slice().reverse().forEach((note, idx) => {
-      const realIdx = p.clinicalNotes.length - 1 - idx;
+    html += `
+      <div class="unified-summary">
+        <div class="unified-summary-header">
+          <div class="unified-summary-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            AI Clinical Summary
+          </div>
+          <div class="unified-summary-meta">${p.clinicalNotes.length} document${p.clinicalNotes.length > 1 ? 's' : ''} analyzed</div>
+        </div>
+        
+        ${p.unifiedSummary ? `
+          <div class="unified-summary-text">${esc(p.unifiedSummary)}</div>
+        ` : allFindings.length ? `
+          <div class="unified-summary-text">${esc(allFindings.join(' '))}</div>
+        ` : `
+          <div class="unified-summary-text" style="color:var(--text-muted);font-style:italic">Summary will be generated from your documents...</div>
+        `}
+        
+        ${uniqueDiagnoses.length ? `
+          <div class="unified-section">
+            <div class="unified-section-title">📋 Diagnoses</div>
+            <div class="unified-section-content">${uniqueDiagnoses.map(d => `<span class="unified-tag diagnosis">${esc(d)}</span>`).join('')}</div>
+          </div>
+        ` : ''}
+        
+        ${uniqueMeds.length ? `
+          <div class="unified-section">
+            <div class="unified-section-title">💊 Medications (${uniqueMeds.length})</div>
+            <div class="unified-section-content">${uniqueMeds.slice(0, 8).map(m => `<span class="unified-tag med">${esc(m.name)}${m.dose ? ' ' + m.dose : ''}</span>`).join('')}${uniqueMeds.length > 8 ? `<span class="unified-tag more">+${uniqueMeds.length - 8} more</span>` : ''}</div>
+            <button class="btn btn-sm" style="margin-top:10px" onclick="importAllMedsFromHistory()">Import All to Medications</button>
+          </div>
+        ` : ''}
+        
+        <button class="btn btn-secondary btn-sm" style="margin-top:12px" onclick="regenerateUnifiedSummary()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="vertical-align:-2px;margin-right:4px"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Regenerate Summary
+        </button>
+      </div>
+    `;
+    
+    // ═══════════════════════════════════════════════════════════════════
+    // DOCUMENT GALLERY - Show thumbnails of uploaded docs
+    // ═══════════════════════════════════════════════════════════════════
+    
+    html += `
+      <div class="documents-gallery">
+        <div class="documents-gallery-header">
+          <span>Source Documents</span>
+          <span style="color:var(--text-muted);font-size:0.75rem">${p.clinicalNotes.length} files</span>
+        </div>
+        <div class="documents-grid">
+    `;
+    
+    p.clinicalNotes.forEach((note, idx) => {
       const typeIcons = { 
-        progress: '📝', progress_note: '📝', consult: '👨‍⚕️', referral: '📤', discharge: '🏥', 
-        imaging: '🩻', lab_report: '🔬', echo: '❤️', holter: '💓',
-        radiology: '📷', emr_screenshot: '🖥️', medication_list: '💊', other: '📄' 
+        progress: '📝', consult: '👨‍⚕️', referral: '📤', discharge: '🏥', 
+        imaging: '🩻', lab_report: '🔬', radiology: '📷', 
+        emr_screenshot: '🖥️', medication_list: '💊', other: '📄' 
       };
       const icon = typeIcons[note.type] || '📄';
-      const typeName = (note.type || 'Note').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      
-      // Truncate summary for display
-      const summaryId = 'summary_' + realIdx;
-      const hasSummary = note.aiSummary && note.aiSummary.length > 0;
-      const summaryLong = note.aiSummary && note.aiSummary.length > 200;
       
       html += `
-        <div class="clinical-note-card">
-          <div class="clinical-note-header">
-            <div class="clinical-note-type">${icon} ${typeName}</div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <span class="clinical-note-date">${formatDateTime(note.date)}</span>
-              <button class="btn-icon-sm" onclick="deleteClinicalNote(${realIdx})" title="Delete">🗑️</button>
-            </div>
+        <div class="document-thumb" onclick="viewNoteImage(${idx})">
+          ${note.image ? `<img src="${note.image}" alt="Document ${idx + 1}">` : `<div class="document-thumb-icon">${icon}</div>`}
+          <div class="document-thumb-overlay">
+            <button class="document-thumb-delete" onclick="event.stopPropagation(); deleteClinicalNote(${idx})" title="Delete">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
           </div>
-          ${note.image ? `<img src="${note.image}" class="clinical-note-image" onclick="viewNoteImage(${realIdx})">` : ''}
-          ${hasSummary ? `
-            <div class="clinical-note-ai">
-              <div class="clinical-note-ai-badge">🤖 AI Summary</div>
-              <div class="clinical-note-ai-text" id="${summaryId}">${esc(note.aiSummary)}</div>
-              ${summaryLong ? `<span class="clinical-note-expand" onclick="toggleSummary('${summaryId}', this)">Show more</span>` : ''}
-            </div>
-          ` : ''}
-          ${note.diagnoses?.length ? `
-            <div class="clinical-note-extracted" style="background:rgba(239,68,68,0.06)">
-              <div class="clinical-note-extracted-title" style="color:#f87171">📋 Diagnoses</div>
-              <div class="clinical-note-extracted-content" style="color:#fca5a5">${note.diagnoses.map(d => esc(d)).join(' • ')}</div>
-            </div>
-          ` : ''}
-          ${note.medsExtracted?.length ? `
-            <div class="clinical-note-extracted" style="background:rgba(139,92,246,0.06)">
-              <div class="clinical-note-extracted-title" style="color:#a78bfa">💊 Medications (${note.medsExtracted.length})</div>
-              <div class="clinical-note-extracted-content" style="color:#c4b5fd">${note.medsExtracted.slice(0,4).map(m => esc(m.name + (m.dose ? ' ' + m.dose : ''))).join(', ')}${note.medsExtracted.length > 4 ? '...' : ''}</div>
-              <button class="btn btn-sm" style="margin-top:6px;padding:3px 8px;font-size:0.68rem" onclick="importMedsFromNote(${realIdx})">Import</button>
-            </div>
-          ` : ''}
-          ${note.text ? `<div class="clinical-note-text">${esc(note.text)}</div>` : ''}
+          <div class="document-thumb-date">${formatShortDate(note.date)}</div>
         </div>
       `;
     });
     
-    html += `</div>`;
+    html += `</div></div>`;
   }
   
   html += `</div></div>`;
@@ -9426,6 +9564,12 @@ function processDocumentResult(data, fileData) {
   state.isAnalyzingHistory = false;
   renderProfileHistory();
   
+  // Auto-regenerate unified summary if multiple documents
+  if (p.clinicalNotes.length > 1) {
+    // Delay to let UI update first
+    setTimeout(() => regenerateUnifiedSummary(), 500);
+  }
+  
   // Show what was extracted
   let msg = '✅ Document analyzed';
   if (data.documentType) msg += ` (${data.documentType.replace(/_/g, ' ')})`;
@@ -9472,6 +9616,119 @@ window.importMedsFromNote = function(noteIdx) {
     toast(`✅ ${imported} medication(s) imported`);
   } else {
     toast('All medications already exist', true);
+  }
+};
+
+// Import ALL medications from ALL clinical notes
+window.importAllMedsFromHistory = function() {
+  const p = state.currentPatient;
+  if (!p.clinicalNotes?.length) {
+    toast('No documents to import from', true);
+    return;
+  }
+  
+  if (!p.medications) p.medications = [];
+  
+  let imported = 0;
+  p.clinicalNotes.forEach(note => {
+    if (note.medsExtracted?.length) {
+      note.medsExtracted.forEach(med => {
+        const exists = p.medications.some(m => 
+          m.name?.toLowerCase() === med.name?.toLowerCase()
+        );
+        if (!exists && med.name) {
+          p.medications.push({
+            name: med.name,
+            dose: med.dose || '',
+            route: med.route || 'PO',
+            frequency: med.frequency || 'OD',
+            indication: med.notes || '',
+            status: med.status || 'active',
+            addedDate: new Date().toISOString(),
+            source: 'document'
+          });
+          imported++;
+        }
+      });
+    }
+  });
+  
+  if (imported > 0) {
+    saveCloud();
+    renderProfileMeds();
+    toast(`✅ ${imported} medication(s) imported`);
+  } else {
+    toast('All medications already exist', true);
+  }
+};
+
+// Regenerate unified summary from all documents
+window.regenerateUnifiedSummary = async function() {
+  const p = state.currentPatient;
+  if (!p.clinicalNotes?.length) {
+    toast('No documents to summarize', true);
+    return;
+  }
+  
+  // Collect all findings, diagnoses, meds
+  const allFindings = [];
+  const allDiagnoses = [];
+  const allMeds = [];
+  
+  p.clinicalNotes.forEach(note => {
+    if (note.aiSummary) allFindings.push(note.aiSummary);
+    if (note.findings?.summary) allFindings.push(note.findings.summary);
+    if (note.diagnoses) allDiagnoses.push(...note.diagnoses);
+    if (note.medsExtracted) allMeds.push(...note.medsExtracted.map(m => m.name));
+  });
+  
+  const uniqueDx = [...new Set(allDiagnoses)];
+  const uniqueMeds = [...new Set(allMeds)];
+  
+  // Build context for AI
+  const context = `
+Patient: ${p.name || 'Unknown'}
+Documents analyzed: ${p.clinicalNotes.length}
+
+Individual document findings:
+${allFindings.join('\n\n')}
+
+Diagnoses mentioned: ${uniqueDx.join(', ') || 'None'}
+Medications mentioned: ${uniqueMeds.join(', ') || 'None'}
+
+Please create a unified, comprehensive clinical summary that:
+1. Synthesizes all findings into one coherent narrative
+2. Identifies the main clinical problems
+3. Notes any trends or changes if multiple dates
+4. Highlights key management considerations
+`;
+  
+  toast('Generating unified summary...');
+  
+  try {
+    const res = await fetch(state.settings.apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'askClinical',
+        question: context,
+        patientData: `${p.name}, ${p.age || ''} ${p.gender || ''}`
+      })
+    });
+    
+    const data = await res.json();
+    
+    if (data.success && data.answer) {
+      p.unifiedSummary = data.answer;
+      saveCloud();
+      renderProfileHistory();
+      toast('✅ Summary regenerated');
+    } else {
+      toast('Failed to generate summary', true);
+    }
+  } catch (e) {
+    console.error('Summary generation error:', e);
+    toast('Error generating summary', true);
   }
 };
 
