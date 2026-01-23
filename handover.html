@@ -725,14 +725,19 @@ async function loadPatients() {
   try {
     console.log('=== LOADING PATIENTS ===');
     console.log('Auth user:', AUTH.user);
-    console.log('Auth pass exists:', !!AUTH.pass);
+    console.log('Auth pass:', AUTH.pass ? '✓ exists' : '✗ missing');
+    
+    if (!AUTH.user || !AUTH.pass) {
+      console.error('Missing credentials');
+      toast('❌ Not logged in');
+      return;
+    }
     
     const res = await callAPI('loadData');
     
     if (!res.success) {
-      console.error('❌ Load failed:', res.error);
-      // Show error visually so user knows what's wrong
-      toast('❌ ' + (res.error || 'Failed to load data'));
+      console.error('Load failed:', res.error);
+      toast('❌ ' + (res.error || 'Failed to load'));
       return;
     }
     
@@ -742,11 +747,11 @@ async function loadPatients() {
       console.log('✅ Patients loaded:', patients.length);
       
       if (patients.length > 0) {
-        console.log('Patient names:', patients.map(p => p.name));
+        toast('✅ ' + patients.length + ' patient(s) loaded');
       }
     }
   } catch (e) { 
-    console.error('Load patients error:', e);
+    console.error('Load error:', e);
     toast('❌ Error: ' + e.message);
   }
 }
@@ -850,66 +855,13 @@ function selectPt(id) {
   document.getElementById('sendBtn').disabled = false;
 }
 
-// Build compact handover packet (excludes heavy fields like images/attachments)
-function buildHandoverPacket(pt) {
-  return {
-    id: pt.id,
-    name: pt.name,
-    age: pt.age,
-    sex: pt.sex,
-    gender: pt.gender,
-    ward: pt.ward,
-    bed: pt.bed,
-    diagnosis: pt.diagnosis,
-    status: pt.status,
-    doctor: pt.doctor,
-    unit: pt.unit,
-    unitId: pt.unitId,
-    
-    // Keep small notes, not megabytes
-    summary: pt.summary || '',
-    notes: (pt.notes || '').substring(0, 2000), // Limit notes size
-    
-    // Core clinical data
-    vitals: pt.vitals || null,
-    medications: pt.medications || [],
-    allergies: pt.allergies || [],
-    
-    // Compact labs (latest values only)
-    labData: pt.labData ? {
-      parameters: (pt.labData.parameters || []).map(p => ({
-        name: p.name,
-        unit: p.unit,
-        refMin: p.refMin,
-        refMax: p.refMax,
-        latest: p.values?.[0] || null
-      }))
-    } : null,
-    
-    // Tasks (without heavy attachments)
-    tasks: (pt.tasks || []).map(t => ({
-      id: t.id,
-      text: t.text,
-      completed: t.completed,
-      priority: t.priority,
-      due: t.due
-    })),
-    
-    // Timestamps
-    createdAt: pt.createdAt,
-    updatedAt: pt.updatedAt
-    
-    // Explicitly EXCLUDED: images, attachments, rawOCR, labImages, documentScans
-  };
-}
-
 async function sendPatient() {
   if (!selectedId || !recipient) {
     toast('❌ Please select a patient and recipient');
     return;
   }
   
-  console.log('Looking for patient with ID:', selectedId);
+  console.log('Looking for patient with ID:', selectedId, 'in', patients.map(p => p.id));
   
   // Find patient - handle both string and number IDs
   const pt = patients.find(p => String(p.id) === String(selectedId));
@@ -922,11 +874,9 @@ async function sendPatient() {
   showLoad('Sending to Dr. ' + recipient + '...');
   
   try {
-    // Build compact packet to avoid payload size issues
-    const packet = buildHandoverPacket(pt);
-    console.log('📦 Sending patient:', pt.name, 'Packet size:', JSON.stringify(packet).length, 'bytes');
-    
-    const res = await callAPI('sendPatient', { recipient, patientData: packet });
+    console.log('Sending patient:', pt.name, 'to:', recipient);
+    const res = await callAPI('sendPatient', { recipient, patientData: pt });
+    console.log('Send response:', res);
     hideLoad();
     
     if (res.success) {
@@ -938,7 +888,7 @@ async function sendPatient() {
     }
   } catch (e) {
     hideLoad();
-    toast('❌ Error: ' + e.message);
+    toast('❌ Network error: ' + e.message);
     console.error('Send error:', e);
   }
 }
@@ -1003,46 +953,39 @@ async function acceptPt(id) {
 
 async function callAPI(action, extra = {}) {
   const requestBody = { action, username: AUTH.user, password: AUTH.pass, ...extra };
+  
+  console.log('📡 API Call:', action);
 
   let res;
   try {
     res = await fetch(API, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(requestBody),
-      redirect: 'follow',
-      cache: 'no-store'
+      redirect: 'follow'
     });
   } catch (e) {
-    // True network/CORS failure ends up here
-    console.error('📡 Network/CORS failure:', e);
-    return { success: false, error: 'Network/CORS failure: ' + e.message };
+    console.error('📡 Network error:', e);
+    toast('❌ Network error: ' + e.message);
+    return { success: false, error: 'Network error: ' + e.message };
   }
 
-  const text = await res.text(); // read as text FIRST
+  const text = await res.text();
 
-  if (!res.ok) {
-    console.error('📡 HTTP Error:', res.status, text.substring(0, 200));
-    return { success: false, error: `HTTP ${res.status}: ${text.substring(0, 200)}` };
-  }
-
-  // Detect Google login / Apps Script HTML error pages
-  const trimmed = text.trim();
-  if (trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html')) {
-    console.error('📡 Server returned HTML instead of JSON');
-    return { 
-      success: false, 
-      error: 'Server returned HTML (login/error page). Check that Apps Script deployment is set to "Anyone".' 
-    };
+  // Detect Google login page (deployment not public)
+  if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+    console.error('📡 Got HTML instead of JSON - check deployment settings');
+    toast('❌ Server error - check Apps Script deployment');
+    return { success: false, error: 'Server returned HTML instead of JSON' };
   }
 
   try {
     const result = JSON.parse(text);
-    console.log('📡 API', action, result.success ? '✅' : '❌', result.error || '');
+    console.log('📡 Response:', action, result.success ? '✅' : '❌', result.error || '');
     return result;
   } catch (e) {
-    console.error('📡 Invalid JSON:', text.substring(0, 200));
-    return { success: false, error: 'Invalid JSON from server: ' + text.substring(0, 200) };
+    console.error('📡 Invalid JSON:', text.substring(0, 100));
+    return { success: false, error: 'Invalid response from server' };
   }
 }
 
