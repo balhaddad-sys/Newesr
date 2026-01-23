@@ -3745,6 +3745,15 @@ Request New Unit Access
 <input type="file" id="labFileInputHidden" accept="image/*" multiple style="display:none">
 <input type="file" id="imagingFileInput" accept="image/*" style="display:none">
 <script>
+// ═══════════════════════════════════════════════════════════════════════════════
+// EARLY GLOBAL AUTH FUNCTIONS - Ensures buttons work immediately
+// These are placeholders that get replaced by the full implementations below
+// ═══════════════════════════════════════════════════════════════════════════════
+window.doLogin = function() { console.log('doLogin loading...'); };
+window.doRegister = function() { console.log('doRegister loading...'); };
+window.doLogout = function() { console.log('doLogout loading...'); };
+</script>
+<script>
 (function(){
 'use strict';
 
@@ -4864,6 +4873,14 @@ function doLogout() {
   // Reload page to show login screen
   location.reload();
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// IMMEDIATELY EXPOSE AUTH FUNCTIONS TO GLOBAL SCOPE
+// This ensures onclick handlers work even if later code has errors
+// ═══════════════════════════════════════════════════════════════════════════════
+window.doLogin = doLogin;
+window.doRegister = doRegister;
+window.doLogout = doLogout;
 
 // Cloud caller - injects credentials into all authenticated requests
 async function callCloud(action, payload = {}) {
