@@ -614,9 +614,6 @@ body {
         <div class="inbox-title">📥 Incoming <span class="inbox-badge" id="inboxBadge" style="display:none">0</span></div>
         <button class="inbox-refresh" onclick="loadInbox()">🔄 Refresh</button>
       </div>
-      <div class="unit-indicator" id="unitIndicator" style="padding:8px 16px;background:var(--primary-light);font-size:0.8rem;color:var(--primary);display:none">
-        <strong>📍 Accepting to:</strong> <span id="unitName">Unknown Unit</span>
-      </div>
       <div class="inbox-list" id="inboxList">
         <div class="inbox-empty">
           <div class="inbox-empty-icon">📭</div>
@@ -667,15 +664,10 @@ const AUTH = {
   pass: sessionStorage.getItem('MW_PASS') || localStorage.getItem('MW_PASS')
 };
 
-// Get current unit from session (set by dashboard/landing)
-const currentUnit = sessionStorage.getItem('MW_UNIT') || null;
-const currentUnitName = sessionStorage.getItem('MW_UNIT_NAME') || 'Unknown Unit';
-
 let scanner = null;
 let patients = [];
 let selectedId = null;
 let recipient = null;
-let serverRev = 0; // Track server revision
 
 document.addEventListener('DOMContentLoaded', async () => {
   updateThemeIcon();
@@ -683,16 +675,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!AUTH.user || !AUTH.pass) {
     showNotLogged();
     return;
-  }
-  
-  // Show current unit indicator
-  if (currentUnit && currentUnitName) {
-    const indicator = document.getElementById('unitIndicator');
-    const unitNameEl = document.getElementById('unitName');
-    if (indicator && unitNameEl) {
-      unitNameEl.textContent = currentUnitName;
-      indicator.style.display = 'block';
-    }
   }
   
   generateBadge();
@@ -744,7 +726,6 @@ async function loadPatients() {
     console.log('=== LOADING PATIENTS ===');
     console.log('Auth user:', AUTH.user);
     console.log('Auth pass:', AUTH.pass ? '✓ exists' : '✗ missing');
-    console.log('Current unit:', currentUnit, currentUnitName);
     
     if (!AUTH.user || !AUTH.pass) {
       console.error('Missing credentials');
@@ -763,15 +744,7 @@ async function loadPatients() {
     if (res.data) {
       const d = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
       patients = d.patients || [];
-      serverRev = d.rev || res.rev || 0;
-      
-      console.log('✅ Patients loaded:', patients.length, 'Rev:', serverRev);
-      
-      // If we have a current unit, filter to show only those patients
-      if (currentUnit) {
-        const unitPatients = patients.filter(p => p.unitId === currentUnit);
-        console.log('📍 Unit patients:', unitPatients.length, 'of', patients.length);
-      }
+      console.log('✅ Patients loaded:', patients.length);
       
       if (patients.length > 0) {
         toast('✅ ' + patients.length + ' patient(s) loaded');
@@ -952,50 +925,32 @@ async function acceptPt(id) {
   showLoad('Accepting...');
   
   try {
-    // Single atomic call - server handles moving from inbox to active data
+    // Single atomic call - server handles everything
     const result = await callAPI('acceptInboxPatient', { patientId: id });
     
     if (!result.success) {
       throw new Error(result.error || 'Accept failed');
     }
     
-    console.log('✅ Patient accepted from inbox:', result.patient?.name);
-    
-    // Update local state with the accepted patient
+    // Update local state
     if (result.patient) {
-      // Assign to current unit if we have one
+      // Get current unit from session and assign it
+      const currentUnit = sessionStorage.getItem('MW_UNIT');
       if (currentUnit) {
         result.patient.unitId = currentUnit;
-        console.log('📍 Assigned to unit:', currentUnitName, '(' + currentUnit + ')');
         
-        // Now we need to save this unit assignment back to server
-        // The patient is already in active_data, we just need to update it with unitId
-        const updateRes = await callAPI('patch', { 
+        // Save the unit assignment to server
+        await callAPI('patch', { 
           operation: 'updatePatient', 
-          payload: { 
-            id: result.patient.id, 
-            unitId: currentUnit 
-          } 
+          payload: { id: result.patient.id, unitId: currentUnit } 
         });
-        
-        if (updateRes.success) {
-          serverRev = updateRes.rev;
-          console.log('✅ Unit assignment saved, rev:', serverRev);
-        } else {
-          console.warn('⚠️ Could not save unit assignment:', updateRes.error);
-        }
       }
       
       patients.push(result.patient);
     }
     
-    // Update server rev if provided
-    if (result.rev) {
-      serverRev = result.rev;
-    }
-    
     hideLoad();
-    toast('✅ Patient accepted' + (currentUnit ? ' to ' + currentUnitName : ''));
+    toast('✅ Patient accepted');
     loadInbox(); // Refresh inbox count
     
   } catch (e) {
