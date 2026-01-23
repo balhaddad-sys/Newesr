@@ -569,6 +569,7 @@ body {
 .code-digit.success{border-color:var(--emerald);background:rgba(16,185,129,0.1)}
 .code-digit.error{border-color:var(--rose);animation:shake 0.3s}
 @keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
 .code-error{color:var(--rose);font-size:0.85rem;text-align:center;display:none;margin-top:12px}
 .code-error.show{display:block}
 #dashboard{background:var(--bg-app)}
@@ -5131,6 +5132,23 @@ function toast(msg, isError = false) {
   t.textContent = msg;
   t.className = 'toast show' + (isError ? ' error' : '');
   setTimeout(() => t.className = 'toast', 3000);
+}
+
+function showLoading(msg = 'Loading...') {
+  if (!document.getElementById('loadingOverlay')) {
+    const overlay = document.createElement('div');
+    overlay.id = 'loadingOverlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999';
+    const spinner = document.createElement('div');
+    spinner.innerHTML = '<div style="background:white;padding:30px;border-radius:12px;text-align:center"><div style="width:40px;height:40px;border:4px solid #e0e0e0;border-top-color:#005eb8;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 15px"></div><p style="margin:0;color:#111827">' + msg + '</p></div>';
+    overlay.appendChild(spinner);
+    document.body.appendChild(overlay);
+  }
+}
+
+function hideLoading() {
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) overlay.remove();
 }
 
 function openModal(id) { $(id).classList.add('active'); }
