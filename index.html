@@ -2720,30 +2720,16 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 })();
 </script>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     AUTHENTICATION OVERLAY - Login/Register Screen
-     ═══════════════════════════════════════════════════════════════════════════ -->
-<div id="auth-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-app); z-index:10000; display:flex; align-items:center; justify-content:center; flex-direction:column;">
-    <div class="card" style="width:320px; padding:30px; text-align:center; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.15);">
-        <div style="font-size:3rem; margin-bottom:10px;">⚕️</div>
-        <h1 style="color:var(--primary); margin-bottom:8px; font-size:1.5rem;">MedWard Pro</h1>
-        <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:24px;">Multi-User Clinical Platform</p>
-        
-        <input type="text" id="auth-user" class="med-input" placeholder="Username" style="margin-bottom:12px; width:100%; padding:14px; border-radius:10px; border:1px solid var(--border); background:var(--bg-input); color:var(--text-main); font-size:1rem;">
-        <input type="password" id="auth-pass" class="med-input" placeholder="Password" style="margin-bottom:12px; width:100%; padding:14px; border-radius:10px; border:1px solid var(--border); background:var(--bg-input); color:var(--text-main); font-size:1rem;">
-        
-        <div style="display:flex; align-items:center; justify-content:flex-start; margin-bottom:20px; font-size:0.9rem; color:var(--text-secondary);">
-            <input type="checkbox" id="auth-remember" style="width:auto; margin-right:8px; cursor:pointer;">
-            <label for="auth-remember" style="cursor:pointer;">Keep me logged in</label>
-        </div>
-        
-        <button class="btn-primary" onclick="doLogin()" style="width:100%; margin-bottom:12px; padding:14px; border-radius:10px; font-size:1rem; font-weight:600; cursor:pointer; border:none; background:var(--primary); color:#fff;">Login</button>
-        <button class="btn-secondary" onclick="doRegister()" style="width:100%; padding:12px; border-radius:10px; font-size:0.9rem; cursor:pointer; border:1px solid var(--border); background:var(--bg-surface); color:var(--text-main);">Create Account</button>
-        
-        <div id="auth-msg" style="margin-top:15px; color:#dc2626; font-size:0.85rem; min-height:20px;"></div>
-    </div>
-    <p style="color:var(--text-muted); font-size:0.75rem; margin-top:20px;">v16.1 • Multi-User Edition</p>
-</div>
+<!-- Auth Check - Redirect to login if not authenticated -->
+<script>
+(function() {
+  const user = sessionStorage.getItem('MW_USER') || localStorage.getItem('MW_USER');
+  const pass = sessionStorage.getItem('MW_PASS') || localStorage.getItem('MW_PASS');
+  if (!user || !pass) {
+    window.location.href = 'login.html';
+  }
+})();
+</script>
 
 <!-- CLINICAL HEADER -->
 <header class="app-header" id="appHeader" style="display:none">
@@ -4728,136 +4714,6 @@ const AUTH = {
   AUTH.pass = sessPass || localPass;
 })();
 
-// Show auth message
-function showAuthMessage(msg, isError = true) {
-  const msgEl = document.getElementById('auth-msg');
-  if (msgEl) {
-    msgEl.textContent = msg;
-    msgEl.className = 'auth-message ' + (isError ? 'error' : 'success');
-  }
-}
-
-// Clear auth message
-function clearAuthMessage() {
-  const msgEl = document.getElementById('auth-msg');
-  if (msgEl) {
-    msgEl.className = 'auth-message';
-    msgEl.textContent = '';
-  }
-}
-
-// Login function
-async function doLogin() {
-  const u = document.getElementById('auth-user').value.trim();
-  const p = document.getElementById('auth-pass').value.trim();
-  const remember = document.getElementById('auth-remember').checked;
-  
-  if (!u || !p) {
-    showAuthMessage("Please enter username and password");
-    return;
-  }
-  
-  clearAuthMessage();
-  showLoading("Signing in...");
-  
-  try {
-    const res = await callCloud('login', { username: u, password: p });
-    hideLoading();
-    
-    if (res.success) {
-      // Set Global State
-      AUTH.user = u;
-      AUTH.pass = p;
-      
-      // Storage Logic based on "Remember Me"
-      if (remember) {
-        // Permanent Storage (survives browser close)
-        localStorage.setItem('MW_USER', u);
-        localStorage.setItem('MW_PASS', p);
-        sessionStorage.removeItem('MW_USER');
-        sessionStorage.removeItem('MW_PASS');
-      } else {
-        // Session Storage (deleted on browser close)
-        sessionStorage.setItem('MW_USER', u);
-        sessionStorage.setItem('MW_PASS', p);
-        localStorage.removeItem('MW_USER');
-        localStorage.removeItem('MW_PASS');
-      }
-      
-      // Hide Login Screen
-      document.getElementById('auth-overlay').classList.add('hidden');
-      
-      // Load user data
-      if (res.data) {
-        state.patients = res.data.patients || [];
-        state.units = res.data.units || [];
-        state.settings = res.data.settings || { adminPassword: 'admin123' };
-        state.unitRequests = res.data.unitRequests || [];
-        
-        // Set default API URL if not in settings
-        if (!state.settings.apiUrl) {
-          state.settings.apiUrl = CONFIG.API_URL;
-        }
-      }
-      
-      // Save to local storage as backup
-      saveLocal();
-      
-      // Render the app
-      renderUnits();
-      renderPatients();
-      
-      toast(`Welcome, Dr. ${u}! 👋`);
-    } else {
-      showAuthMessage(res.error || "Invalid credentials");
-    }
-  } catch (e) {
-    hideLoading();
-    showAuthMessage("Connection error. Please try again.");
-    console.error('Login error:', e);
-  }
-}
-
-// Register function
-async function doRegister() {
-  const u = document.getElementById('auth-user').value.trim();
-  const p = document.getElementById('auth-pass').value.trim();
-  
-  if (!u || !p) {
-    showAuthMessage("Please enter username and password");
-    return;
-  }
-  
-  if (u.length < 3) {
-    showAuthMessage("Username must be at least 3 characters");
-    return;
-  }
-  
-  if (p.length < 4) {
-    showAuthMessage("Password must be at least 4 characters");
-    return;
-  }
-  
-  clearAuthMessage();
-  showLoading("Creating account...");
-  
-  try {
-    const res = await callCloud('register', { username: u, password: p });
-    hideLoading();
-    
-    if (res.success) {
-      showAuthMessage("Account created! Please sign in.", false);
-      document.getElementById('auth-pass').value = '';
-    } else {
-      showAuthMessage(res.error || "Registration failed");
-    }
-  } catch (e) {
-    hideLoading();
-    showAuthMessage("Connection error. Please try again.");
-    console.error('Register error:', e);
-  }
-}
-
 // Logout function  
 function doLogout() {
   if (!confirm("Log out of MedWard Pro?")) return;
@@ -4870,8 +4726,8 @@ function doLogout() {
   AUTH.user = null;
   AUTH.pass = null;
   
-  // Reload page to show login screen
-  location.reload();
+  // Redirect to login page
+  window.location.href = 'login.html';
 }
 
 // Cloud caller - injects credentials into all authenticated requests
@@ -5077,8 +4933,6 @@ window.fetchTrash = fetchTrash;
 window.restorePatientFromTrash = restorePatientFromTrash;
 window.restoreUnitFromTrash = restoreUnitFromTrash;
 window.emptyTrashPermanently = emptyTrashPermanently;
-window.doLogin = doLogin;
-window.doRegister = doRegister;
 window.doLogout = doLogout;
 
 // Generate session ID
