@@ -432,6 +432,11 @@ body {
 .unit-card-icon{font-size:2rem;margin-bottom:12px}
 .unit-card-name{font-size:1rem;font-weight:700;margin-bottom:4px}
 .unit-card-desc{color:var(--text-muted);font-size:0.8rem}
+.unit-card-actions{position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity 0.2s}
+.unit-card:hover .unit-card-actions{opacity:1}
+.unit-action-btn{width:28px;height:28px;border:none;background:var(--bg-elevated);border-radius:6px;cursor:pointer;font-size:0.85rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.unit-action-btn:hover{background:var(--bg-surface);transform:scale(1.1)}
+.unit-action-btn.delete:hover{background:#fee2e2}
 .fab{position:fixed;width:56px;height:56px;background:var(--bg-surface);border:1px solid var(--border);border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--text-secondary);z-index:50;transition:all 0.3s}
 .fab svg{width:24px;height:24px}
 .fab:hover{border-color:var(--primary);color:var(--primary)}
@@ -2827,8 +2832,6 @@ body {
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 5v14M5 12h14"/></svg>
 Add New Unit
 </button>
-<div class="fab sync-fab" id="syncFab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4-3-9s1.34-9 3-9"/></svg></div>
-<div class="fab admin-fab" id="adminFab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
 </div>
 
 <!-- DASHBOARD -->
@@ -3015,7 +3018,6 @@ Add New Unit
 <div class="admin-tabs" id="adminTabs">
 <button class="admin-tab active" data-atab="units" onclick="switchAdminTab('units')">🏥 Units</button>
 <button class="admin-tab" data-atab="trash" onclick="switchAdminTab('trash')">🗑️ Trash</button>
-<button class="admin-tab" data-atab="settings" onclick="switchAdminTab('settings')">⚙️ Settings</button>
 </div>
 
 <div class="admin-tab-panel active" id="adminUnits">
@@ -3036,49 +3038,6 @@ Add New Unit
 </div>
 </div>
 </div>
-</div>
-
-<div class="admin-tab-panel" id="adminSettings">
-<div class="admin-section">
-<div class="section-header"><div class="section-title">⚙️ Settings</div></div>
-<div class="section-body">
-<div class="form-group"><label class="form-label">Admin Password</label><input type="password" id="newAdminPwd" class="form-input" placeholder="Enter new password"></div>
-<div class="form-group">
-<label class="form-label">API Endpoint <span style="color:var(--emerald);font-size:0.7rem;background:rgba(5,150,105,0.1);padding:2px 8px;border-radius:4px;margin-left:6px">Connected ✓</span></label>
-<input type="text" id="apiUrl" class="form-input" readonly style="background:var(--bg);font-size:0.8rem;color:var(--text-muted)">
-</div>
-<div class="form-group">
-<label class="form-label">💊 Drug Reference URL</label>
-<input type="text" id="drugRefUrl" class="form-input" placeholder="https://example.com/drug.html">
-<p style="font-size:0.75rem;color:var(--text-muted);margin-top:6px">Optional: URL for medication info</p>
-</div>
-<button class="btn btn-primary" onclick="saveSettings()" style="width:100%;margin-top:8px">💾 Save Settings</button>
-</div>
-</div>
-
-<!-- TRASH MANAGEMENT SECTION -->
-<div class="admin-section">
-<div class="section-header"><div class="section-title">🗑️ Trash Bin</div></div>
-<div class="section-body">
-<p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:12px">Deleted patients are stored safely here. You can restore them or permanently delete.</p>
-<button class="btn btn-secondary" onclick="openTrashView()" style="width:100%">
-  <span style="margin-right:8px">🗑️</span> View Deleted Items
-</button>
-</div>
-</div>
-
-<!-- USER SESSION SECTION -->
-<div class="admin-section">
-<div class="section-header"><div class="section-title">👤 User Session</div></div>
-<div class="section-body">
-<div id="currentUserInfo" style="background:var(--bg-elevated);padding:12px;border-radius:8px;margin-bottom:12px;font-size:0.85rem;">
-  <div style="color:var(--text-secondary);margin-bottom:4px">Logged in as:</div>
-  <div id="authUserDisplay" style="font-weight:600;color:var(--text-main)">—</div>
-</div>
-<button class="btn btn-danger" onclick="doLogout()" style="width:100%;border-left:4px solid #dc2626;">
-  <span style="margin-right:8px">🚪</span> Log Out
-</button>
-<p style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">This will clear your session on this device</p>
 </div>
 </div>
 </div>
@@ -5561,8 +5520,6 @@ async function forceSync() {
 }
 
 async function manualSync() {
-  const syncFab = $('syncFab');
-  syncFab.classList.add('syncing');
   updateSyncStatus('syncing', 'Syncing...');
   
   try {
@@ -5573,8 +5530,6 @@ async function manualSync() {
   } catch (e) {
     toast('Sync failed', true);
   }
-  
-  syncFab.classList.remove('syncing');
 }
 
 async function syncFromCloud() {
@@ -5722,6 +5677,10 @@ window.sendFeedback = sendFeedback;
 function renderUnits() {
   $('unitsGrid').innerHTML = state.units.map(u => `
     <div class="unit-card" style="--unit-color:${u.color || '#f59e0b'}" data-id="${u.id}">
+      <div class="unit-card-actions">
+        <button class="unit-action-btn" onclick="event.stopPropagation(); editUnit('${u.id}')" title="Edit">✏️</button>
+        <button class="unit-action-btn delete" onclick="event.stopPropagation(); deleteUnit('${u.id}')" title="Delete">🗑️</button>
+      </div>
       <div class="unit-card-icon">${u.icon || '🏥'}</div>
       <div class="unit-card-name">${esc(u.name)}</div>
       <div class="unit-card-desc">${esc(u.desc || '')}</div>
@@ -12208,10 +12167,8 @@ async function init() {
   renderScoresGrid();
   renderRef();
 
-  $('adminFab').onclick = openAdminLogin;
-  $('syncFab').onclick = manualSync;
-  $('adminPwd').onkeydown = e => { if (e.key === 'Enter') loginAdmin(); };
-  $('userName').onkeydown = e => { if (e.key === 'Enter') enterUnit(); };
+  $('adminPwd')?.addEventListener('keydown', e => { if (e.key === 'Enter') loginAdmin(); });
+  $('userName')?.addEventListener('keydown', e => { if (e.key === 'Enter') enterUnit(); });
   $('mainTabs').onclick = e => { const t = e.target.closest('.tab'); if (t) showTab(t.dataset.tab); };
   $('profileTabs').onclick = e => { const t = e.target.closest('.profile-tab'); if (t) showProfileTab(t.dataset.ptab); };
   $('profileSidebar').onclick = e => { const t = e.target.closest('.profile-nav-item'); if (t) showProfileTab(t.dataset.ptab); };
