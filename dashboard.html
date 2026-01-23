@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="theme-color" content="#005eb8">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>MedWard Pro v16.1</title>
+<title>MedWard Pro v17.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -276,6 +276,21 @@ body {
 .status-icon.warning { color: #f59e0b; }
 .status-icon.success { color: #059669; }
 .status-icon.info { color: #3b82f6; }
+
+/* SVG Spin Animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.spin { animation: spin 1s linear infinite; }
+
+/* Tab Icon Styling */
+.tab-icon, .nav-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 6px;
+  vertical-align: -4px;
+}
 /* ═══════════════════════════════════════════════════════════════════
    3. PROFESSIONAL HEADER
    ═══════════════════════════════════════════════════════════════════ */
@@ -2851,11 +2866,11 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 </div>
 </header>
 <div class="dash-content">
-<div class="date-banner">📅 <span id="currentDate"></span></div>
+<div class="date-banner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="vertical-align:-3px;margin-right:4px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span id="currentDate"></span></div>
 <div class="tabs-container" id="mainTabs">
-<button class="tab active" data-tab="patients">👥 Patients</button>
-<button class="tab" data-tab="scores">📊 Scores</button>
-<button class="tab" data-tab="reference">📚 Reference</button>
+<button class="tab active" data-tab="patients"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="vertical-align:-3px;margin-right:4px"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Patients</button>
+<button class="tab" data-tab="scores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="vertical-align:-3px;margin-right:4px"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Scores</button>
+<button class="tab" data-tab="reference"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="vertical-align:-3px;margin-right:4px"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Reference</button>
 </div>
 <div class="panel active" id="panelPatients">
 <div class="stats-grid" id="statsBar">
@@ -2879,14 +2894,14 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 </div>
 <div class="panel" id="panelScores">
 <div class="section-card">
-<div class="section-header"><div class="section-title">📊 Clinical Scoring Calculators</div></div>
+<div class="section-header"><div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18" style="vertical-align:-3px;margin-right:6px"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Clinical Scoring Calculators</div></div>
 <div class="section-body">
 <div class="scores-search-wrapper">
   <svg class="scores-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
   <input type="text" class="scores-search-input" id="scoresSearchInput" placeholder="Search scores (e.g., CURB-65, Wells, HEART)..." oninput="filterScores(this.value)">
 </div>
 <div class="quick-score-ref">
-  <div class="quick-score-ref-title">🚨 Common Emergency Scores</div>
+  <div class="quick-score-ref-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="vertical-align:-3px;margin-right:4px;color:#dc2626"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Common Emergency Scores</div>
   <div class="quick-score-ref-grid">
     <div class="quick-score-ref-item" onclick="openScoreCalculator('qSOFA')">
       <span class="quick-score-ref-item-name">qSOFA</span>
@@ -2935,20 +2950,20 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 <div class="back-btn" onclick="closePatientProfile()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
 <div class="profile-title">Patient Profile</div>
 <div class="profile-actions">
-<button class="btn btn-success btn-sm" onclick="openDischargeModal()" id="profileDischargeBtn">🏠 Discharge</button>
-<button class="btn btn-secondary btn-sm" onclick="editCurrentPatient()">✏️</button>
-<button class="btn btn-danger btn-sm" onclick="deleteCurrentPatient()">🗑️</button>
+<button class="btn btn-success btn-sm" onclick="openDischargeModal()" id="profileDischargeBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="margin-right:4px"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Discharge</button>
+<button class="icon-btn btn-edit" onclick="editCurrentPatient()" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+<button class="icon-btn btn-delete" onclick="deleteCurrentPatient()" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
 </div>
 </div>
 <div class="profile-patient" id="profilePatientInfo"></div>
 </div>
 <!-- Mobile tabs (shown on small screens) -->
 <div class="profile-tabs" id="profileTabs">
-<button class="profile-tab active" data-ptab="overview"><span class="tab-icon">📋</span>Overview</button>
-<button class="profile-tab" data-ptab="meds"><span class="tab-icon">💊</span>Meds</button>
-<button class="profile-tab" data-ptab="labs"><span class="tab-icon">🧪</span>Labs</button>
-<button class="profile-tab" data-ptab="history"><span class="tab-icon">📜</span>History</button>
-<button class="profile-tab" data-ptab="plans"><span class="tab-icon">📝</span>Plans</button>
+<button class="profile-tab active" data-ptab="overview"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>Overview</button>
+<button class="profile-tab" data-ptab="meds"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M10.5 20.5L3.5 13.5a4.95 4.95 0 117-7l7 7a4.95 4.95 0 11-7 7z"/><path d="M8.5 8.5l7 7"/></svg>Meds</button>
+<button class="profile-tab" data-ptab="labs"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M9 3h6v5l4 9a2 2 0 01-2 3H7a2 2 0 01-2-3l4-9V3z"/><line x1="9" y1="3" x2="15" y2="3"/></svg>Labs</button>
+<button class="profile-tab" data-ptab="history"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>History</button>
+<button class="profile-tab" data-ptab="plans"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Plans</button>
 </div>
 <!-- Main body with sidebar -->
 <div class="profile-body">
@@ -2956,38 +2971,38 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 <nav class="profile-sidebar" id="profileSidebar">
 <div class="profile-nav-section">Patient Data</div>
 <button class="profile-nav-item active" data-ptab="overview">
-<span class="nav-icon">📋</span>
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
 <span class="nav-label">Overview</span>
 </button>
 <button class="profile-nav-item" data-ptab="meds">
-<span class="nav-icon">💊</span>
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path d="M10.5 20.5L3.5 13.5a4.95 4.95 0 117-7l7 7a4.95 4.95 0 11-7 7z"/><path d="M8.5 8.5l7 7"/></svg>
 <span class="nav-label">Medications</span>
 </button>
 <button class="profile-nav-item" data-ptab="history">
-<span class="nav-icon">📜</span>
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
 <span class="nav-label">History</span>
 </button>
 <div class="profile-nav-section">Diagnostics</div>
 <button class="profile-nav-item" data-ptab="labs">
-<span class="nav-icon">🧪</span>
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path d="M9 3h6v5l4 9a2 2 0 01-2 3H7a2 2 0 01-2-3l4-9V3z"/><line x1="9" y1="3" x2="15" y2="3"/></svg>
 <span class="nav-label">Labs</span>
 <span class="nav-badge" id="labsAlertBadge" style="display:none">!</span>
 </button>
 <button class="profile-nav-item" data-ptab="imaging">
-<span class="nav-icon">🩻</span>
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
 <span class="nav-label">Imaging</span>
 </button>
 <button class="profile-nav-item" data-ptab="scores">
-<span class="nav-icon">📊</span>
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
 <span class="nav-label">Scores</span>
 </button>
 <div class="profile-nav-section">Management</div>
 <button class="profile-nav-item" data-ptab="fluids">
-<span class="nav-icon">💧</span>
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>
 <span class="nav-label">Fluids</span>
 </button>
 <button class="profile-nav-item" data-ptab="plans">
-<span class="nav-icon">📝</span>
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
 <span class="nav-label">Plans</span>
 <span class="nav-badge" id="plansTaskBadge" style="display:none">0</span>
 </button>
@@ -3015,30 +3030,30 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 </div>
 <span style="font-weight:700;font-size:1.1rem">Admin</span>
 </div>
-<button class="btn btn-secondary btn-sm" onclick="exitAdmin()" style="padding:10px 16px;font-size:0.85rem">← Exit</button>
+<button class="btn btn-secondary btn-sm" onclick="exitAdmin()" style="padding:10px 16px;font-size:0.85rem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="vertical-align:-3px;margin-right:4px"><polyline points="15 18 9 12 15 6"/></svg>Exit</button>
 </header>
 <div class="admin-content">
 <div class="admin-tabs" id="adminTabs">
-<button class="admin-tab active" data-atab="units" onclick="switchAdminTab('units')">🏥 Units</button>
-<button class="admin-tab" data-atab="requests" onclick="switchAdminTab('requests')">📩 Requests <span class="badge-count" id="requestsCount" style="display:none">0</span></button>
-<button class="admin-tab" data-atab="trash" onclick="switchAdminTab('trash')">🗑️ Trash</button>
-<button class="admin-tab" data-atab="settings" onclick="switchAdminTab('settings')">⚙️ Settings</button>
+<button class="admin-tab active" data-atab="units" onclick="switchAdminTab('units')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="vertical-align:-3px;margin-right:4px"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>Units</button>
+<button class="admin-tab" data-atab="requests" onclick="switchAdminTab('requests')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="vertical-align:-3px;margin-right:4px"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>Requests <span class="badge-count" id="requestsCount" style="display:none">0</span></button>
+<button class="admin-tab" data-atab="trash" onclick="switchAdminTab('trash')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="vertical-align:-3px;margin-right:4px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>Trash</button>
+<button class="admin-tab" data-atab="settings" onclick="switchAdminTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16" style="vertical-align:-3px;margin-right:4px"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</button>
 </div>
 
 <div class="admin-tab-panel active" id="adminUnits">
 <div class="admin-section">
-<div class="section-header"><div class="section-title">🏥 Manage Units</div><button class="btn btn-primary btn-sm" onclick="addUnit()">+ Add Unit</button></div>
+<div class="section-header"><div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18" style="vertical-align:-3px;margin-right:6px"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>Manage Units</div><button class="btn btn-primary btn-sm" onclick="addUnit()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="vertical-align:-2px;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Unit</button></div>
 <div class="section-body" id="unitsTable"></div>
 </div>
 </div>
 
 <div class="admin-tab-panel" id="adminRequests">
 <div class="admin-section">
-<div class="section-header"><div class="section-title">📩 Requests</div><button class="btn btn-secondary btn-sm" onclick="refreshRequests()" style="padding:8px 12px;font-size:0.8rem">🔄 Refresh</button></div>
+<div class="section-header"><div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18" style="vertical-align:-3px;margin-right:6px"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>Requests</div><button class="btn btn-secondary btn-sm" onclick="refreshRequests()" style="padding:8px 12px;font-size:0.8rem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14" style="vertical-align:-2px;margin-right:4px"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>Refresh</button></div>
 <div class="section-body">
 <div class="requests-list" id="requestsList">
 <div class="admin-empty-state">
-<div class="admin-empty-icon">📭</div>
+<div class="admin-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg></div>
 <div class="admin-empty-text">No pending requests</div>
 <div class="admin-empty-hint">Unit access requests will appear here</div>
 </div>
@@ -3049,10 +3064,10 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 
 <div class="admin-tab-panel" id="adminTrash">
 <div class="admin-section">
-<div class="section-header"><div class="section-title">🗑️ Trash</div><button class="btn btn-danger btn-sm" onclick="emptyTrashPermanently()">Empty Trash</button></div>
+<div class="section-header"><div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18" style="vertical-align:-3px;margin-right:6px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>Trash</div><button class="btn btn-danger btn-sm" onclick="emptyTrashPermanently()">Empty Trash</button></div>
 <div class="section-body" id="trashContent">
 <div class="admin-empty-state">
-<div class="admin-empty-icon">🗑️</div>
+<div class="admin-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div>
 <div class="admin-empty-text">Trash is empty</div>
 <div class="admin-empty-hint">Deleted items will appear here for recovery</div>
 </div>
@@ -3062,11 +3077,11 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 
 <div class="admin-tab-panel" id="adminSettings">
 <div class="admin-section">
-<div class="section-header"><div class="section-title">⚙️ Settings</div></div>
+<div class="section-header"><div class="section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18" style="vertical-align:-3px;margin-right:6px"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</div></div>
 <div class="section-body">
 <div class="form-group"><label class="form-label">Admin Password</label><input type="password" id="newAdminPwd" class="form-input" placeholder="Enter new password"></div>
 <div class="form-group">
-<label class="form-label">API Endpoint <span style="color:var(--emerald);font-size:0.7rem;background:rgba(5,150,105,0.1);padding:2px 8px;border-radius:4px;margin-left:6px">Connected ✓</span></label>
+<label class="form-label">API Endpoint <span style="color:var(--emerald);font-size:0.7rem;background:rgba(5,150,105,0.1);padding:2px 8px;border-radius:4px;margin-left:6px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12" style="vertical-align:-2px;margin-right:2px"><polyline points="20 6 9 17 4 12"/></svg>Connected</span></label>
 <input type="text" id="apiUrl" class="form-input" readonly style="background:var(--bg);font-size:0.8rem;color:var(--text-muted)">
 </div>
 <div class="form-group">
@@ -3305,7 +3320,7 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 <div class="modal-box wide">
 <div class="modal-header">
 <div class="modal-title">📩 Request New Unit Access</div>
-<button class="btn btn-ghost" onclick="closeModal('requestUnitModal')">✕</button>
+<button class="btn btn-ghost" onclick="closeModal('requestUnitModal')"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
 </div>
 <div class="modal-body" id="requestUnitBody">
 <div id="requestFormSection">
@@ -3391,7 +3406,7 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 <div class="modal-box wide">
 <div class="modal-header">
 <div class="modal-title">✅ Approve Unit Request</div>
-<button class="btn btn-ghost" onclick="closeModal('approveRequestModal')" aria-label="Close">✕</button>
+<button class="btn btn-ghost" onclick="closeModal('approveRequestModal')" aria-label="Close"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
 </div>
 <div class="modal-body" style="padding:20px">
 <!-- Request Details Section -->
@@ -3460,14 +3475,14 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
   <div class="modal-box wide">
     <div class="modal-header">
       <div class="modal-title">🧪 Lab Extraction Preview</div>
-      <button class="btn btn-ghost" onclick="closeModal('labPreviewModal'); resetLabExtraction()">✕</button>
+      <button class="btn btn-ghost" onclick="closeModal('labPreviewModal'); resetLabExtraction()"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div class="modal-body" id="labPreviewBody">
       <!-- Dynamic content inserted by showLabExtractionPreview() -->
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('labPreviewModal'); resetLabExtraction()">Cancel</button>
-      <button class="btn btn-primary" id="confirmLabBtn" onclick="confirmLabExtraction()">✓ Confirm & Save</button>
+      <button class="btn btn-primary" id="confirmLabBtn" onclick="confirmLabExtraction()"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="vertical-align:-2px;margin-right:4px"><polyline points="20 6 9 17 4 12"/></svg>Confirm & Save</button>
     </div>
   </div>
 </div>
@@ -3523,7 +3538,7 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
             <div class="score-calc-title" id="scoreCalcTitle">Score Name</div>
             <div class="score-calc-purpose" id="scoreCalcPurpose">Purpose description</div>
           </div>
-          <button onclick="closeModal('scoreCalcModal')" style="background:rgba(148,163,184,0.1);border:none;width:32px;height:32px;border-radius:8px;color:#94a3b8;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+          <button onclick="closeModal('scoreCalcModal')" style="background:rgba(148,163,184,0.1);border:none;width:32px;height:32px;border-radius:8px;color:#94a3b8;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
         <div class="score-calc-category" id="scoreCalcCategory">Category</div>
       </div>
@@ -3732,7 +3747,7 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 <div class="modal-box" style="max-width:400px">
 <div class="modal-header">
   <div class="modal-title" id="labHistoryTitle">📊 Lab History</div>
-  <button class="btn-ghost" onclick="closeModal('labHistoryModal')" style="font-size:1.2rem">✕</button>
+  <button class="btn-ghost" onclick="closeModal('labHistoryModal')" style="font-size:1.2rem"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
 </div>
 <div class="modal-body" style="padding:0;max-height:60vh;overflow-y:auto">
   <div id="labHistoryContent"></div>
@@ -3760,7 +3775,7 @@ body.dark-theme .profile-tab.active{background:rgba(96,165,250,0.15)}
 </div>
 <div class="modal-footer">
 <button class="btn btn-secondary" onclick="closeModal('dischargeModal')">Cancel</button>
-<button class="btn btn-success" onclick="confirmDischarge()">✓ Confirm Discharge</button>
+<button class="btn btn-success" onclick="confirmDischarge()"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="vertical-align:-2px;margin-right:4px"><polyline points="20 6 9 17 4 12"/></svg>Confirm Discharge</button>
 </div>
 </div>
 </div>
@@ -6679,7 +6694,7 @@ function renderProfileMeds() {
       <div class="med-add-form" id="medAddForm" style="display:none">
         <div class="med-form-header">
           <div class="med-form-title">💊 Add Medication</div>
-          <button class="med-form-close" onclick="hideAddMedForm()">✕</button>
+          <button class="med-form-close" onclick="hideAddMedForm()"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
         
         <div class="med-form-section">
@@ -9213,21 +9228,32 @@ function renderProfileLabs() {
   const p = state.currentPatient;
   const labData = p.labData || { dates: [], parameters: [] };
   
+  // SVG Icons for Labs section
+  const labIcons = {
+    flask: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path d="M9 3h6v5l4 9a2 2 0 01-2 3H7a2 2 0 01-2-3l4-9V3z"/><line x1="9" y1="3" x2="15" y2="3"/></svg>',
+    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>',
+    upload: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+    loader: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24" class="spin"><circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="20"/></svg>',
+    alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    brain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M12 2a4 4 0 014 4c0 1.1-.9 2-2 2h-4c-1.1 0-2-.9-2-2a4 4 0 014-4z"/><path d="M8 8v8a4 4 0 008 0V8"/><path d="M12 8v12"/></svg>',
+    info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+  };
+  
   let html = `
     <div class="section-card">
       <div class="section-header">
-        <div class="section-title">🧪 Laboratory Results</div>
-        ${labData.parameters?.length ? `<button class="btn btn-danger btn-sm" onclick="clearPatientLabs()" style="padding:4px 8px;font-size:0.7rem">🗑️ Clear</button>` : ''}
+        <div class="section-title">${labIcons.flask} Laboratory Results</div>
+        ${labData.parameters?.length ? `<button class="icon-btn btn-delete sm" onclick="clearPatientLabs()" title="Clear Labs">${labIcons.trash}</button>` : ''}
       </div>
       <div class="section-body">
         <div class="lab-upload-area ${state.isAnalyzingLab ? 'analyzing' : ''}" onclick="triggerLabUpload()">
           ${state.isAnalyzingLab ? `
-            <div class="lab-upload-icon">⏳</div>
+            <div class="lab-upload-icon">${labIcons.loader}</div>
             <div class="lab-upload-content">
               <div class="lab-upload-title">Analyzing...</div>
             </div>
           ` : `
-            <div class="lab-upload-icon">🔬</div>
+            <div class="lab-upload-icon">${labIcons.upload}</div>
             <div class="lab-upload-content">
               <div class="lab-upload-title">Upload Lab Report</div>
               <div class="lab-upload-subtitle">Photo of lab results, blood gas, chemistry panel...</div>
@@ -9254,7 +9280,7 @@ function renderProfileLabs() {
   if (criticals.length) {
     html += `
         <div class="critical-alert">
-          <div class="critical-alert-icon">⚠️</div>
+          <div class="critical-alert-icon">${labIcons.alert}</div>
           <div class="critical-alert-content">
             <div class="critical-alert-title">Abnormal Values Detected</div>
             <div class="critical-alert-values">${criticals.join(' • ')}</div>
@@ -9270,10 +9296,10 @@ function renderProfileLabs() {
     html += `
         <div class="ai-interpretation">
           <div class="ai-interpretation-header">
-            <div class="ai-interpretation-title">🤖 AI Interpretation <span class="ai-badge">DECISION SUPPORT</span></div>
+            <div class="ai-interpretation-title">${labIcons.brain} AI Interpretation <span class="ai-badge">DECISION SUPPORT</span></div>
             <div style="font-size:0.7rem;color:var(--text-muted)">Generated ${interpTime}</div>
           </div>
-          <div style="font-size:0.7rem;color:var(--warning-text);background:var(--warning-bg);padding:6px 10px;border-radius:6px;margin-bottom:10px">⚕️ Requires clinical correlation. Verify with local protocols.</div>
+          <div style="font-size:0.7rem;color:var(--warning-text);background:var(--warning-bg);padding:6px 10px;border-radius:6px;margin-bottom:10px">${labIcons.info} Requires clinical correlation. Verify with local protocols.</div>
           <div class="ai-interpretation-text">${esc(interp.summary)}</div>
           
           ${interp.clinicalCorrelation ? `
@@ -10818,7 +10844,7 @@ window.openTaskModal = function(existingTask = null) {
             <h3 class="modal-title">${existingTask ? 'Edit Task' : 'Add Clinical Task'}</h3>
             <p class="modal-subtitle">For ${esc(state.currentPatient.name)}</p>
           </div>
-          <button class="modal-close" onclick="closeModal('taskModal')">✕</button>
+          <button class="modal-close" onclick="closeModal('taskModal')"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
         <div class="modal-body">
           <div class="form-group">
@@ -11688,7 +11714,7 @@ function renderTrash() {
           </div>
           <div style="display:flex;gap:8px">
             <button class="btn btn-success btn-xs" onclick="restorePatient(${idx})">↩️ Restore</button>
-            <button class="btn btn-danger btn-xs" onclick="permanentDeletePatient(${idx})">✕</button>
+            <button class="btn btn-danger btn-xs" onclick="permanentDeletePatient(${idx})"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
           </div>
         </div>
       `;
@@ -11709,7 +11735,7 @@ function renderTrash() {
           </div>
           <div style="display:flex;gap:8px">
             <button class="btn btn-success btn-xs" onclick="restoreUnit(${idx})">↩️ Restore</button>
-            <button class="btn btn-danger btn-xs" onclick="permanentDeleteUnit(${idx})">✕</button>
+            <button class="btn btn-danger btn-xs" onclick="permanentDeleteUnit(${idx})"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
           </div>
         </div>
       `;
@@ -11730,7 +11756,7 @@ function renderTrash() {
           </div>
           <div style="display:flex;gap:8px">
             <button class="btn btn-success btn-xs" onclick="restoreMedication(${idx})">↩️ Restore</button>
-            <button class="btn btn-danger btn-xs" onclick="permanentDeleteMedication(${idx})">✕</button>
+            <button class="btn btn-danger btn-xs" onclick="permanentDeleteMedication(${idx})"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
           </div>
         </div>
       `;
@@ -12751,14 +12777,19 @@ function toggleTheme() {
   // Save preference
   localStorage.setItem('MEDWARD_THEME', isDark ? 'dark' : 'light');
   
-  toast(isDark ? "🌙 Night Shift On" : "☀️ Day Mode On");
+  toast(isDark ? "Night Mode" : "Day Mode");
 }
+
+const THEME_ICONS = {
+  sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+  moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>'
+};
 
 function updateThemeIcon(isDark) {
   const icon = document.getElementById('theme-icon');
   const iconLanding = document.getElementById('theme-icon-landing');
-  if (icon) icon.innerText = isDark ? "☀️" : "🌙";
-  if (iconLanding) iconLanding.innerText = isDark ? "☀️" : "🌙";
+  if (icon) icon.innerHTML = isDark ? THEME_ICONS.sun : THEME_ICONS.moon;
+  if (iconLanding) iconLanding.innerHTML = isDark ? THEME_ICONS.sun : THEME_ICONS.moon;
 }
 
 // Initialize theme on DOMContentLoaded to update icons
