@@ -7,20 +7,20 @@
 <title>Antibiotic Stewardship</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-:root{--primary:#3b82f6;--bg:#f3f4f6;--card:#fff;--text:#0f172a;--text2:#475569;--muted:#94a3b8;--border:#e2e8f0;--success:#059669;--danger:#dc2626;--warning:#d97706}
+:root{--primary:#005eb8;--bg:#f8fafc;--card:#fff;--text:#0f172a;--text2:#475569;--muted:#94a3b8;--border:#e2e8f0;--success:#059669;--danger:#dc2626;--warning:#d97706}
 body.dark-theme{--primary:#60a5fa;--bg:#0f172a;--card:#1e293b;--text:#f8fafc;--text2:#cbd5e1;--muted:#64748b;--border:#334155}
 body,input,select,.section,.card,.drug-card,.sys-card,.proto-card,.detail-hdr,.hdr,.nav{transition:background-color 0.3s ease,color 0.3s ease,border-color 0.3s ease}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 button:focus-visible,input:focus-visible,select:focus-visible{box-shadow:0 0 0 4px rgba(59,130,246,0.15)}
 body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:100px}
-.hdr{background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;padding:16px 20px;position:sticky;top:0;z-index:100}
+.hdr{background:var(--card);border-bottom:1px solid var(--border);color:var(--text);padding:16px 20px;position:sticky;top:0;z-index:100}
 .hdr-row{display:flex;align-items:center;justify-content:space-between;max-width:600px;margin:0 auto}
 .hdr-brand{display:flex;align-items:center;gap:12px}
-.hdr-icon{width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.hdr-icon{width:40px;height:40px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#fff}
 .hdr-title{font-weight:700;font-size:1.1rem}
 .hdr-sub{font-size:0.75rem;opacity:0.9}
-.close-btn{width:44px;height:44px;border-radius:10px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:#fff;font-size:1.2rem;cursor:pointer}
+.close-btn{width:44px;height:44px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:1.2rem;cursor:pointer}
 .main{max-width:600px;margin:0 auto;padding:16px}
 .search-box{position:relative;margin-bottom:16px}
 .search-input{width:100%;padding:14px 16px 14px 44px;border:1px solid var(--border);border-radius:12px;font-size:16px;background:var(--card)}
@@ -142,7 +142,7 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 </div>
 <div style="display:flex;gap:8px">
 <button class="close-btn" onclick="toggleTheme()" title="Night Shift"><span id="theme-icon">🌙</span></button>
-<button class="close-btn" onclick="location.href='index.html'">✕</button>
+<button class="close-btn" onclick="location.href='landing.html'">✕</button>
 </div>
 </div>
 </header>
