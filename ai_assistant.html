@@ -19,9 +19,7 @@
   --text-muted: #94a3b8;
   --border: #e2e8f0;
   --success: #059669;
-  --success-light: #d1fae5;
   --danger: #dc2626;
-  --danger-light: #fee2e2;
   --warning: #d97706;
   --warning-light: #fef3c7;
   --radius: 16px;
@@ -39,8 +37,6 @@ body.dark-theme {
   --text-secondary: #cbd5e1;
   --text-muted: #64748b;
   --border: #334155;
-  --success-light: #064e3b;
-  --danger-light: #7f1d1d;
   --warning-light: #78350f;
 }
 
@@ -55,7 +51,6 @@ body {
   flex-direction: column;
 }
 
-/* Header */
 .header {
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
@@ -82,21 +77,11 @@ body {
   cursor: pointer;
 }
 
-.back-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
+.back-btn:hover { border-color: var(--primary); color: var(--primary); }
 
-.header-title {
-  flex: 1;
-  font-weight: 700;
-  font-size: 1.1rem;
-}
-
-.header-subtitle {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
+.header-content { flex: 1; }
+.header-title { font-weight: 700; font-size: 1.1rem; }
+.header-subtitle { font-size: 0.75rem; color: var(--text-muted); }
 
 .icon-btn {
   width: 40px;
@@ -111,11 +96,8 @@ body {
   font-size: 1.1rem;
 }
 
-.icon-btn:hover {
-  border-color: var(--primary);
-}
+.icon-btn:hover { border-color: var(--primary); }
 
-/* Main Container */
 .main {
   flex: 1;
   max-width: 800px;
@@ -126,30 +108,17 @@ body {
   flex-direction: column;
 }
 
-/* Disclaimer */
 .disclaimer {
   background: var(--warning-light);
-  border: 1px solid var(--warning);
+  border-left: 3px solid var(--warning);
   border-radius: var(--radius-sm);
-  padding: 12px 16px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.disclaimer-icon {
-  font-size: 1.2rem;
-  flex-shrink: 0;
-}
-
-.disclaimer-text {
-  font-size: 0.8rem;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 0.75rem;
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
-/* Chat Container */
 .chat-container {
   flex: 1;
   overflow-y: auto;
@@ -162,9 +131,7 @@ body {
   gap: 12px;
 }
 
-.message.user {
-  flex-direction: row-reverse;
-}
+.message.user { flex-direction: row-reverse; }
 
 .message-avatar {
   width: 36px;
@@ -173,43 +140,116 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
   flex-shrink: 0;
 }
 
-.message.assistant .message-avatar {
-  background: var(--primary-light);
-  color: var(--primary);
-}
-
-.message.user .message-avatar {
-  background: var(--bg-elevated);
-  color: var(--text-secondary);
-}
+.message.assistant .message-avatar { background: var(--primary-light); color: var(--primary); }
+.message.user .message-avatar { background: var(--bg-elevated); color: var(--text-secondary); }
 
 .message-content {
-  max-width: 80%;
-  padding: 14px 18px;
-  border-radius: var(--radius);
-  font-size: 0.9rem;
+  max-width: 85%;
+  padding: 0;
+  font-size: 0.88rem;
   line-height: 1.6;
-}
-
-.message.assistant .message-content {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  color: var(--text-main);
 }
 
 .message.user .message-content {
   background: var(--primary);
   color: white;
+  padding: 12px 16px;
+  border-radius: var(--radius);
 }
+
+/* Structured Response Sections */
+.response-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.response-section {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.response-section:last-child { border-bottom: none; }
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.section-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.section-icon.diagnosis { background: rgba(239,68,68,0.1); color: #ef4444; }
+.section-icon.assessment { background: rgba(59,130,246,0.1); color: #3b82f6; }
+.section-icon.treatment { background: rgba(16,185,129,0.1); color: #10b981; }
+.section-icon.monitoring { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+.section-icon.alert { background: rgba(245,158,11,0.1); color: #f59e0b; }
+
+.section-title {
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-main);
+}
+
+.section-content {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.section-content ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.section-content li {
+  margin-bottom: 4px;
+}
+
+.section-content strong {
+  color: var(--text-main);
+}
+
+/* Quick Reference Pills */
+.quick-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.quick-pill {
+  padding: 4px 10px;
+  background: var(--bg-elevated);
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.quick-pill.dose { background: rgba(16,185,129,0.1); color: #10b981; }
+.quick-pill.frequency { background: rgba(59,130,246,0.1); color: #3b82f6; }
+.quick-pill.warning { background: rgba(245,158,11,0.1); color: #f59e0b; }
 
 /* Welcome State */
 .welcome {
   text-align: center;
-  padding: 40px 20px;
+  padding: 30px 20px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -217,66 +257,48 @@ body {
 }
 
 .welcome-icon {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 20px;
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 16px;
   background: var(--primary-light);
-  border-radius: 20px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.welcome-icon svg {
-  width: 40px;
-  height: 40px;
-  color: var(--primary);
-}
+.welcome-icon svg { width: 35px; height: 35px; color: var(--primary); }
 
-.welcome-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
+.welcome-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; }
+.welcome-text { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px; }
 
-.welcome-text {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  margin-bottom: 24px;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* Quick Prompts */
 .quick-prompts {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 8px;
 }
 
 .quick-prompt {
-  padding: 10px 16px;
+  padding: 8px 14px;
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: 100px;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s;
+  font-family: inherit;
 }
 
 .quick-prompt:hover {
   border-color: var(--primary);
   color: var(--primary);
-  background: var(--primary-light);
 }
 
 /* Input Area */
 .input-area {
-  padding: 16px 20px;
+  padding: 14px 20px;
   background: var(--bg-surface);
   border-top: 1px solid var(--border);
   position: sticky;
@@ -297,35 +319,30 @@ body {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 4px 4px 4px 16px;
-  transition: border-color 0.2s;
+  padding: 4px 4px 4px 14px;
 }
 
-.input-wrapper:focus-within {
-  border-color: var(--primary);
-}
+.input-wrapper:focus-within { border-color: var(--primary); }
 
 .chat-input {
   flex: 1;
   border: none;
   background: transparent;
-  padding: 12px 0;
-  font-size: 0.95rem;
+  padding: 10px 0;
+  font-size: 0.9rem;
   color: var(--text-main);
   font-family: inherit;
   outline: none;
   resize: none;
-  min-height: 24px;
-  max-height: 120px;
+  min-height: 20px;
+  max-height: 100px;
 }
 
-.chat-input::placeholder {
-  color: var(--text-muted);
-}
+.chat-input::placeholder { color: var(--text-muted); }
 
 .send-btn {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-sm);
   border: none;
   background: var(--primary);
@@ -334,29 +351,14 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
-.send-btn:hover {
-  opacity: 0.9;
-}
-
-.send-btn:disabled {
-  background: var(--border);
-  cursor: not-allowed;
-}
-
-.send-btn svg {
-  width: 20px;
-  height: 20px;
-}
+.send-btn:hover { opacity: 0.9; }
+.send-btn:disabled { background: var(--border); cursor: not-allowed; }
+.send-btn svg { width: 18px; height: 18px; }
 
 /* Loading */
-.typing {
-  display: flex;
-  gap: 4px;
-  padding: 8px 0;
-}
+.typing { display: flex; gap: 4px; padding: 14px 16px; }
 
 .typing-dot {
   width: 8px;
@@ -373,79 +375,39 @@ body {
   0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
   30% { transform: translateY(-6px); opacity: 1; }
 }
-
-/* Toast */
-.toast {
-  position: fixed;
-  bottom: 100px;
-  left: 50%;
-  transform: translateX(-50%) translateY(100px);
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  padding: 12px 20px;
-  border-radius: var(--radius-sm);
-  font-size: 0.85rem;
-  opacity: 0;
-  transition: all 0.3s;
-  z-index: 1000;
-}
-
-.toast.show {
-  transform: translateX(-50%) translateY(0);
-  opacity: 1;
-}
-
-/* Responsive */
-@media (max-width: 600px) {
-  .message-content {
-    max-width: 85%;
-  }
-  
-  .quick-prompt {
-    font-size: 0.75rem;
-    padding: 8px 12px;
-  }
-}
 </style>
 </head>
 <body>
 
 <div class="header">
   <a href="landing.html" class="back-btn">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-      <path d="M19 12H5M12 19l-7-7 7-7"/>
-    </svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
   </a>
-  <div>
+  <div class="header-content">
     <div class="header-title">AI Clinical Assistant</div>
-    <div class="header-subtitle">Powered by Claude</div>
+    <div class="header-subtitle">Quick On-Call Reference</div>
   </div>
   <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
 </div>
 
 <div class="main">
-  <div class="disclaimer">
-    <span class="disclaimer-icon">⚠️</span>
-    <span class="disclaimer-text">AI responses are for educational purposes only. Always verify with clinical guidelines and consult appropriate resources for patient care decisions.</span>
-  </div>
+  <div class="disclaimer">⚠️ For educational purposes. Verify with guidelines and consider individual patient factors.</div>
   
   <div class="chat-container" id="chatContainer">
     <div class="welcome" id="welcomeState">
       <div class="welcome-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z"/>
-          <path d="M12 16v-4"/>
-          <path d="M12 8h.01"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
       </div>
-      <div class="welcome-title">Clinical AI Assistant</div>
-      <div class="welcome-text">Ask me clinical questions about diagnosis, management, drug interactions, or medical guidelines.</div>
+      <div class="welcome-title">On-Call AI Assistant</div>
+      <div class="welcome-text">Get organized clinical answers with diagnosis, treatment, and monitoring sections.</div>
       
       <div class="quick-prompts">
-        <button class="quick-prompt" onclick="askQuestion('What are the diagnostic criteria for DKA?')">DKA criteria</button>
-        <button class="quick-prompt" onclick="askQuestion('Management of acute heart failure')">Heart failure</button>
-        <button class="quick-prompt" onclick="askQuestion('CURB-65 scoring and interpretation')">CURB-65</button>
-        <button class="quick-prompt" onclick="askQuestion('Anticoagulation in AF')">AF anticoagulation</button>
+        <button class="quick-prompt" onclick="askQuestion('DKA management')">DKA</button>
+        <button class="quick-prompt" onclick="askQuestion('Acute heart failure treatment')">Heart Failure</button>
+        <button class="quick-prompt" onclick="askQuestion('Hyperkalemia management')">Hyperkalemia</button>
+        <button class="quick-prompt" onclick="askQuestion('Sepsis hour-1 bundle')">Sepsis</button>
+        <button class="quick-prompt" onclick="askQuestion('CURB-65 scoring')">CURB-65</button>
+        <button class="quick-prompt" onclick="askQuestion('PE anticoagulation')">PE</button>
       </div>
     </div>
   </div>
@@ -454,121 +416,229 @@ body {
 <div class="input-area">
   <div class="input-row">
     <div class="input-wrapper">
-      <textarea class="chat-input" id="chatInput" placeholder="Ask a clinical question..." rows="1" onkeydown="handleKey(event)"></textarea>
+      <textarea class="chat-input" id="chatInput" placeholder="Ask about diagnosis, treatment, doses..." rows="1" onkeydown="handleKey(event)"></textarea>
       <button class="send-btn" onclick="sendMessage()" id="sendBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M22 2L11 13"/>
-          <path d="M22 2l-7 20-4-9-9-4 20-7z"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
       </button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbyewF_EjwJeundXYupFZcAjJF7jyMrd38FPDP7DB0zmjmHqAcXHig08Ycn07oW45l4w-A/exec';
-
-let messages = [];
 let isLoading = false;
 
-// Theme
 function initTheme() {
-  const saved = localStorage.getItem('MEDWARD_THEME');
-  if (saved === 'dark') {
-    document.body.classList.add('dark-theme');
-  }
+  if (localStorage.getItem('MEDWARD_THEME') === 'dark') document.body.classList.add('dark-theme');
   updateThemeIcon();
 }
 
 function toggleTheme() {
   document.body.classList.toggle('dark-theme');
-  const isDark = document.body.classList.contains('dark-theme');
-  localStorage.setItem('MEDWARD_THEME', isDark ? 'dark' : 'light');
+  localStorage.setItem('MEDWARD_THEME', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
   updateThemeIcon();
 }
 
 function updateThemeIcon() {
-  const btn = document.getElementById('themeBtn');
-  btn.textContent = document.body.classList.contains('dark-theme') ? '☀️' : '🌙';
+  document.getElementById('themeBtn').textContent = document.body.classList.contains('dark-theme') ? '☀️' : '🌙';
 }
 
-// Chat
 function askQuestion(q) {
   document.getElementById('chatInput').value = q;
   sendMessage();
 }
 
 function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 }
 
 async function sendMessage() {
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
-  
   if (!text || isLoading) return;
   
-  // Hide welcome
-  const welcome = document.getElementById('welcomeState');
-  if (welcome) welcome.style.display = 'none';
-  
-  // Add user message
-  addMessage('user', text);
+  document.getElementById('welcomeState')?.remove();
+  addUserMessage(text);
   input.value = '';
   
-  // Show loading
   isLoading = true;
   const loadingId = addLoading();
+  
+  // Enhanced prompt for structured response
+  const structuredPrompt = `You are an on-call clinical assistant. Respond to this query in a STRUCTURED format for quick reference.
+
+Query: ${text}
+
+RESPOND IN THIS EXACT FORMAT (use these exact section headers):
+[DIAGNOSIS/CRITERIA]
+- List diagnostic criteria or key features
+
+[INITIAL ASSESSMENT]
+- Immediate evaluation steps
+
+[TREATMENT]
+- First-line treatment with doses
+- Alternative options if applicable
+
+[MONITORING]
+- Key parameters to monitor
+- Red flags to watch for
+
+[KEY POINTS]
+- 2-3 critical takeaways
+
+Keep each section concise (2-4 bullet points max). Include specific doses where relevant. This is for quick on-call reference.`;
   
   try {
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({
-        action: 'askClinical',
-        question: text
-      })
+      body: JSON.stringify({ action: 'askClinical', question: structuredPrompt })
     });
-    
     const data = await res.json();
     removeLoading(loadingId);
     
     if (data.success && data.answer) {
-      addMessage('assistant', data.answer);
+      addStructuredResponse(data.answer);
     } else {
-      addMessage('assistant', 'Sorry, I could not process your question. Please try again.');
+      addSimpleResponse('Unable to process request. Please try again.');
     }
   } catch (e) {
     removeLoading(loadingId);
-    addMessage('assistant', 'Network error. Please check your connection and try again.');
+    addSimpleResponse('Network error. Please check connection.');
   }
-  
   isLoading = false;
 }
 
-function addMessage(role, text) {
+function addUserMessage(text) {
   const container = document.getElementById('chatContainer');
   const msg = document.createElement('div');
-  msg.className = `message ${role}`;
-  
-  const avatar = role === 'assistant' ? 
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>' :
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
-  
+  msg.className = 'message user';
   msg.innerHTML = `
-    <div class="message-avatar">${avatar}</div>
-    <div class="message-content">${formatText(text)}</div>
+    <div class="message-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+    <div class="message-content">${escapeHtml(text)}</div>
   `;
-  
   container.appendChild(msg);
   container.scrollTop = container.scrollHeight;
+}
+
+function addStructuredResponse(text) {
+  const container = document.getElementById('chatContainer');
+  const msg = document.createElement('div');
+  msg.className = 'message assistant';
   
-  messages.push({ role, content: text });
+  // Parse sections from response
+  const sections = parseStructuredResponse(text);
+  
+  let html = `
+    <div class="message-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div>
+    <div class="message-content">
+      <div class="response-card">
+  `;
+  
+  sections.forEach(section => {
+    const iconClass = getSectionIcon(section.title);
+    html += `
+      <div class="response-section">
+        <div class="section-header">
+          <div class="section-icon ${iconClass.class}">${iconClass.icon}</div>
+          <div class="section-title">${section.title}</div>
+        </div>
+        <div class="section-content">${formatContent(section.content)}</div>
+      </div>
+    `;
+  });
+  
+  html += `</div></div>`;
+  msg.innerHTML = html;
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
+}
+
+function parseStructuredResponse(text) {
+  const sections = [];
+  const sectionPatterns = [
+    { regex: /\[DIAGNOSIS\/CRITERIA\]|\*\*DIAGNOSIS\/CRITERIA\*\*|##?\s*DIAGNOSIS|##?\s*CRITERIA/i, title: 'Diagnosis/Criteria' },
+    { regex: /\[INITIAL ASSESSMENT\]|\*\*INITIAL ASSESSMENT\*\*|##?\s*INITIAL ASSESSMENT|##?\s*ASSESSMENT/i, title: 'Initial Assessment' },
+    { regex: /\[TREATMENT\]|\*\*TREATMENT\*\*|##?\s*TREATMENT|##?\s*MANAGEMENT/i, title: 'Treatment' },
+    { regex: /\[MONITORING\]|\*\*MONITORING\*\*|##?\s*MONITORING/i, title: 'Monitoring' },
+    { regex: /\[KEY POINTS\]|\*\*KEY POINTS\*\*|##?\s*KEY POINTS|##?\s*SUMMARY/i, title: 'Key Points' }
+  ];
+  
+  // Find all section positions
+  let positions = [];
+  sectionPatterns.forEach(pattern => {
+    const match = text.match(pattern.regex);
+    if (match) {
+      positions.push({
+        title: pattern.title,
+        start: match.index,
+        headerEnd: match.index + match[0].length
+      });
+    }
+  });
+  
+  // Sort by position
+  positions.sort((a, b) => a.start - b.start);
+  
+  // Extract content for each section
+  for (let i = 0; i < positions.length; i++) {
+    const start = positions[i].headerEnd;
+    const end = positions[i + 1]?.start || text.length;
+    const content = text.substring(start, end).trim();
+    
+    if (content) {
+      sections.push({
+        title: positions[i].title,
+        content: content
+      });
+    }
+  }
+  
+  // If no sections found, create a single general section
+  if (sections.length === 0) {
+    sections.push({
+      title: 'Response',
+      content: text
+    });
+  }
+  
+  return sections;
+}
+
+function getSectionIcon(title) {
+  const lower = title.toLowerCase();
+  if (lower.includes('diagnosis') || lower.includes('criteria')) return { class: 'diagnosis', icon: '🔍' };
+  if (lower.includes('assessment')) return { class: 'assessment', icon: '📋' };
+  if (lower.includes('treatment') || lower.includes('management')) return { class: 'treatment', icon: '💊' };
+  if (lower.includes('monitoring')) return { class: 'monitoring', icon: '📊' };
+  if (lower.includes('key') || lower.includes('summary')) return { class: 'alert', icon: '⚡' };
+  return { class: 'assessment', icon: '📝' };
+}
+
+function formatContent(content) {
+  // Convert markdown-style lists to HTML
+  let html = content
+    .replace(/^\s*[-•]\s*/gm, '• ')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+  
+  // Highlight doses
+  html = html.replace(/(\d+\.?\d*\s*(?:mg|g|mcg|mL|units|U)(?:\/(?:kg|hr|day|dose))?)/gi, '<span class="quick-pill dose">$1</span>');
+  
+  return html;
+}
+
+function addSimpleResponse(text) {
+  const container = document.getElementById('chatContainer');
+  const msg = document.createElement('div');
+  msg.className = 'message assistant';
+  msg.innerHTML = `
+    <div class="message-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/></svg></div>
+    <div class="message-content"><div class="response-card"><div class="response-section"><div class="section-content">${escapeHtml(text)}</div></div></div></div>
+  `;
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
 }
 
 function addLoading() {
@@ -578,47 +648,26 @@ function addLoading() {
   msg.className = 'message assistant';
   msg.id = id;
   msg.innerHTML = `
-    <div class="message-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div>
-    <div class="message-content">
-      <div class="typing">
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
-      </div>
-    </div>
+    <div class="message-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/></svg></div>
+    <div class="message-content"><div class="response-card"><div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>
   `;
   container.appendChild(msg);
   container.scrollTop = container.scrollHeight;
   return id;
 }
 
-function removeLoading(id) {
-  const el = document.getElementById(id);
-  if (el) el.remove();
+function removeLoading(id) { document.getElementById(id)?.remove(); }
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
 
-function formatText(text) {
-  // Simple markdown-like formatting
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br>');
-}
-
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-// Init
 initTheme();
-
-// Auto-resize textarea
-const textarea = document.getElementById('chatInput');
-textarea.addEventListener('input', function() {
+document.getElementById('chatInput').addEventListener('input', function() {
   this.style.height = 'auto';
-  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  this.style.height = Math.min(this.scrollHeight, 100) + 'px';
 });
 </script>
 </body>
