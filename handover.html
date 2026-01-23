@@ -723,26 +723,29 @@ function generateBadge() {
 
 async function loadPatients() {
   try {
-    console.log('Loading patients from API...', API);
-    console.log('Auth:', AUTH);
+    console.log('Loading patients...');
+    console.log('Auth user:', AUTH.user);
     
     const res = await callAPI('loadData');
-    console.log('Full API response:', JSON.stringify(res).substring(0, 500));
+    console.log('API response success:', res.success);
     
     if (res.success && res.data) {
+      // res.data is already the data object
       const d = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
-      console.log('Parsed data keys:', Object.keys(d));
+      console.log('Data keys:', Object.keys(d));
       
+      // Patients are directly in the data object
       patients = d.patients || [];
-      console.log('Patients loaded:', patients.length);
+      console.log('Patients found:', patients.length);
       
       if (patients.length > 0) {
-        console.log('First patient:', patients[0]);
+        console.log('Patient IDs:', patients.map(p => p.id));
+        console.log('Patient names:', patients.map(p => p.name));
       } else {
-        console.log('No patients found in data');
+        console.log('No patients in data. Full data:', JSON.stringify(d).substring(0, 300));
       }
     } else {
-      console.log('API returned no success or no data');
+      console.log('API failed or no data. Response:', JSON.stringify(res).substring(0, 200));
     }
   } catch (e) { 
     console.error('Load patients error:', e); 
