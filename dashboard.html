@@ -11213,22 +11213,26 @@ window.enterUnit = function() {
 };
 
 window.logout = function() {
-  // Clear saved login on logout
+  if (!confirm('Log out of MedWard Pro?')) return;
+  
+  // Clear all credentials
+  localStorage.removeItem('MW_USER');
+  localStorage.removeItem('MW_PASS');
+  sessionStorage.removeItem('MW_USER');
+  sessionStorage.removeItem('MW_PASS');
+  sessionStorage.removeItem('MW_UNIT');
+  sessionStorage.removeItem('MW_UNIT_NAME');
   localStorage.removeItem('MEDWARD_SAVED_LOGIN');
-  state.currentUnit = null;
-  state.currentUser = null;
-  state.currentFilter = 'all';
-  showPage('landing');
-  toast('Logged out');
+  
+  // Redirect to login
+  window.location.href = 'login.html';
 };
 
 window.goToLanding = function() {
-  // Go back to landing page WITHOUT clearing saved login
-  // This allows admin to access unit management while keeping auto-login active
-  state.currentUnit = null;
-  state.currentUser = null;
-  showPage('landing');
-  renderUnits();
+  // Go back to landing page to switch units
+  sessionStorage.removeItem('MW_UNIT');
+  sessionStorage.removeItem('MW_UNIT_NAME');
+  window.location.href = 'landing.html';
 };
 
 window.tryAutoLogin = function() {
@@ -12553,7 +12557,7 @@ async function init() {
   // Show debug panel if ?debug=1 in URL
   Diagnostics.showDebugPanel();
   
-  // Load data from local storage
+  // Load data from local storage first
   loadLocal();
   
   // Load unit from session
@@ -12566,14 +12570,23 @@ async function init() {
     state.currentUnit = unit;
     state.currentUser = { name: AUTH.user || 'Doctor', role: 'attending' };
     
-    $('unitBadge').textContent = unitName;
-    $('dashAvatar').textContent = initials(AUTH.user || 'Doctor');
-    $('currentDate').textContent = formatDate();
+    const unitBadge = $('unitBadge');
+    const dashAvatar = $('dashAvatar');
+    const currentDate = $('currentDate');
+    
+    if (unitBadge) unitBadge.textContent = unitName;
+    if (dashAvatar) dashAvatar.textContent = initials(AUTH.user || 'Doctor');
+    if (currentDate) currentDate.textContent = formatDate();
   }
 
+  // Render scores and reference
   renderScoresGrid();
   renderRef();
+  
+  // Render patients immediately with local data
+  renderPatients();
 
+  // Setup event handlers
   const mainTabs = $('mainTabs');
   if (mainTabs) mainTabs.onclick = e => { const t = e.target.closest('.tab'); if (t) showTab(t.dataset.tab); };
   
@@ -12596,26 +12609,27 @@ async function init() {
     };
   }
 
-  $('labFileInput').onchange = function() { if (this.files.length > 0) handleLabUpload(this.files); this.value = ''; };
-  $('imagingFileInput').onchange = function() { if (this.files[0]) handleImagingUpload(this.files[0]); this.value = ''; };
-  $('importFile').onchange = function() { if (this.files[0]) { compress(this.files[0], CONFIG.MAX_IMAGE_SIZE, url => { state.importImage = url; $('importImg').src = url; $('importUpload').style.display = 'none'; $('importPreview').style.display = 'block'; }); } };
+  // File input handlers
+  const labFileInput = $('labFileInput');
+  if (labFileInput) labFileInput.onchange = function() { if (this.files.length > 0) handleLabUpload(this.files); this.value = ''; };
+  
+  const imagingFileInput = $('imagingFileInput');
+  if (imagingFileInput) imagingFileInput.onchange = function() { if (this.files[0]) handleImagingUpload(this.files[0]); this.value = ''; };
+  
+  const importFile = $('importFile');
+  if (importFile) importFile.onchange = function() { if (this.files[0]) { compress(this.files[0], CONFIG.MAX_IMAGE_SIZE, url => { state.importImage = url; $('importImg').src = url; $('importUpload').style.display = 'none'; $('importPreview').style.display = 'block'; }); } };
 
+  // Modal close on backdrop click
   $$('.modal').forEach(m => m.onclick = e => { if (e.target === m) m.classList.remove('active'); });
 
-  // Initial cloud sync
+  // Sync from cloud to get latest data
   await syncFromCloud();
   
-  // Update requests badge if any pending
-  updateRequestsBadge();
+  // Re-render with synced data
+  renderPatients();
   
   // Initialize debug panel if enabled
   initDebugPanel();
-
-  // If we had a saved login, now complete the auto-login after data is loaded
-  if (hasSavedLogin && state.currentUnit) {
-    renderPatients();
-    renderRef();
-  }
 
   // Periodic background sync (every 60 seconds) - only if no pending changes
   setInterval(() => {
