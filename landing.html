@@ -1009,7 +1009,13 @@ let state = {
   patients: [],
   trash: { units: [], patients: [] },
   settings: {},
-  unitRequests: []
+  unitRequests: [],
+  // ═══════════════════════════════════════════════════════════════════
+  // HYDRATION GATE - Prevents zombie cache from overwriting cloud
+  // ═══════════════════════════════════════════════════════════════════
+  isHydrated: false,
+  isReadOnly: true,  // Start in read-only until cloud loads
+  lastServerTimestamp: null
 };
 
 // Patch queue for delta sync
@@ -1071,6 +1077,9 @@ async function loadData() {
     // Handle conditional load - already in sync
     if (res.success && res.unchanged) {
       console.log('⚡ Already in sync (rev:', res.rev, ')');
+      // ✅ UNLOCK - we're in sync
+      state.isHydrated = true;
+      state.isReadOnly = false;
       renderUnits();
       hideLoading();
       return;
@@ -1087,7 +1096,14 @@ async function loadData() {
       // Update revision tracking
       state.rev = data.rev || res.rev || state.rev;
       localStorage.setItem('MW_REV', String(state.rev));
-      console.log('✅ Data loaded, rev:', state.rev);
+      
+      // ═══════════════════════════════════════════════════════════════════
+      // ✅ UNLOCK - Successfully loaded from cloud
+      // ═══════════════════════════════════════════════════════════════════
+      state.isHydrated = true;
+      state.isReadOnly = false;
+      state.lastServerTimestamp = data.updatedAt || new Date().toISOString();
+      console.log('✅ Data loaded, rev:', state.rev, 'isReadOnly:', state.isReadOnly);
     }
     
     renderUnits();
@@ -1096,6 +1112,8 @@ async function loadData() {
     hideLoading();
     toast('Failed to load data');
     console.error(e);
+    // Stay in read-only mode on failure
+    console.warn('⚠️ Load failed - staying in read-only mode');
   }
 }
 
@@ -1105,6 +1123,15 @@ function enqueuePatch(operation, payload) {
 }
 
 async function saveData() {
+  // ═══════════════════════════════════════════════════════════════════
+  // CRITICAL GUARD: Block saves until cloud load completes
+  // ═══════════════════════════════════════════════════════════════════
+  if (state.isReadOnly) {
+    console.warn('⛔ saveData blocked: App is in read-only mode (not yet hydrated)');
+    toast('Cannot save - still loading from cloud');
+    return;
+  }
+  
   try {
     // ═══════════════════════════════════════════════════════════════════
     // SAFEGUARD: Don't overwrite cloud with empty units if we have none locally
@@ -1122,6 +1149,7 @@ async function saveData() {
       if (res.success) {
         patchQueue = []; // Clear queue on success
         state.rev = res.rev || state.rev;
+        state.lastServerTimestamp = res.timestamp || new Date().toISOString();
         localStorage.setItem('MW_REV', String(state.rev));
       } else {
         // Fall back to snapshot only if we have data
@@ -1137,7 +1165,8 @@ async function saveData() {
             patients: state.patients,
             trash: state.trash,
             settings: state.settings,
-            unitRequests: state.unitRequests
+            unitRequests: state.unitRequests,
+            updatedAt: state.lastServerTimestamp  // Timestamp for conflict detection
           }
         });
       }
@@ -1149,7 +1178,8 @@ async function saveData() {
           patients: state.patients,
           trash: state.trash,
           settings: state.settings,
-          unitRequests: state.unitRequests
+          unitRequests: state.unitRequests,
+          updatedAt: state.lastServerTimestamp  // Timestamp for conflict detection
         }
       });
     } else {
