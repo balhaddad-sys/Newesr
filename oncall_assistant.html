@@ -199,7 +199,7 @@ a.nav-item{color:var(--text-muted)}
 <header class="app-header">
 <div class="header-row">
 <div class="header-brand">
-<div class="header-logo">🩺</div>
+<div class="header-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg></div>
 <div><div class="header-title">OnCall Assistant</div><div class="header-subtitle">Evidence-Based Decision Support</div></div>
 </div>
 <div class="header-actions">
@@ -215,7 +215,7 @@ a.nav-item{color:var(--text-muted)}
 <div style="font-size:0.7rem;color:#92400e;line-height:1.4">Verify with local protocols. If unstable: activate emergency pathway.</div>
 </div>
 <div class="mode-switcher">
-<button id="btn-mode-tasks" class="segment-btn active" onclick="switchMode('tasks')">📞 Call Log <span id="task-badge" class="badge-count hidden">0</span></button>
+<button id="btn-mode-tasks" class="segment-btn active" onclick="switchMode('tasks')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg> Call Log <span id="task-badge" class="badge-count hidden">0</span></button>
 <button id="btn-mode-tools" class="segment-btn" onclick="switchMode('tools')">🧮 Calculators</button>
 </div>
 <div id="call-log-view" class="call-log-view">
@@ -230,7 +230,7 @@ a.nav-item{color:var(--text-muted)}
 <select id="call-priority" class="call-select">
 <option value="routine">Routine</option>
 <option value="urgent">Urgent</option>
-<option value="stat">STAT ⚡</option>
+<option value="stat">STAT <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></option>
 </select>
 </div>
 <button class="add-call-btn" onclick="addCallLog()"><span>+</span> Add Task</button>
@@ -240,20 +240,20 @@ a.nav-item{color:var(--text-muted)}
 <div id="tools-view" class="tools-view hidden">
 <div class="category-pills">
 <button class="pill active" onclick="filterCategory('all',this)">All Tools</button>
-<button class="pill" onclick="filterCategory('emergency',this)">🚨 Emergency</button>
-<button class="pill" onclick="filterCategory('handover',this)">📋 Handover</button>
-<button class="pill" onclick="filterCategory('consult',this)">📞 Consults</button>
-<button class="pill" onclick="filterCategory('prn',this)">💊 PRN</button>
-<button class="pill" onclick="filterCategory('lytes',this)">🧪 Lytes</button>
-<button class="pill" onclick="filterCategory('cardiac',this)">❤️ Cardiac</button>
+<button class="pill" onclick="filterCategory('emergency',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Emergency</button>
+<button class="pill" onclick="filterCategory('handover',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Handover</button>
+<button class="pill" onclick="filterCategory('consult',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg> Consults</button>
+<button class="pill" onclick="filterCategory('prn',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M10.5 20.5L3.5 13.5a4.95 4.95 0 1 1 7-7l7 7a4.95 4.95 0 0 1-7 7z"/><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/></svg> PRN</button>
+<button class="pill" onclick="filterCategory('lytes',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M9 3h6v4l4 10H5L9 7V3z"/><line x1="9" y1="3" x2="15" y2="3"/></svg> Lytes</button>
+<button class="pill" onclick="filterCategory('cardiac',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Cardiac</button>
 </div>
 <div class="tool-card emergency" data-category="emergency">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon">🍬</div>
+<div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="4"/></svg></div>
 <div><div class="tool-title">Hypoglycemia<span class="tool-badge urgent">Urgent</span></div><div class="tool-subtitle">Glucose &lt; 3.9 mmol/L</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
@@ -271,10 +271,10 @@ a.nav-item{color:var(--text-muted)}
 <div class="tool-card emergency" data-category="emergency">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon">⚡</div>
+<div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
 <div><div class="tool-title">Hyperkalemia<span class="tool-badge urgent">Urgent</span></div><div class="tool-subtitle">K+ &gt; 6.0 mmol/L</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
@@ -294,10 +294,10 @@ a.nav-item{color:var(--text-muted)}
 <div class="tool-card emergency" data-category="emergency">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon">💉</div>
+<div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M18 2l4 4-9 9-4-4 9-9zM12 11l-7 7-3 1 1-3 7-7"/></svg></div>
 <div><div class="tool-title">Anaphylaxis<span class="tool-badge urgent">Urgent</span></div><div class="tool-subtitle">Severe allergic reaction</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
@@ -314,10 +314,10 @@ a.nav-item{color:var(--text-muted)}
 <div class="tool-card emergency" data-category="emergency">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon">🦠</div>
+<div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/></svg></div>
 <div><div class="tool-title">Sepsis<span class="tool-badge urgent">Urgent</span></div><div class="tool-subtitle">Hour-1 Bundle</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
@@ -332,10 +332,10 @@ a.nav-item{color:var(--text-muted)}
 <div class="tool-card emergency" data-category="emergency">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon">💧</div>
+<div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div>
 <div><div class="tool-title">DKA<span class="tool-badge urgent">Urgent</span></div><div class="tool-subtitle">Diabetic ketoacidosis</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
@@ -350,26 +350,26 @@ a.nav-item{color:var(--text-muted)}
 <div class="tool-card" data-category="prn">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon">💊</div>
+<div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M10.5 20.5L3.5 13.5a4.95 4.95 0 1 1 7-7l7 7a4.95 4.95 0 0 1-7 7z"/><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/></svg></div>
 <div><div class="tool-title">PRN Medications</div><div class="tool-subtitle">As-needed prescriptions</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
 <div class="prn-grid">
-<div class="prn-card" onclick="showPRN('pain',this)"><div class="prn-icon">😣</div><div class="prn-name">Pain</div></div>
-<div class="prn-card" onclick="showPRN('nausea',this)"><div class="prn-icon">🤢</div><div class="prn-name">Nausea</div></div>
-<div class="prn-card" onclick="showPRN('fever',this)"><div class="prn-icon">🌡️</div><div class="prn-name">Fever</div></div>
-<div class="prn-card" onclick="showPRN('sleep',this)"><div class="prn-icon">😴</div><div class="prn-name">Sleep</div></div>
-<div class="prn-card" onclick="showPRN('anxiety',this)"><div class="prn-icon">😰</div><div class="prn-name">Anxiety</div></div>
-<div class="prn-card" onclick="showPRN('constipation',this)"><div class="prn-icon">💩</div><div class="prn-name">Constipation</div></div>
-<div class="prn-card" onclick="showPRN('itch',this)"><div class="prn-icon">🖐️</div><div class="prn-name">Itch</div></div>
-<div class="prn-card" onclick="showPRN('heartburn',this)"><div class="prn-icon">🔥</div><div class="prn-name">Heartburn</div></div>
-<div class="prn-card" onclick="showPRN('agitation',this)"><div class="prn-icon">😤</div><div class="prn-name">Agitation</div></div>
-<div class="prn-card" onclick="showPRN('htn',this)"><div class="prn-icon">📈</div><div class="prn-name">HTN</div></div>
-<div class="prn-card" onclick="showPRN('wheeze',this)"><div class="prn-icon">🌬️</div><div class="prn-name">Wheeze</div></div>
-<div class="prn-card" onclick="showPRN('diarrhea',this)"><div class="prn-icon">🚽</div><div class="prn-name">Diarrhea</div></div>
+<div class="prn-card" onclick="showPRN('pain',this)"><div class="prn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M8 15s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div><div class="prn-name">Pain</div></div>
+<div class="prn-card" onclick="showPRN('nausea',this)"><div class="prn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5-2 4-2 4 2 4 2"/></svg></div><div class="prn-name">Nausea</div></div>
+<div class="prn-card" onclick="showPRN('fever',this)"><div class="prn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0z"/></svg></div><div class="prn-name">Fever</div></div>
+<div class="prn-card" onclick="showPRN('sleep',this)"><div class="prn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div><div class="prn-name">Sleep</div></div>
+<div class="prn-card" onclick="showPRN('anxiety',this)"><div class="prn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg></div><div class="prn-name">Anxiety</div></div>
+<div class="prn-card" onclick="showPRN('constipation',this)"><div class="prn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M12 3c-1.5 0-3 .5-4 1.5S6 7 6 9c-2 0-3 2-3 4 0 1.5 1 3 3 3h12c2 0 3-1.5 3-3 0-2-1-4-3-4 0-2-.5-3.5-1.5-4.5S13.5 3 12 3z"/></svg></div><div class="prn-name">Constipation</div></div>
+<div class="prn-card" onclick="showPRN('itch',this)"><div class="prn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v0M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v6M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-5.7-2.4L3.7 16.2a2 2 0 1 1 3-2.6L8 15"/></svg></div><div class="prn-name">Itch</div></div>
+<div class="prn-card" onclick="showPRN('heartburn',this)"><div class="prn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M12 2c1 3 2.5 3.5 3.5 4.5A5 5 0 0 1 17 11a5 5 0 1 1-10 0c0-1.5.5-3 1.5-4.5S11 3 12 2z"/></svg></div><div class="prn-name">Heartburn</div></div>
+<div class="prn-card" onclick="showPRN('agitation',this)"><div class="prn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div><div class="prn-name">Agitation</div></div>
+<div class="prn-card" onclick="showPRN('htn',this)"><div class="prn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div class="prn-name">HTN</div></div>
+<div class="prn-card" onclick="showPRN('wheeze',this)"><div class="prn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg></div><div class="prn-name">Wheeze</div></div>
+<div class="prn-card" onclick="showPRN('diarrhea',this)"><div class="prn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M12 2v20M2 12h20"/></svg></div><div class="prn-name">Diarrhea</div></div>
 </div>
 <div id="prnDetails" class="prn-details"></div>
 </div>
@@ -377,10 +377,10 @@ a.nav-item{color:var(--text-muted)}
 <div class="tool-card" data-category="lytes">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon">🧪</div>
+<div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M9 3h6v4l4 10H5L9 7V3z"/><line x1="9" y1="3" x2="15" y2="3"/></svg></div>
 <div><div class="tool-title">K+ Correction</div><div class="tool-subtitle">Replacement dosing</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
@@ -392,10 +392,10 @@ a.nav-item{color:var(--text-muted)}
 <div class="tool-card" data-category="lytes">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon">🦴</div>
+<div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="5" cy="5" r="3"/><circle cx="19" cy="19" r="3"/><path d="M8 8l8 8"/></svg></div>
 <div><div class="tool-title">Corrected Ca</div><div class="tool-subtitle">Albumin adjustment</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
@@ -410,10 +410,10 @@ a.nav-item{color:var(--text-muted)}
 <div class="tool-card" data-category="renal">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon">🫘</div>
+<div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><ellipse cx="12" cy="12" rx="8" ry="5"/><path d="M4 12c0 2.76 3.58 5 8 5s8-2.24 8-5"/></svg></div>
 <div><div class="tool-title">eGFR</div><div class="tool-subtitle">CKD-EPI 2021</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
@@ -433,10 +433,10 @@ a.nav-item{color:var(--text-muted)}
 <div class="tool-card" data-category="cardiac">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon">❤️</div>
+<div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
 <div><div class="tool-title">QTc</div><div class="tool-subtitle">Bazett formula</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
@@ -448,14 +448,14 @@ a.nav-item{color:var(--text-muted)}
 <div id="resultQTc" class="result-box hidden"></div>
 </div>
 </div>
-<div class="section-label" style="margin-top:12px;">📋 HANDOVER TOOLS</div>
+<div class="section-label" style="margin-top:12px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> HANDOVER TOOLS</div>
 <div class="tool-card handover-card" data-category="handover">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;">📋</div>
+<div class="tool-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div>
 <div><div class="tool-title">SBAR Handover</div><div class="tool-subtitle">Structured communication</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
@@ -479,20 +479,20 @@ a.nav-item{color:var(--text-muted)}
 </div>
 </div>
 </div>
-<div class="section-label">📞 SPECIALTY CONSULTATIONS</div>
+<div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg> SPECIALTY CONSULTATIONS</div>
 <div class="consult-intro">Tap any specialty for what you need BEFORE calling</div>
 <div class="tool-card consult-card consult-critical" data-category="consult">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon consult-icon-critical">🏥</div>
+<div class="tool-icon consult-icon-critical"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M12 8v8M8 12h8"/></svg></div>
 <div><div class="tool-title">ICU<span class="tool-badge urgent">Critical</span></div><div class="tool-subtitle">Intensive Care Unit</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
 <div class="consult-box critical">
-<div class="consult-title">📞 Before Calling ICU</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg> Before Calling ICU</div>
 <div class="consult-grid">
 <div class="consult-item"><strong>Airway:</strong> Patent? Protecting? GCS?</div>
 <div class="consult-item"><strong>Breathing:</strong> RR, SpO2, O2 requirement, ABG</div>
@@ -501,7 +501,7 @@ a.nav-item{color:var(--text-muted)}
 </div>
 </div>
 <div class="consult-box">
-<div class="consult-title">📋 ICU Admission Criteria</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> ICU Admission Criteria</div>
 <div class="protocol-content">
 • Mechanical ventilation or imminent intubation<br>
 • Vasopressor requirement<br>
@@ -537,12 +537,12 @@ a.nav-item{color:var(--text-muted)}
 <div class="tool-icon consult-icon-surgery">🔪</div>
 <div><div class="tool-title">Surgery</div><div class="tool-subtitle">General Surgery</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
 <div class="consult-box">
-<div class="consult-title">📞 Before Calling Surgery</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg> Before Calling Surgery</div>
 <div class="consult-grid">
 <div class="consult-item"><strong>Localize:</strong> Where is the problem?</div>
 <div class="consult-item"><strong>Imaging:</strong> CT/US done? Results?</div>
@@ -551,7 +551,7 @@ a.nav-item{color:var(--text-muted)}
 </div>
 </div>
 <div class="consult-box">
-<div class="consult-title">📋 Required Information</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Required Information</div>
 <div class="protocol-content">
 • <strong>Chief complaint</strong> with timeline<br>
 • <strong>Physical exam:</strong> Peritonitis? Guarding? Rebound?<br>
@@ -563,7 +563,7 @@ a.nav-item{color:var(--text-muted)}
 </div>
 </div>
 <div class="consult-box warning">
-<div class="consult-title">🚨 Urgent Surgical Conditions</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Urgent Surgical Conditions</div>
 <div class="protocol-content">
 • Perforated viscus / free air<br>
 • Acute appendicitis with peritonitis<br>
@@ -581,15 +581,15 @@ a.nav-item{color:var(--text-muted)}
 <div class="tool-card consult-card consult-cardio" data-category="consult">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon consult-icon-cardio">❤️</div>
+<div class="tool-icon consult-icon-cardio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
 <div><div class="tool-title">Cardiology</div><div class="tool-subtitle">Cardiac referral</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
 <div class="consult-box critical">
-<div class="consult-title">🚨 STEMI - Activate Cath Lab</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> STEMI - Activate Cath Lab</div>
 <div class="protocol-content">
 • <strong>Call cath lab FIRST</strong> - don't wait for consult<br>
 • ECG with ST elevation or new LBBB<br>
@@ -600,7 +600,7 @@ a.nav-item{color:var(--text-muted)}
 </div>
 </div>
 <div class="consult-box">
-<div class="consult-title">📋 Non-STEMI/Unstable Angina</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Non-STEMI/Unstable Angina</div>
 <div class="protocol-content">
 • <strong>Serial ECGs</strong> (at least 2)<br>
 • <strong>Troponin</strong> at 0, 3, 6 hours<br>
@@ -622,7 +622,7 @@ a.nav-item{color:var(--text-muted)}
 </div>
 </div>
 <div class="consult-box">
-<div class="consult-title">🫀 Heart Failure Consult</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Heart Failure Consult</div>
 <div class="protocol-content">
 • <strong>BNP/NT-proBNP</strong> level<br>
 • <strong>Echo</strong> with EF (recent or pending)<br>
@@ -637,15 +637,15 @@ a.nav-item{color:var(--text-muted)}
 <div class="tool-card consult-card consult-neuro" data-category="consult">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon consult-icon-neuro">🧠</div>
+<div class="tool-icon consult-icon-neuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M12 2a10 10 0 0 0-7 17h14a10 10 0 0 0-7-17z"/><path d="M12 12v4"/></svg></div>
 <div><div class="tool-title">Neurology</div><div class="tool-subtitle">Neuro referral</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
 <div class="consult-box critical">
-<div class="consult-title">🚨 Stroke Alert</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Stroke Alert</div>
 <div class="protocol-content">
 • <strong>Time last seen normal</strong> - CRITICAL<br>
 • <strong>NIHSS score</strong> (or key deficits)<br>
@@ -657,7 +657,7 @@ a.nav-item{color:var(--text-muted)}
 </div>
 </div>
 <div class="consult-box">
-<div class="consult-title">📋 Seizure Consult</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Seizure Consult</div>
 <div class="protocol-content">
 • <strong>Witnessed description</strong> of event<br>
 • Duration & post-ictal state<br>
@@ -686,15 +686,15 @@ a.nav-item{color:var(--text-muted)}
 <div class="tool-card consult-card consult-gi" data-category="consult">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon consult-icon-gi">🔬</div>
+<div class="tool-icon consult-icon-gi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="3"/><path d="M12 5v2M12 17v2M5 12h2M17 12h2"/></svg></div>
 <div><div class="tool-title">Gastroenterology</div><div class="tool-subtitle">GI referral</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
 <div class="consult-box critical">
-<div class="consult-title">🚨 GI Bleed - Urgent</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> GI Bleed - Urgent</div>
 <div class="protocol-content">
 • <strong>Hemodynamic status:</strong> HR, BP, orthostatics<br>
 • <strong>Blood products:</strong> Type & Screen, transfusion needs<br>
@@ -705,7 +705,7 @@ a.nav-item{color:var(--text-muted)}
 </div>
 </div>
 <div class="consult-box">
-<div class="consult-title">📋 Liver/Pancreas Consult</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Liver/Pancreas Consult</div>
 <div class="protocol-content">
 • <strong>LFTs</strong> with trend<br>
 • <strong>Lipase</strong> (for pancreatitis)<br>
@@ -721,15 +721,15 @@ a.nav-item{color:var(--text-muted)}
 <div class="tool-card consult-card consult-renal" data-category="consult">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon consult-icon-renal">🫘</div>
+<div class="tool-icon consult-icon-renal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><ellipse cx="12" cy="12" rx="8" ry="5"/><path d="M4 12c0 2.76 3.58 5 8 5s8-2.24 8-5"/></svg></div>
 <div><div class="tool-title">Nephrology</div><div class="tool-subtitle">Renal referral</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
 <div class="consult-box critical">
-<div class="consult-title">🚨 Urgent Dialysis Indications (AEIOU)</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Urgent Dialysis Indications (AEIOU)</div>
 <div class="protocol-content">
 • <strong>A</strong>cidosis - severe metabolic (pH &lt;7.1)<br>
 • <strong>E</strong>lectrolytes - K+ &gt;6.5 refractory to medical Rx<br>
@@ -739,7 +739,7 @@ a.nav-item{color:var(--text-muted)}
 </div>
 </div>
 <div class="consult-box">
-<div class="consult-title">📋 AKI Workup</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> AKI Workup</div>
 <div class="protocol-content">
 • <strong>Baseline Cr</strong> & trend<br>
 • <strong>Urine output</strong> (hourly if available)<br>
@@ -757,15 +757,15 @@ a.nav-item{color:var(--text-muted)}
 <div class="tool-card consult-card consult-pulm" data-category="consult">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon consult-icon-pulm">🫁</div>
+<div class="tool-icon consult-icon-pulm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><ellipse cx="8" cy="13" rx="5" ry="8"/><ellipse cx="16" cy="13" rx="5" ry="8"/></svg></div>
 <div><div class="tool-title">Pulmonology</div><div class="tool-subtitle">Respiratory referral</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
 <div class="consult-box">
-<div class="consult-title">📞 Before Calling Pulm</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg> Before Calling Pulm</div>
 <div class="consult-grid">
 <div class="consult-item"><strong>O2 needs:</strong> FiO2, device, SpO2</div>
 <div class="consult-item"><strong>ABG:</strong> With FiO2 at time of draw</div>
@@ -774,7 +774,7 @@ a.nav-item{color:var(--text-muted)}
 </div>
 </div>
 <div class="consult-box">
-<div class="consult-title">📋 Required Information</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Required Information</div>
 <div class="protocol-content">
 • <strong>Respiratory history:</strong> COPD, asthma, ILD, OSA<br>
 • <strong>Home O2?</strong> L/min, continuous vs nocturnal<br>
@@ -791,15 +791,15 @@ a.nav-item{color:var(--text-muted)}
 <div class="tool-card consult-card consult-id" data-category="consult">
 <div class="tool-header" onclick="toggleTool(this)">
 <div class="tool-header-left">
-<div class="tool-icon consult-icon-id">🦠</div>
+<div class="tool-icon consult-icon-id"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/></svg></div>
 <div><div class="tool-title">Infectious Disease</div><div class="tool-subtitle">ID referral</div></div>
 </div>
-<div class="tool-chevron">▼</div>
+<div class="tool-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="6 9 12 15 18 9"/></svg></div>
 </div>
 <div class="tool-content">
 <div class="tool-divider"></div>
 <div class="consult-box">
-<div class="consult-title">📞 Before Calling ID</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg> Before Calling ID</div>
 <div class="consult-grid">
 <div class="consult-item"><strong>Source:</strong> Where is the infection?</div>
 <div class="consult-item"><strong>Cultures:</strong> Blood Cx x2 drawn?</div>
@@ -808,7 +808,7 @@ a.nav-item{color:var(--text-muted)}
 </div>
 </div>
 <div class="consult-box">
-<div class="consult-title">📋 Required Information</div>
+<div class="consult-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Required Information</div>
 <div class="protocol-content">
 • <strong>Culture data</strong> with sensitivities<br>
 • <strong>Imaging</strong> showing source<br>
@@ -822,10 +822,10 @@ a.nav-item{color:var(--text-muted)}
 </div>
 </div>
 
-<div class="section-label">🤖 AI ASSISTANT</div>
+<div class="section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="3"/><path d="M12 8v3"/><circle cx="8" cy="16" r="1"/><circle cx="16" cy="16" r="1"/></svg> AI ASSISTANT</div>
 <div class="ai-section" data-category="all,emergency">
 <div class="ai-header">
-<div class="ai-icon">🤖</div>
+<div class="ai-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="3"/><path d="M12 8v3"/><circle cx="8" cy="16" r="1"/><circle cx="16" cy="16" r="1"/></svg></div>
 <div><div class="ai-title">Clinical AI</div><div class="ai-subtitle">Ask any clinical question</div></div>
 </div>
 <div class="ai-body">
@@ -836,25 +836,25 @@ a.nav-item{color:var(--text-muted)}
 </div>
 <div class="ai-input-row">
 <input type="text" class="ai-input" id="aiInput" placeholder="Ask anything...">
-<button class="ai-send-btn" onclick="askAI()">➤</button>
+<button class="ai-send-btn" onclick="askAI()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
 </div>
 <div class="ai-response" id="aiResponse"></div>
 </div>
 </div>
 <div class="section-label">Quick Reference</div>
 <div class="quick-ref-grid">
-<div class="quick-ref-card" onclick="showRef('K+: 3.5-5.0 mmol/L')"><div class="quick-ref-icon">🧪</div><div class="quick-ref-title">K+</div><div class="quick-ref-value">3.5-5.0</div></div>
-<div class="quick-ref-card" onclick="showRef('Na+: 136-145 mmol/L')"><div class="quick-ref-icon">🧂</div><div class="quick-ref-title">Na+</div><div class="quick-ref-value">136-145</div></div>
-<div class="quick-ref-card" onclick="showRef('Ca: 2.1-2.6 mmol/L')"><div class="quick-ref-icon">🦴</div><div class="quick-ref-title">Ca</div><div class="quick-ref-value">2.1-2.6</div></div>
-<div class="quick-ref-card" onclick="showRef('Glucose: 3.9-5.6 mmol/L')"><div class="quick-ref-icon">🍬</div><div class="quick-ref-title">Gluc</div><div class="quick-ref-value">3.9-5.6</div></div>
+<div class="quick-ref-card" onclick="showRef('K+: 3.5-5.0 mmol/L')"><div class="quick-ref-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M9 3h6v4l4 10H5L9 7V3z"/><line x1="9" y1="3" x2="15" y2="3"/></svg></div><div class="quick-ref-title">K+</div><div class="quick-ref-value">3.5-5.0</div></div>
+<div class="quick-ref-card" onclick="showRef('Na+: 136-145 mmol/L')"><div class="quick-ref-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M9 3h6v4l4 10H5L9 7V3z"/></svg></div><div class="quick-ref-title">Na+</div><div class="quick-ref-value">136-145</div></div>
+<div class="quick-ref-card" onclick="showRef('Ca: 2.1-2.6 mmol/L')"><div class="quick-ref-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="5" cy="5" r="3"/><circle cx="19" cy="19" r="3"/><path d="M8 8l8 8"/></svg></div><div class="quick-ref-title">Ca</div><div class="quick-ref-value">2.1-2.6</div></div>
+<div class="quick-ref-card" onclick="showRef('Glucose: 3.9-5.6 mmol/L')"><div class="quick-ref-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="4"/></svg></div><div class="quick-ref-title">Gluc</div><div class="quick-ref-value">3.9-5.6</div></div>
 </div>
 </div>
 </div>
 <nav class="bottom-nav">
-<div class="nav-item" onclick="goBack()"><div class="nav-icon">🏠</div><span>Home</span></div>
-<div class="nav-item active"><div class="nav-icon">⚡</div><span>OnCall</span></div>
-<div class="nav-item" onclick="switchMode('tools');filterCategory('emergency',null)"><div class="nav-icon">🚨</div><span>Emergency</span></div>
-<a class="nav-item" href="ai_assistant.html"><div class="nav-icon">🤖</div><span>AI</span></a>
+<div class="nav-item" onclick="goBack()"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div>
+<div class="nav-item active"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><span>OnCall</span></div>
+<div class="nav-item" onclick="switchMode('tools');filterCategory('emergency',null)"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><span>Emergency</span></div>
+<a class="nav-item" href="ai_assistant.html"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="3"/><path d="M12 8v3"/><circle cx="8" cy="16" r="1"/><circle cx="16" cy="16" r="1"/></svg></div><span>AI</span></a>
 </nav>
 <div id="toast" class="toast"></div>
 <script>
@@ -912,7 +912,7 @@ function addCallLog() {
   document.getElementById('call-issue').value = '';
   document.getElementById('call-mrn').value = '';
   document.getElementById('call-priority').value = 'routine';
-  toast("✓ Call Logged");
+  toast("<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg> Call Logged");
 }
 
 function renderCallLogs() {
@@ -923,13 +923,13 @@ function renderCallLogs() {
   badge.innerText = activeCount;
   badge.classList.toggle('hidden', activeCount === 0);
   if (callLogs.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-title">No calls logged</div><div class="empty-state-text">Add your first call above</div></div>';
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div><div class="empty-state-title">No calls logged</div><div class="empty-state-text">Add your first call above</div></div>';
     return;
   }
   callLogs.forEach(function(call) {
     var div = document.createElement('div');
     div.className = 'task-card priority-' + call.priority + (call.done ? ' done' : '');
-    div.innerHTML = '<div class="check-circle" onclick="toggleCallDone(' + call.id + ')">' + (call.done ? '✓' : '') + '</div><div class="task-content" onclick="toggleCallDone(' + call.id + ')"><div class="task-meta"><span>' + call.timestamp + ' • ' + call.loc + '</span><span class="task-priority ' + call.priority + '">' + call.priority + '</span></div><div class="task-issue">' + escapeHtml(call.issue) + '</div>' + (call.mrn ? '<div class="task-detail">' + escapeHtml(call.mrn) + '</div>' : '') + '</div><button class="delete-btn" onclick="deleteCall(' + call.id + ')">✕</button>';
+    div.innerHTML = '<div class="check-circle" onclick="toggleCallDone(' + call.id + ')">' + (call.done ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>' : '') + '</div><div class="task-content" onclick="toggleCallDone(' + call.id + ')"><div class="task-meta"><span>' + call.timestamp + ' • ' + call.loc + '</span><span class="task-priority ' + call.priority + '">' + call.priority + '</span></div><div class="task-issue">' + escapeHtml(call.issue) + '</div>' + (call.mrn ? '<div class="task-detail">' + escapeHtml(call.mrn) + '</div>' : '') + '</div><button class="delete-btn" onclick="deleteCall(' + call.id + ')">✕</button>';
     container.appendChild(div);
   });
 }
@@ -982,18 +982,18 @@ function showRef(text){alert(text);}
 function setPrompt(t){document.getElementById('aiInput').value=t;}
 
 var prnData={
-  pain:'😣 PAIN<br><br>Mild: Paracetamol 1g PO q6h (max 4g/day)<br>Moderate: Tramadol 50-100mg PO q6h<br>Severe: Morphine 2.5-5mg IV q4h<br><br>⚠️ Reduce opioids in elderly/renal',
-  nausea:'🤢 NAUSEA<br><br>1st: Ondansetron 4-8mg IV/PO q8h<br>Alt: Metoclopramide 10mg q8h<br><br>⚠️ Avoid metoclopramide >5 days',
-  fever:'🌡️ FEVER<br><br>Paracetamol 1g PO/IV q6h<br>Ibuprofen 400mg PO q6-8h<br><br>⚠️ Avoid NSAIDs in renal/GI',
-  sleep:'😴 SLEEP<br><br>Melatonin 3-5mg PO hs<br>Zopiclone 3.75-7.5mg hs<br><br>⚠️ Avoid benzos in elderly',
-  anxiety:'😰 ANXIETY<br><br>Hydroxyzine 25-50mg PO q6h<br>Lorazepam 0.5-1mg PO/SL q6h<br><br>⚠️ Benzos worsen delirium',
-  constipation:'💩 CONSTIPATION<br><br>Lactulose 15-30mL PO BD<br>Senna 15mg PO hs<br>Bisacodyl 10mg PR<br><br>⚠️ Rule out obstruction',
-  itch:'🖐️ ITCH<br><br>Cetirizine 10mg PO daily<br>Chlorpheniramine 4mg q6h<br><br>⚠️ Sedating in elderly',
-  heartburn:'🔥 HEARTBURN<br><br>Gaviscon 10-20mL PRN<br>Omeprazole 20-40mg daily<br><br>⚠️ Long-term PPI risks',
-  agitation:'😤 AGITATION<br><br>⚠️ Verbal de-escalation first!<br><br>PO: Olanzapine 5-10mg OR Lorazepam 1-2mg<br>IM: Haloperidol 5mg + Lorazepam 2mg<br><br>🚨 NEVER IM olanzapine with benzos',
-  htn:'📈 HYPERTENSION<br><br>Mild: Amlodipine 5mg PO<br>Moderate: Labetalol 100-200mg PO<br>Severe: Labetalol 20mg IV<br><br>⚠️ Rule out emergency first',
-  wheeze:'🌬️ WHEEZE<br><br>Salbutamol 2.5-5mg neb q20min x3<br>Ipratropium 500mcg neb<br>Hydrocortisone 100mg IV<br><br>⚠️ Continuous nebs if severe',
-  diarrhea:'🚽 DIARRHEA<br><br>Rehydrate first!<br>Loperamide 4mg then 2mg PRN<br><br>🚨 AVOID if bloody/fever/C.diff'
+  pain:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M8 15s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg> PAIN<br><br>Mild: Paracetamol 1g PO q6h (max 4g/day)<br>Moderate: Tramadol 50-100mg PO q6h<br>Severe: Morphine 2.5-5mg IV q4h<br><br><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Reduce opioids in elderly/renal',
+  nausea:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5-2 4-2 4 2 4 2"/></svg> NAUSEA<br><br>1st: Ondansetron 4-8mg IV/PO q8h<br>Alt: Metoclopramide 10mg q8h<br><br><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Avoid metoclopramide >5 days',
+  fever:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0z"/></svg> FEVER<br><br>Paracetamol 1g PO/IV q6h<br>Ibuprofen 400mg PO q6-8h<br><br><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Avoid NSAIDs in renal/GI',
+  sleep:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> SLEEP<br><br>Melatonin 3-5mg PO hs<br>Zopiclone 3.75-7.5mg hs<br><br><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Avoid benzos in elderly',
+  anxiety:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg> ANXIETY<br><br>Hydroxyzine 25-50mg PO q6h<br>Lorazepam 0.5-1mg PO/SL q6h<br><br><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Benzos worsen delirium',
+  constipation:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M12 3c-1.5 0-3 .5-4 1.5S6 7 6 9c-2 0-3 2-3 4 0 1.5 1 3 3 3h12c2 0 3-1.5 3-3 0-2-1-4-3-4 0-2-.5-3.5-1.5-4.5S13.5 3 12 3z"/></svg> CONSTIPATION<br><br>Lactulose 15-30mL PO BD<br>Senna 15mg PO hs<br>Bisacodyl 10mg PR<br><br><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Rule out obstruction',
+  itch:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v0M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v6M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-5.7-2.4L3.7 16.2a2 2 0 1 1 3-2.6L8 15"/></svg> ITCH<br><br>Cetirizine 10mg PO daily<br>Chlorpheniramine 4mg q6h<br><br><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Sedating in elderly',
+  heartburn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M12 2c1 3 2.5 3.5 3.5 4.5A5 5 0 0 1 17 11a5 5 0 1 1-10 0c0-1.5.5-3 1.5-4.5S11 3 12 2z"/></svg> HEARTBURN<br><br>Gaviscon 10-20mL PRN<br>Omeprazole 20-40mg daily<br><br><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Long-term PPI risks',
+  agitation:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg> AGITATION<br><br><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Verbal de-escalation first!<br><br>PO: Olanzapine 5-10mg OR Lorazepam 1-2mg<br>IM: Haloperidol 5mg + Lorazepam 2mg<br><br><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> NEVER IM olanzapine with benzos',
+  htn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> HYPERTENSION<br><br>Mild: Amlodipine 5mg PO<br>Moderate: Labetalol 100-200mg PO<br>Severe: Labetalol 20mg IV<br><br><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Rule out emergency first',
+  wheeze:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg> WHEEZE<br><br>Salbutamol 2.5-5mg neb q20min x3<br>Ipratropium 500mcg neb<br>Hydrocortisone 100mg IV<br><br><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Continuous nebs if severe',
+  diarrhea:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M12 2v20M2 12h20"/></svg> DIARRHEA<br><br>Rehydrate first!<br>Loperamide 4mg then 2mg PRN<br><br><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> AVOID if bloody/fever/C.diff'
 };
 
 function showPRN(type,card){
@@ -1012,10 +1012,10 @@ function calcHypo(e){
   var box=document.getElementById('resultHypo');
   if(!g){alert('Enter glucose');return;}
   box.className='result-box';
-  if(g>=3.9){box.className+=' success';box.innerHTML='<div class="result-title">✓ Normal</div><div class="result-content">'+g+' mmol/L is normal</div>';}
-  else if(s==='unconscious'){box.className+=' danger';box.innerHTML='<div class="result-title">🚨 SEVERE</div><div class="result-content"><strong>D50 25-50mL IV</strong> or Glucagon 1mg IM<br><br>Recheck 15min</div>';}
-  else if(s==='confused'){box.className+=' warning';box.innerHTML='<div class="result-title">⚠️ Moderate</div><div class="result-content"><strong>Glucose gel 15-20g</strong> buccal<br><br>If no response: D50 25mL IV</div>';}
-  else{box.innerHTML='<div class="result-title">📋 Mild</div><div class="result-content"><strong>15-20g fast carbs</strong><br>Juice, glucose tabs<br><br>Recheck 15min</div>';}
+  if(g>=3.9){box.className+=' success';box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg> Normal</div><div class="result-content">'+g+' mmol/L is normal</div>';}
+  else if(s==='unconscious'){box.className+=' danger';box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> SEVERE</div><div class="result-content"><strong>D50 25-50mL IV</strong> or Glucagon 1mg IM<br><br>Recheck 15min</div>';}
+  else if(s==='confused'){box.className+=' warning';box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Moderate</div><div class="result-content"><strong>Glucose gel 15-20g</strong> buccal<br><br>If no response: D50 25mL IV</div>';}
+  else{box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Mild</div><div class="result-content"><strong>15-20g fast carbs</strong><br>Juice, glucose tabs<br><br>Recheck 15min</div>';}
 }
 
 function calcHyperK(e){
@@ -1025,11 +1025,11 @@ function calcHyperK(e){
   var box=document.getElementById('resultHyperK');
   if(!k){alert('Enter K+');return;}
   box.className='result-box';
-  if(k<5.5&&ecg==='none'){box.className+=' success';box.innerHTML='<div class="result-title">✓ Normal</div><div class="result-content">Review meds</div>';}
+  if(k<5.5&&ecg==='none'){box.className+=' success';box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg> Normal</div><div class="result-content">Review meds</div>';}
   else{
     var severe=k>=6.5||ecg!=='none';
     box.className+=' '+(severe?'danger':'warning');
-    box.innerHTML='<div class="result-title">'+(severe?'🚨 EMERGENCY':'⚠️ Moderate')+' K+ '+k+'</div><div class="result-content">'+(ecg!=='none'?'<strong>⚡ ECG CHANGES - Treat NOW</strong><br><br>':'')+'<strong>1. Ca Gluconate 10% 10mL IV</strong> (2-3min)<br><br><strong>2. Insulin 10U + D50 25g IV</strong><br>Salbutamol 10-20mg neb<br><br><strong>3. Furosemide 40-80mg IV</strong></div>';
+    box.innerHTML='<div class="result-title">'+(severe?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> EMERGENCY':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Moderate')+' K+ '+k+'</div><div class="result-content">'+(ecg!=='none'?'<strong><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> ECG CHANGES - Treat NOW</strong><br><br>':'')+'<strong>1. Ca Gluconate 10% 10mL IV</strong> (2-3min)<br><br><strong>2. Insulin 10U + D50 25g IV</strong><br>Salbutamol 10-20mg neb<br><br><strong>3. Furosemide 40-80mg IV</strong></div>';
   }
 }
 
@@ -1039,7 +1039,7 @@ function calcAnap(e){
   var box=document.getElementById('resultAnap');
   box.className='result-box danger';
   var dose=age==='adult'?'0.5mg (0.5mL 1:1000)':age==='child'?'0.3mg (0.3mL 1:1000)':'0.15mg (0.15mL 1:1000)';
-  box.innerHTML='<div class="result-title">🚨 ANAPHYLAXIS</div><div class="result-content"><strong>💉 ADRENALINE FIRST!</strong><br><br><strong>'+dose+' IM thigh</strong><br>Repeat q5min PRN<br><br>Lie flat, elevate legs<br>High-flow O2<br>NS 20mL/kg if hypotensive</div>';
+  box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> ANAPHYLAXIS</div><div class="result-content"><strong><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M18 2l4 4-9 9-4-4 9-9zM12 11l-7 7-3 1 1-3 7-7"/></svg> ADRENALINE FIRST!</strong><br><br><strong>'+dose+' IM thigh</strong><br>Repeat q5min PRN<br><br>Lie flat, elevate legs<br>High-flow O2<br>NS 20mL/kg if hypotensive</div>';
 }
 
 function calcSepsis(e){
@@ -1049,7 +1049,7 @@ function calcSepsis(e){
   var box=document.getElementById('resultSepsis');
   var shock=(map&&map<65)||(lac&&lac>2);
   box.className='result-box '+(shock?'danger':'warning');
-  box.innerHTML='<div class="result-title">'+(shock?'🚨 SEPTIC SHOCK':'⚠️ SEPSIS')+' Hour-1</div><div class="result-content"><strong>1. Lactate</strong> '+(lac?lac+' mmol/L':'Draw NOW')+'<br><br><strong>2. Blood Cx x2</strong> before abx<br><br><strong>3. Pip-Tazo 4.5g IV</strong> within 1hr<br><br><strong>4. NS 30mL/kg</strong> if hypotensive</div>';
+  box.innerHTML='<div class="result-title">'+(shock?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> SEPTIC SHOCK':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> SEPSIS')+' Hour-1</div><div class="result-content"><strong>1. Lactate</strong> '+(lac?lac+' mmol/L':'Draw NOW')+'<br><br><strong>2. Blood Cx x2</strong> before abx<br><br><strong>3. Pip-Tazo 4.5g IV</strong> within 1hr<br><br><strong>4. NS 30mL/kg</strong> if hypotensive</div>';
 }
 
 function calcDKA(e){
@@ -1059,8 +1059,8 @@ function calcDKA(e){
   var box=document.getElementById('resultDKA');
   var severe=pH&&pH<7.0;
   box.className='result-box '+(severe?'danger':'warning');
-  var kMsg=k?((k<3.3)?'🚨 HOLD insulin until K+>3.3!':(k<5.3)?'Add 20-30 mEq KCl/L':'No K+ initially'):'Check K+ first';
-  box.innerHTML='<div class="result-title">'+(severe?'🚨 SEVERE DKA':'⚠️ DKA')+(pH?' pH '+pH:'')+'</div><div class="result-content"><strong>1. NS 1-1.5L/hr</strong> x1h<br><br><strong>2. Insulin 0.1 U/kg/hr</strong><br><br><strong>3. K+:</strong> '+kMsg+'<br><br>BG q1h, lytes q2-4h</div>';
+  var kMsg=k?((k<3.3)?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> HOLD insulin until K+>3.3!':(k<5.3)?'Add 20-30 mEq KCl/L':'No K+ initially'):'Check K+ first';
+  box.innerHTML='<div class="result-title">'+(severe?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> SEVERE DKA':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> DKA')+(pH?' pH '+pH:'')+'</div><div class="result-content"><strong>1. NS 1-1.5L/hr</strong> x1h<br><br><strong>2. Insulin 0.1 U/kg/hr</strong><br><br><strong>3. K+:</strong> '+kMsg+'<br><br>BG q1h, lytes q2-4h</div>';
 }
 
 function calcK(e){
@@ -1069,11 +1069,11 @@ function calcK(e){
   var box=document.getElementById('resultK');
   if(!k){alert('Enter K+');return;}
   box.className='result-box';
-  if(k>=3.5&&k<=5.0){box.className+=' success';box.innerHTML='<div class="result-title">✓ Normal</div><div class="result-content">K+ '+k+' is within range</div>';}
-  else if(k<2.5){box.className+=' danger';box.innerHTML='<div class="result-title">🚨 Severe Hypokalemia</div><div class="result-content">K+ '+k+'<br><br><strong>KCl 40 mEq IV</strong> (max 20/hr peripheral)<br>Recheck in 2-4h</div>';}
-  else if(k<3.0){box.className+=' warning';box.innerHTML='<div class="result-title">⚠️ Moderate</div><div class="result-content">K+ '+k+'<br><br><strong>KCl 40 mEq PO/IV</strong><br>Recheck in 4h</div>';}
-  else if(k<3.5){box.innerHTML='<div class="result-title">📋 Mild</div><div class="result-content">K+ '+k+'<br><br><strong>KCl 20-40 mEq PO</strong><br>Recheck next AM</div>';}
-  else{box.className+=' warning';box.innerHTML='<div class="result-title">⚠️ Elevated</div><div class="result-content">K+ '+k+'<br><br>Review meds (ACEi, K-sparing)</div>';}
+  if(k>=3.5&&k<=5.0){box.className+=' success';box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg> Normal</div><div class="result-content">K+ '+k+' is within range</div>';}
+  else if(k<2.5){box.className+=' danger';box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Severe Hypokalemia</div><div class="result-content">K+ '+k+'<br><br><strong>KCl 40 mEq IV</strong> (max 20/hr peripheral)<br>Recheck in 2-4h</div>';}
+  else if(k<3.0){box.className+=' warning';box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Moderate</div><div class="result-content">K+ '+k+'<br><br><strong>KCl 40 mEq PO/IV</strong><br>Recheck in 4h</div>';}
+  else if(k<3.5){box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Mild</div><div class="result-content">K+ '+k+'<br><br><strong>KCl 20-40 mEq PO</strong><br>Recheck next AM</div>';}
+  else{box.className+=' warning';box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Elevated</div><div class="result-content">K+ '+k+'<br><br>Review meds (ACEi, K-sparing)</div>';}
 }
 
 function calcCa(e){
@@ -1084,11 +1084,11 @@ function calcCa(e){
   if(!ca||!alb){alert('Enter values');return;}
   var corr=(ca+0.02*(40-alb)).toFixed(2);
   box.className='result-box';
-  if(corr<1.9){box.className+=' danger';box.innerHTML='<div class="result-title">🚨 Severe Hypocalcemia</div><div class="result-content">Corrected: <strong>'+corr+'</strong><br>Ca Gluconate 1-2g IV</div>';}
-  else if(corr<2.1){box.className+=' warning';box.innerHTML='<div class="result-title">⚠️ Low</div><div class="result-content">Corrected: <strong>'+corr+'</strong></div>';}
-  else if(corr>3.0){box.className+=' danger';box.innerHTML='<div class="result-title">🚨 Severe Hypercalcemia</div><div class="result-content">Corrected: <strong>'+corr+'</strong><br>IV NS aggressively</div>';}
-  else if(corr>2.6){box.className+=' warning';box.innerHTML='<div class="result-title">⚠️ High</div><div class="result-content">Corrected: <strong>'+corr+'</strong></div>';}
-  else{box.className+=' success';box.innerHTML='<div class="result-title">✓ Normal</div><div class="result-content">Corrected: '+corr+'</div>';}
+  if(corr<1.9){box.className+=' danger';box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Severe Hypocalcemia</div><div class="result-content">Corrected: <strong>'+corr+'</strong><br>Ca Gluconate 1-2g IV</div>';}
+  else if(corr<2.1){box.className+=' warning';box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Low</div><div class="result-content">Corrected: <strong>'+corr+'</strong></div>';}
+  else if(corr>3.0){box.className+=' danger';box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Severe Hypercalcemia</div><div class="result-content">Corrected: <strong>'+corr+'</strong><br>IV NS aggressively</div>';}
+  else if(corr>2.6){box.className+=' warning';box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> High</div><div class="result-content">Corrected: <strong>'+corr+'</strong></div>';}
+  else{box.className+=' success';box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg> Normal</div><div class="result-content">Corrected: '+corr+'</div>';}
 }
 
 function calcEGFR(e){
@@ -1121,10 +1121,10 @@ function calcQTc(e){
   if(!qt||!hr){alert('Enter values');return;}
   var qtc=Math.round(qt/Math.sqrt(60/hr));
   box.className='result-box';
-  if(qtc>500){box.className+=' danger';box.innerHTML='<div class="result-title">🚨 '+qtc+'ms</div><div class="result-content">HIGH TdP risk<br>STOP QT drugs</div>';}
-  else if(qtc>470){box.className+=' warning';box.innerHTML='<div class="result-title">⚠️ '+qtc+'ms</div><div class="result-content">Prolonged</div>';}
-  else if(qtc>440){box.innerHTML='<div class="result-title">📋 '+qtc+'ms</div><div class="result-content">Borderline</div>';}
-  else{box.className+=' success';box.innerHTML='<div class="result-title">✓ '+qtc+'ms</div><div class="result-content">Normal</div>';}
+  if(qtc>500){box.className+=' danger';box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> '+qtc+'ms</div><div class="result-content">HIGH TdP risk<br>STOP QT drugs</div>';}
+  else if(qtc>470){box.className+=' warning';box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> '+qtc+'ms</div><div class="result-content">Prolonged</div>';}
+  else if(qtc>440){box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> '+qtc+'ms</div><div class="result-content">Borderline</div>';}
+  else{box.className+=' success';box.innerHTML='<div class="result-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg> '+qtc+'ms</div><div class="result-content">Normal</div>';}
 }
 
 function askAI(){
