@@ -3753,30 +3753,8 @@ const CONFIG = {
   // ═══════════════════════════════════════════════════════════════════
   // REQUIRED DOM ELEMENTS (for boot diagnostics)
   // ═══════════════════════════════════════════════════════════════════
-  REQUIRED_ELEMENTS: ['landing', 'dashboard', 'patientsList']
+  REQUIRED_ELEMENTS: ['dashboard', 'patientsList']
 };
-
-// ═══════════════════════════════════════════════════════════════════════════
-// GLOBAL AUTH STATE - Multi-User Authentication
-// ═══════════════════════════════════════════════════════════════════════════
-const AUTH = {
-  user: null,
-  pass: null,
-  isAuthenticated: false
-};
-
-// Initialize AUTH from storage on load
-(function initAuth() {
-  // Check localStorage (permanent) first, then sessionStorage (temporary)
-  const localUser = localStorage.getItem('MW_AUTH_USER');
-  const localPass = localStorage.getItem('MW_AUTH_PASS');
-  const sessUser = sessionStorage.getItem('MW_AUTH_USER');
-  const sessPass = sessionStorage.getItem('MW_AUTH_PASS');
-  
-  AUTH.user = sessUser || localUser || null;
-  AUTH.pass = sessPass || localPass || null;
-  AUTH.isAuthenticated = !!(AUTH.user && AUTH.pass);
-})();
 
 // ═══════════════════════════════════════════════════════════════════════════
 // BOOT DIAGNOSTICS - Validates app configuration and DOM before initialization
@@ -11318,7 +11296,7 @@ function updateProfileBadges() {
 // Admin functions
 window.openAdminLogin = function() { $('adminPwd').value = ''; $('adminError').classList.remove('show'); openModal('adminModal'); };
 window.loginAdmin = function() { if ($('adminPwd').value === state.settings.adminPassword) { closeModal('adminModal'); showPage('adminPanel'); $('apiUrl').value = state.settings.apiUrl || ''; $('drugRefUrl').value = state.settings.drugRefUrl || ''; renderUnitsTable(); loadUnitRequests(); } else $('adminError').classList.add('show'); };
-window.exitAdmin = function() { showPage('landing'); };
+window.exitAdmin = function() { window.location.href = 'landing.html'; };
 window.openAddUnitModal = function() { state.editingUnitId = null; $('unitModalTitle').textContent = 'Add Unit'; $('uName').value = ''; $('uIcon').value = '🏥'; $('uCode').value = ''; $('uDesc').value = ''; openModal('unitModal'); };
 window.addUnit = window.openAddUnitModal;
 window.openTrashModal = function() { openModal('trashModal'); fetchTrash(); };
