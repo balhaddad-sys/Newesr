@@ -1106,6 +1106,12 @@ function enqueuePatch(operation, payload) {
 
 async function saveData() {
   try {
+    // ═══════════════════════════════════════════════════════════════════
+    // SAFEGUARD: Don't overwrite cloud with empty units if we have none locally
+    // but cloud might have data (prevents accidental data loss on code updates)
+    // ═══════════════════════════════════════════════════════════════════
+    const hasLocalData = state.units.length > 0 || state.patients.length > 0;
+    
     let res;
     
     // Use delta sync if we have patches queued
@@ -1118,8 +1124,13 @@ async function saveData() {
         state.rev = res.rev || state.rev;
         localStorage.setItem('MW_REV', String(state.rev));
       } else {
-        // Fall back to snapshot
+        // Fall back to snapshot only if we have data
         console.warn('⚠️ Patch failed, using snapshot');
+        if (!hasLocalData) {
+          console.warn('⚠️ SAFEGUARD: Refusing to save empty state to cloud');
+          updateSyncStatus('error');
+          return;
+        }
         res = await callAPI('saveData', {
           payload: {
             units: state.units,
@@ -1130,8 +1141,8 @@ async function saveData() {
           }
         });
       }
-    } else {
-      // Full snapshot save
+    } else if (hasLocalData) {
+      // Full snapshot save - only if we have data
       res = await callAPI('saveData', {
         payload: {
           units: state.units,
@@ -1141,6 +1152,10 @@ async function saveData() {
           unitRequests: state.unitRequests
         }
       });
+    } else {
+      console.log('ℹ️ No local data to save, skipping sync');
+      updateSyncStatus('synced');
+      return;
     }
     
     if (res.success) {
