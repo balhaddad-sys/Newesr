@@ -131,7 +131,8 @@ body {
   color: #fff;
 }
 
-.mode-tab-icon { font-size: 1.3rem; }
+.mode-tab-icon { display:flex;align-items:center;justify-content:center }
+.mode-tab-icon svg { width:22px;height:22px }
 
 .panel { display: none; }
 .panel.active { display: block; animation: fadeIn 0.3s; }
@@ -566,15 +567,15 @@ body {
 <main class="main" id="mainContent">
   <div class="mode-tabs">
     <button class="mode-tab active" data-mode="receive" onclick="switchMode('receive')">
-      <span class="mode-tab-icon">📱</span>
+      <span class="mode-tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span>
       My Badge
     </button>
     <button class="mode-tab" data-mode="send" onclick="switchMode('send')">
-      <span class="mode-tab-icon">📷</span>
+      <span class="mode-tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
       Scan & Send
     </button>
     <button class="mode-tab" data-mode="inbox" onclick="switchMode('inbox')">
-      <span class="mode-tab-icon">📥</span>
+      <span class="mode-tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>
       Inbox
     </button>
   </div>
@@ -722,12 +723,30 @@ function generateBadge() {
 
 async function loadPatients() {
   try {
+    console.log('Loading patients from API...', API);
+    console.log('Auth:', AUTH);
+    
     const res = await callAPI('loadData');
+    console.log('Full API response:', JSON.stringify(res).substring(0, 500));
+    
     if (res.success && res.data) {
       const d = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+      console.log('Parsed data keys:', Object.keys(d));
+      
       patients = d.patients || [];
+      console.log('Patients loaded:', patients.length);
+      
+      if (patients.length > 0) {
+        console.log('First patient:', patients[0]);
+      } else {
+        console.log('No patients found in data');
+      }
+    } else {
+      console.log('API returned no success or no data');
     }
-  } catch (e) { console.error(e); }
+  } catch (e) { 
+    console.error('Load patients error:', e); 
+  }
 }
 
 function startScanner() {
@@ -810,9 +829,10 @@ function closeSelect() {
 }
 
 function selectPt(id) {
-  selectedId = id;
+  selectedId = String(id); // Ensure string type
+  console.log('Selected patient ID:', selectedId);
   document.querySelectorAll('.patient-item').forEach(el => {
-    el.classList.toggle('selected', el.dataset.id === id);
+    el.classList.toggle('selected', el.dataset.id === selectedId);
   });
   document.getElementById('sendBtn').disabled = false;
 }
@@ -823,9 +843,13 @@ async function sendPatient() {
     return;
   }
   
-  const pt = patients.find(p => p.id === selectedId);
+  console.log('Looking for patient with ID:', selectedId, 'in', patients.map(p => p.id));
+  
+  // Find patient - handle both string and number IDs
+  const pt = patients.find(p => String(p.id) === String(selectedId));
   if (!pt) {
-    toast('❌ Patient not found');
+    toast('❌ Patient not found (ID: ' + selectedId + ')');
+    console.error('Patient not found. Available IDs:', patients.map(p => p.id));
     return;
   }
   
