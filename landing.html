@@ -555,6 +555,31 @@ body {
   background: var(--primary-light);
 }
 
+.color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.color-option {
+  width: 36px;
+  height: 36px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.color-option:hover {
+  transform: scale(1.1);
+}
+
+.color-option.selected {
+  border-color: var(--text-main);
+  box-shadow: 0 0 0 3px var(--bg-surface), 0 0 0 5px currentColor;
+}
+
 /* Trash Modal */
 .trash-list {
   max-height: 300px;
@@ -833,25 +858,19 @@ body {
         <input type="text" class="form-input" id="unitName" placeholder="e.g., Cardiology" style="text-align:left;letter-spacing:normal;">
       </div>
       <div class="form-group">
-        <label class="form-label">Icon</label>
-        <div class="emoji-picker" id="emojiPicker">
-          <button type="button" class="emoji-option" data-emoji="🏥">🏥</button>
-          <button type="button" class="emoji-option" data-emoji="❤️">❤️</button>
-          <button type="button" class="emoji-option" data-emoji="🧠">🧠</button>
-          <button type="button" class="emoji-option" data-emoji="🫁">🫁</button>
-          <button type="button" class="emoji-option" data-emoji="🦴">🦴</button>
-          <button type="button" class="emoji-option" data-emoji="👶">👶</button>
-          <button type="button" class="emoji-option" data-emoji="🔬">🔬</button>
-          <button type="button" class="emoji-option" data-emoji="💊">💊</button>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">4-Digit Access Code</label>
-        <input type="text" class="form-input" id="unitCode" maxlength="4" placeholder="• • • •" inputmode="numeric">
-      </div>
-      <div class="form-group">
         <label class="form-label">Description (optional)</label>
         <input type="text" class="form-input" id="unitDesc" placeholder="e.g., Ward 14" style="text-align:left;letter-spacing:normal;">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Color</label>
+        <div class="color-picker" id="colorPicker">
+          <button type="button" class="color-option selected" data-color="#005eb8" style="background:#005eb8"></button>
+          <button type="button" class="color-option" data-color="#059669" style="background:#059669"></button>
+          <button type="button" class="color-option" data-color="#7c3aed" style="background:#7c3aed"></button>
+          <button type="button" class="color-option" data-color="#dc2626" style="background:#dc2626"></button>
+          <button type="button" class="color-option" data-color="#d97706" style="background:#d97706"></button>
+          <button type="button" class="color-option" data-color="#0891b2" style="background:#0891b2"></button>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -1110,22 +1129,9 @@ function openAccessModal(unitId) {
   const unit = state.units.find(u => u.id === unitId);
   if (!unit) return;
   
-  selectedUnitId = unitId;
-  document.getElementById('accessUnitName').textContent = unit.name;
-  document.getElementById('accessUnitDesc').textContent = unit.desc || 'Medical Unit';
-  
-  openModal('accessModal');
-}
-
-function enterUnit() {
-  const unit = state.units.find(u => u.id === selectedUnitId);
-  if (!unit) return;
-  
-  // Store selected unit
-  sessionStorage.setItem('MW_UNIT', selectedUnitId);
+  // Direct access - no modal needed
+  sessionStorage.setItem('MW_UNIT', unitId);
   sessionStorage.setItem('MW_UNIT_NAME', unit.name);
-  
-  // Navigate to dashboard
   window.location.href = 'dashboard.html';
 }
 
@@ -1133,11 +1139,19 @@ function openAddUnitModal() {
   editingUnitId = null;
   document.getElementById('unitModalTitle').textContent = 'Add Unit';
   document.getElementById('unitName').value = '';
-  document.getElementById('unitCode').value = '';
   document.getElementById('unitDesc').value = '';
-  selectedIcon = '🏥';
-  document.querySelectorAll('.emoji-option').forEach(b => b.classList.remove('selected'));
-  document.querySelector('.emoji-option[data-emoji="🏥"]').classList.add('selected');
+  
+  // Reset color picker
+  document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
+  document.querySelector('.color-option[data-color="#005eb8"]')?.classList.add('selected');
+  
+  // Add click handlers to color options
+  document.querySelectorAll('.color-option').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    };
+  });
   
   openModal('unitModal');
 }
@@ -1149,12 +1163,19 @@ function editUnit(unitId) {
   editingUnitId = unitId;
   document.getElementById('unitModalTitle').textContent = 'Edit Unit';
   document.getElementById('unitName').value = unit.name;
-  document.getElementById('unitCode').value = unit.code;
   document.getElementById('unitDesc').value = unit.desc || '';
-  selectedIcon = unit.icon || '🏥';
   
-  document.querySelectorAll('.emoji-option').forEach(b => {
-    b.classList.toggle('selected', b.dataset.emoji === selectedIcon);
+  // Set color picker
+  document.querySelectorAll('.color-option').forEach(b => {
+    b.classList.toggle('selected', b.dataset.color === unit.color);
+  });
+  
+  // Add click handlers
+  document.querySelectorAll('.color-option').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    };
   });
   
   openModal('unitModal');
@@ -1162,34 +1183,26 @@ function editUnit(unitId) {
 
 async function saveUnit() {
   const name = document.getElementById('unitName').value.trim();
-  const code = document.getElementById('unitCode').value.trim();
   const desc = document.getElementById('unitDesc').value.trim();
+  const selectedColorEl = document.querySelector('.color-option.selected');
+  const color = selectedColorEl ? selectedColorEl.dataset.color : '#005eb8';
   
   if (!name) {
     toast('Please enter a unit name');
     return;
   }
   
-  if (!/^\d{4}$/.test(code)) {
-    toast('Please enter a 4-digit code');
-    return;
-  }
-  
-  const colors = ['#f59e0b', '#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899', '#10b981'];
-  
   if (editingUnitId) {
     const idx = state.units.findIndex(u => u.id === editingUnitId);
     if (idx !== -1) {
-      state.units[idx] = { ...state.units[idx], name, code, desc, icon: selectedIcon };
+      state.units[idx] = { ...state.units[idx], name, desc, color };
     }
   } else {
     state.units.push({
       id: 'u' + Date.now(),
       name,
-      code,
       desc,
-      icon: selectedIcon,
-      color: colors[state.units.length % colors.length]
+      color
     });
   }
   
