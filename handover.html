@@ -723,20 +723,11 @@ function generateBadge() {
 
 async function loadPatients() {
   try {
-    console.log('=== LOADING PATIENTS ===');
+    console.log('Loading patients...');
     console.log('Auth user:', AUTH.user);
-    console.log('Auth pass exists:', !!AUTH.pass);
-    console.log('Auth pass length:', AUTH.pass ? AUTH.pass.length : 0);
     
     const res = await callAPI('loadData');
-    console.log('Full API response:', JSON.stringify(res).substring(0, 500));
     console.log('API response success:', res.success);
-    
-    if (!res.success) {
-      console.error('❌ API FAILED:', res.error);
-      toast('❌ Load failed: ' + (res.error || 'Unknown error'));
-      return;
-    }
     
     if (res.success && res.data) {
       // res.data is already the data object
@@ -745,20 +736,19 @@ async function loadPatients() {
       
       // Patients are directly in the data object
       patients = d.patients || [];
-      console.log('✅ Patients found:', patients.length);
+      console.log('Patients found:', patients.length);
       
       if (patients.length > 0) {
         console.log('Patient IDs:', patients.map(p => p.id));
         console.log('Patient names:', patients.map(p => p.name));
       } else {
-        console.log('No patients in data. Full data:', JSON.stringify(d).substring(0, 500));
+        console.log('No patients in data. Full data:', JSON.stringify(d).substring(0, 300));
       }
     } else {
-      console.log('API returned no data. Response:', JSON.stringify(res).substring(0, 500));
+      console.log('API failed or no data. Response:', JSON.stringify(res).substring(0, 200));
     }
   } catch (e) { 
-    console.error('Load patients error:', e);
-    toast('❌ Error: ' + e.message);
+    console.error('Load patients error:', e); 
   }
 }
 
@@ -958,12 +948,29 @@ async function acceptPt(id) {
 }
 
 async function callAPI(action, extra = {}) {
-  const r = await fetch(API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action, username: AUTH.user, password: AUTH.pass, ...extra })
-  });
-  return r.json();
+  try {
+    const payload = { 
+      action, 
+      username: AUTH.user, 
+      password: AUTH.pass, 
+      ...extra 
+    };
+    
+    console.log('📡 API Call:', action, 'User:', AUTH.user);
+    
+    const r = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+    
+    const result = await r.json();
+    console.log('📡 API Response:', action, result.success ? '✅' : '❌');
+    return result;
+  } catch (e) {
+    console.error('📡 API Error:', action, e);
+    return { success: false, error: 'Network error: ' + e.message };
+  }
 }
 
 function showLoad(t) {
