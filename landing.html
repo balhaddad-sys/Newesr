@@ -1130,6 +1130,16 @@ async function loadData() {
   // ═══════════════════════════════════════════════════════════════════
   // CACHE-ONLY LOAD - loading.html already fetched from cloud
   // ═══════════════════════════════════════════════════════════════════
+  
+  const cloudVerified = localStorage.getItem('MW_CLOUD_VERIFIED');
+  
+  // If not verified, redirect to loading page first
+  if (!cloudVerified) {
+    console.log('⚠️ Cache not verified - redirecting to loading page');
+    window.location.href = 'loading.html';
+    return;
+  }
+  
   try {
     const cached = localStorage.getItem('medward_pro_v12') || localStorage.getItem('MEDWARD_CACHE');
     
@@ -1142,18 +1152,10 @@ async function loadData() {
       state.unitRequests = data.unitRequests || [];
       state.rev = data.rev || parseInt(localStorage.getItem('MW_REV') || '1', 10);
       
-      // Check if cache was verified by loading.html
-      const cloudVerified = localStorage.getItem('MW_CLOUD_VERIFIED');
-      if (cloudVerified) {
-        state.isHydrated = true;
-        state.isReadOnly = false;
-        console.log('✅ Loaded from verified cache:', state.patients.length, 'patients,', state.units.length, 'units');
-      } else {
-        // Cache exists but not verified - read-only mode
-        state.isHydrated = true;
-        state.isReadOnly = true;
-        console.log('⚠️ Loaded from unverified cache (read-only):', state.patients.length, 'patients');
-      }
+      // Cache is verified - full access
+      state.isHydrated = true;
+      state.isReadOnly = false;
+      console.log('✅ Loaded from verified cache:', state.patients.length, 'patients,', state.units.length, 'units');
     } else {
       // No cache - redirect to loading page
       console.log('❌ No cache found - redirecting to loading page');
