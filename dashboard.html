@@ -12542,7 +12542,7 @@ async function handleLabUpload(files) {
       try {
         return JSON.parse(text);
       } catch (e) {
-        console.log('⚠️ Direct parse failed, attempting fixes...');
+        console.log('⚠️ Direct parse failed, attempting fixes...', e.message);
       }
       
       let cleaned = text;
@@ -12570,7 +12570,7 @@ async function handleLabUpload(files) {
       try {
         return JSON.parse(cleaned);
       } catch (e) {
-        console.log('⚠️ Standard fixes failed, trying aggressive repair...');
+        console.log('⚠️ Standard fixes failed, trying aggressive repair...', e.message);
       }
       
       // Step 3: Aggressive repair - rebuild the JSON structure
@@ -12581,13 +12581,49 @@ async function handleLabUpload(files) {
           return result;
         }
       } catch (e) {
-        console.log('⚠️ Function eval failed');
+        console.log('⚠️ Function eval failed:', e.message);
       }
       
-      // Step 4: Try to extract labData specifically using regex
+      // Step 4: Try to extract labData specifically using regex - more aggressive
       console.log('⚠️ Attempting regex extraction of labData...');
       try {
-        // Look for labData object
+        // Look for parameters array directly - this is the most important part
+        const paramsMatch = cleaned.match(/"parameters"\s*:\s*\[([\s\S]*?)\](?=\s*[,}])/);
+        if (paramsMatch) {
+          console.log('📊 Found parameters array, attempting extraction...');
+          let paramsStr = '[' + paramsMatch[1] + ']';
+          
+          // Clean up common issues in parameters
+          paramsStr = paramsStr
+            .replace(/,(\s*[\]}])/g, '$1')  // trailing commas
+            .replace(/([}\]])\s*([{\[])/g, '$1,$2')  // missing commas between objects
+            .replace(/"\s*\n\s*"/g, '","')  // missing commas between strings
+            .replace(/}\s*{/g, '},{');  // missing commas between objects
+          
+          try {
+            const params = JSON.parse(paramsStr);
+            console.log('✅ Extracted ' + params.length + ' parameters via regex');
+            
+            // Try to get dates too
+            let dates = [];
+            const datesMatch = cleaned.match(/"dates"\s*:\s*\[([\s\S]*?)\](?=\s*[,}])/);
+            if (datesMatch) {
+              try {
+                dates = JSON.parse('[' + datesMatch[1].replace(/,(\s*\])/g, '$1') + ']');
+              } catch (e) { /* ignore date parsing errors */ }
+            }
+            
+            return { 
+              success: true, 
+              labData: { parameters: params, dates: dates },
+              confidence: 0.6
+            };
+          } catch (paramErr) {
+            console.log('⚠️ Parameter array parse failed:', paramErr.message);
+          }
+        }
+        
+        // Fallback: Look for labData object
         const labDataMatch = cleaned.match(/"labData"\s*:\s*(\{[\s\S]*?"parameters"\s*:\s*\[[\s\S]*?\]\s*\})/);
         if (labDataMatch) {
           const labDataStr = labDataMatch[1]
@@ -12599,6 +12635,34 @@ async function handleLabUpload(files) {
         }
       } catch (e) {
         console.log('⚠️ Regex extraction failed:', e.message);
+      }
+      
+      // Step 5: Last resort - try to extract any valid JSON objects that look like lab parameters
+      console.log('⚠️ Attempting last-resort parameter extraction...');
+      try {
+        const paramObjects = [];
+        // Match objects that look like lab parameters
+        const paramPattern = /\{\s*"name"\s*:\s*"[^"]+"\s*,[\s\S]*?"values"\s*:\s*\[[\s\S]*?\]\s*\}/g;
+        let match;
+        while ((match = paramPattern.exec(cleaned)) !== null) {
+          try {
+            const obj = JSON.parse(match[0].replace(/,(\s*[\]}])/g, '$1'));
+            if (obj.name && obj.values) {
+              paramObjects.push(obj);
+            }
+          } catch (e) { /* skip invalid objects */ }
+        }
+        
+        if (paramObjects.length > 0) {
+          console.log('✅ Recovered ' + paramObjects.length + ' parameters via object extraction');
+          return {
+            success: true,
+            labData: { parameters: paramObjects, dates: [] },
+            confidence: 0.5
+          };
+        }
+      } catch (e) {
+        console.log('⚠️ Last-resort extraction failed:', e.message);
       }
       
       // Give up
@@ -12618,8 +12682,12 @@ async function handleLabUpload(files) {
       if (errorMatch) {
         data = { success: false, error: errorMatch[1] };
       } else {
-        toast('Failed to parse server response', true);
-        throw jsonError;
+        // Don't throw - show user-friendly error instead
+        state.isAnalyzingLab = false;
+        hideLabLoader();
+        toast('Analysis failed - please try again or use a clearer image', true);
+        renderProfileLabs();
+        return;
       }
     }
     console.log('📦 Extraction result:', data);
@@ -12661,7 +12729,18 @@ async function handleLabUpload(files) {
     console.error('❌ Error message:', e.message);
     state.isAnalyzingLab = false;
     hideLabLoader();
-    toast('Extraction failed: ' + (e.message || 'check connection'), true);
+    
+    // User-friendly error messages
+    let userMsg = 'Analysis failed - please try again';
+    if (e.message?.includes('network') || e.message?.includes('fetch') || e.message?.includes('Failed to fetch')) {
+      userMsg = 'Connection error - check your internet';
+    } else if (e.message?.includes('timeout')) {
+      userMsg = 'Request timed out - please try again';
+    } else if (e.message?.includes('parse') || e.message?.includes('JSON') || e.message?.includes('Syntax')) {
+      userMsg = 'Analysis incomplete - try a clearer image';
+    }
+    
+    toast(userMsg, true);
     renderProfileLabs();
   }
 }
