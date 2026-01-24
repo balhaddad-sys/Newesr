@@ -12325,56 +12325,39 @@ CRITICAL INSTRUCTIONS:
 2. Pay special attention to:
    - Date format: Look for DD/MM/YYYY or MM/DD/YYYY patterns
    - Cumulative/historical data tables showing multiple dates
-   - Age-specific reference ranges (e.g., "<50 years: >450 pg/ml")
    - Units (pg/ml, mmol/L, mg/dL, etc.)
-   - Patient demographics if visible
 
 3. For each parameter found, extract:
-   - Parameter name (standardized: e.g., "NT-proBNP" not "NT pro BNP")
+   - Parameter name (standardized)
    - Value (numeric only)
    - Unit
-   - Reference range (min-max or descriptive)
+   - Reference range (min-max)
    - Date of test (convert to ISO format YYYY-MM-DD)
    - Status: "critical", "high", "low", or "normal" based on reference ranges
 
 4. IMPORTANT FOR KUWAIT MOH FORMAT:
    - Look for "PATIENT CUMULATIVE REPORT" section with historical values
    - Parse the table showing multiple dates and sample numbers
-   - Extract ALL historical values, not just the latest
-   - Note the "Special Range" section for age-specific cutoffs
+   - Extract ALL historical values from the cumulative table
    - Handle formats like "16/01/2026 04:32:56" for dates
 
-5. NT-proBNP Specific (ICON Criteria for Acute HF):
-   - Rule IN HF for <50 years: >450 pg/ml
-   - Rule IN HF for 50-75 years: >900 pg/ml  
-   - Rule IN HF for >75 years: >1800 pg/ml
-   - Rule OUT HF (all ages): <300 pg/ml
-   - Chronic HF (ESC): >125 pg/ml
-
-6. Common Lab Mappings:
-   - "NT proBNP" / "NT-proBNP" / "ProBNP" → standardize to "NT-proBNP"
-   - Apply age-based reference interpretation for cardiac markers
+5. Status determination:
+   - "critical": Values marked HH or LL, or far outside range
+   - "high": Values marked H or above reference max
+   - "low": Values marked L or below reference min
+   - "normal": Within range or marked Norm
 
 Return a JSON object with this exact structure:
 {
   "confidence": 0.0-1.0,
-  "patientInfo": {
-    "name": "string or null",
-    "hospitalId": "string or null", 
-    "dateOfBirth": "YYYY-MM-DD or null",
-    "gender": "Male/Female or null",
-    "location": "string or null"
-  },
   "labData": {
     "dates": ["YYYY-MM-DD", ...],
     "parameters": [
       {
-        "name": "Standard Parameter Name",
-        "abbrev": "Abbreviation",
+        "name": "Parameter Name",
         "unit": "unit string",
         "refMin": number or null,
         "refMax": number or null,
-        "refDescription": "Age-specific or contextual reference info",
         "values": [
           {
             "date": "YYYY-MM-DD",
@@ -12383,13 +12366,7 @@ Return a JSON object with this exact structure:
           }
         ]
       }
-    ],
-    "interpretation": {
-      "summary": "Brief clinical interpretation",
-      "clinicalCorrelation": "Clinical context",
-      "trends": ["Notable trends"],
-      "recommendations": ["Actionable recommendations"]
-    }
+    ]
   }
 }
 
