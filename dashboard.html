@@ -14295,8 +14295,7 @@ async function cloudFirstBoot() {
   // This page only reads from the warmed cache
   // ═══════════════════════════════════════════════════════════════════
   
-  const cloudVerifiedAt = parseInt(localStorage.getItem('MW_CLOUD_VERIFIED') || '0', 10);
-  const cacheAge = Date.now() - cloudVerifiedAt;
+  const cloudVerified = localStorage.getItem('MW_CLOUD_VERIFIED');
   
   // Allow reads from local cache
   boot.allowLocalReads = true;
@@ -14330,11 +14329,10 @@ async function cloudFirstBoot() {
         syncState.clientRev = data.rev;
       }
       
-      // Check if cache was verified by loading.html (within last 5 minutes)
-      const CACHE_VALID_MS = 5 * 60 * 1000; // 5 minutes
-      
-      if (cloudVerifiedAt && cacheAge < CACHE_VALID_MS) {
-        // Cache is fresh and verified - full access
+      // ═══════════════════════════════════════════════════════════════════
+      // If MW_CLOUD_VERIFIED exists, loading.html verified it - FULL ACCESS
+      // ═══════════════════════════════════════════════════════════════════
+      if (cloudVerified) {
         boot.cloudLoaded = true;
         boot.allowLocalWrites = true;
         boot.bootPhase = 'ready';
@@ -14347,23 +14345,14 @@ async function cloudFirstBoot() {
         showSyncStatusBar('☁️ Cloud connected', 'green');
         console.log('✅ Loaded from verified cache:', state.patients.length, 'patients');
         
-        // Clear the verified flag (one-time use per session)
-        localStorage.removeItem('MW_CLOUD_VERIFIED');
-        
         return true;
       } else {
-        // Cache exists but is old/unverified - read-only mode
-        boot.cloudLoaded = false;
-        boot.allowLocalWrites = false;
-        boot.bootPhase = 'ready';
-        syncState.isHydrated = true;
-        syncState.isReadOnly = true;
-        syncState.lastServerPatientCount = state.patients?.length || 0;
-        syncState.lastServerUnitCount = state.units?.length || 0;
-        
-        showSyncStatusBar('📱 Offline - View Only', 'orange');
-        console.log('⚠️ Cache not verified - read-only mode:', state.patients.length, 'patients');
-        
+        // ═══════════════════════════════════════════════════════════════════
+        // No MW_CLOUD_VERIFIED - user accessed dashboard directly without
+        // going through loading.html. Redirect to loading.html to verify.
+        // ═══════════════════════════════════════════════════════════════════
+        console.log('⚠️ Cache not verified - redirecting to loading page');
+        window.location.href = 'loading.html';
         return false;
       }
       
