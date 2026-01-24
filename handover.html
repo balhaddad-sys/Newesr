@@ -839,1051 +839,428 @@ function exportPatientPDF(idx) {
 }
 
 // Standalone PDF generator (no recipient needed)
+// Standalone PDF generator (no recipient needed)
 function generatePatientPDF(pt) {
   showLoad('Generating PDF...');
   
   // Debug: Log patient data structure
-  console.log('=== PDF GENERATION DEBUG ===');
-  console.log('Patient object keys:', Object.keys(pt));
-  console.log('Patient data:', JSON.stringify(pt, (key, value) => {
-    // Truncate long strings for logging
-    if (typeof value === 'string' && value.length > 200) {
-      return value.substring(0, 200) + '... [truncated]';
-    }
-    return value;
-  }, 2));
+  console.log('=== PDF DEBUG ===');
+  console.log('Keys:', Object.keys(pt));
+  console.log('Labs:', pt.labs);
+  console.log('Vitals:', pt.vitals);
+  console.log('Tasks:', pt.tasks || pt.plans);
   
   try {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
-    });
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 20;
+    const margin = 15;
     const contentWidth = pageWidth - (margin * 2);
     let y = margin;
     
     // Colors
-    const primaryColor = [0, 94, 184];
-    const darkColor = [15, 23, 42];
-    const grayColor = [71, 85, 105];
+    const primary = [0, 94, 184];
+    const dark = [15, 23, 42];
+    const gray = [100, 116, 139];
     const lightGray = [226, 232, 240];
+    const red = [220, 38, 38];
     
-    // ─────────────────────────────────────────────────────────────
-    // HEADER
-    // ─────────────────────────────────────────────────────────────
-    doc.setFillColor(...primaryColor);
-    doc.rect(0, 0, pageWidth, 30, 'F');
+    // Timestamp for unique filename
+    const now = new Date();
+    const timestamp = now.getTime();
+    
+    // ═══════════════════════════════════════════════════════════════
+    // HELPER: Check if value has meaningful data
+    // ═══════════════════════════════════════════════════════════════
+    function hasData(val) {
+      if (val === null || val === undefined) return false;
+      if (typeof val === 'string') {
+        const cleaned = val.trim();
+        if (!cleaned || cleaned === '-' || cleaned === 'N/A' || cleaned === 'Pending' || cleaned === 'new') return false;
+        if (cleaned.includes('data:image') || cleaned.includes('base64')) return false;
+        if (cleaned.length > 500 && !cleaned.includes(' ')) return false;
+        return true;
+      }
+      if (Array.isArray(val)) return val.length > 0;
+      if (typeof val === 'object') return Object.keys(val).length > 0;
+      return true;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // HELPER: Clean text
+    // ═══════════════════════════════════════════════════════════════
+    function clean(str) {
+      if (!str) return '';
+      return String(str).replace(/data:image[^,]+,[^\s]+/g, '').replace(/\s+/g, ' ').trim();
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // HELPER: Add section (only if data exists)
+    // ═══════════════════════════════════════════════════════════════
+    function addSection(title, content) {
+      if (!hasData(content)) return false;
+      
+      const text = clean(typeof content === 'object' ? JSON.stringify(content) : String(content));
+      if (!text || text.length < 2) return false;
+      
+      if (y > pageHeight - 40) { doc.addPage(); y = margin; }
+      
+      // Section title
+      doc.setFillColor(...primary);
+      doc.rect(margin, y, 2, 5, 'F');
+      doc.setTextColor(...dark);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.text(title.toUpperCase(), margin + 5, y + 4);
+      y += 8;
+      
+      // Content
+      doc.setTextColor(...gray);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      const lines = doc.splitTextToSize(text, contentWidth - 5);
+      const maxLines = Math.min(lines.length, 20);
+      for (let i = 0; i < maxLines; i++) {
+        if (y > pageHeight - 15) { doc.addPage(); y = margin; }
+        doc.text(lines[i], margin + 5, y);
+        y += 4;
+      }
+      y += 3;
+      return true;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // HEADER - Compact
+    // ═══════════════════════════════════════════════════════════════
+    doc.setFillColor(...primary);
+    doc.rect(0, 0, pageWidth, 22, 'F');
     
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(16);
-    doc.text('PATIENT SUMMARY', margin, 14);
+    doc.setFontSize(14);
+    doc.text('PATIENT SUMMARY', margin, 10);
     
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.text('MedWard Pro', margin, 21);
+    doc.setFontSize(8);
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    doc.text(dateStr + ' | ' + timeStr, pageWidth - margin, 9, { align: 'right' });
     
-    // Date/Time on right
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('en-GB', { 
-      day: '2-digit', 
-      month: 'short', 
-      year: 'numeric' 
-    });
-    const timeStr = now.toLocaleTimeString('en-GB', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-    doc.text(dateStr + ' | ' + timeStr, pageWidth - margin, 14, { align: 'right' });
-    
-    const fromDr = AUTH.user ? 'Dr. ' + AUTH.user.toUpperCase() : '';
-    if (fromDr) {
-      doc.text('Prepared by: ' + fromDr, pageWidth - margin, 21, { align: 'right' });
+    if (AUTH.user) {
+      doc.text('Dr. ' + AUTH.user.charAt(0).toUpperCase() + AUTH.user.slice(1), pageWidth - margin, 15, { align: 'right' });
     }
     
-    y = 40;
+    y = 28;
     
-    // ─────────────────────────────────────────────────────────────
-    // PATIENT IDENTIFICATION BOX
-    // ─────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════
+    // PATIENT INFO BOX
+    // ═══════════════════════════════════════════════════════════════
     doc.setFillColor(248, 250, 252);
     doc.setDrawColor(...lightGray);
-    doc.roundedRect(margin, y, contentWidth, 25, 3, 3, 'FD');
+    doc.roundedRect(margin, y, contentWidth, 18, 2, 2, 'FD');
     
-    doc.setTextColor(...darkColor);
+    doc.setTextColor(...dark);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
-    doc.text(pt.name || 'Unknown Patient', margin + 5, y + 9);
+    doc.setFontSize(12);
+    doc.text(pt.name || 'Unknown', margin + 4, y + 7);
     
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...grayColor);
+    doc.setFontSize(8);
+    doc.setTextColor(...gray);
+    const meta = [];
+    if (pt.mrn || pt.id) meta.push('MRN: ' + (pt.mrn || pt.id));
+    if (pt.ward) meta.push('Ward: ' + pt.ward);
+    if (pt.age) meta.push('Age: ' + pt.age);
+    if (pt.gender) meta.push(pt.gender);
+    doc.text(meta.join('  |  '), margin + 4, y + 13);
     
-    const patientMeta = [];
-    if (pt.age) patientMeta.push('Age: ' + pt.age);
-    if (pt.gender) patientMeta.push('Gender: ' + pt.gender);
-    if (pt.mrn || pt.id) patientMeta.push('MRN: ' + (pt.mrn || pt.id));
-    if (pt.ward) patientMeta.push('Ward: ' + pt.ward);
-    if (pt.bed) patientMeta.push('Bed: ' + pt.bed);
+    y += 24;
     
-    doc.text(patientMeta.join('  |  '), margin + 5, y + 17);
+    // ═══════════════════════════════════════════════════════════════
+    // PARSE UNIFIED SUMMARY FOR STRUCTURED DATA
+    // ═══════════════════════════════════════════════════════════════
+    const summary = pt.unifiedSummary || pt.summary || pt.clinicalSummary || '';
+    let extracted = { demographics: null, riskFactors: [], presentingComplaint: null, findings: [], currentStatus: null };
     
-    if (pt.admissionDate || pt.dateAdmitted) {
-      doc.text('Admitted: ' + (pt.admissionDate || pt.dateAdmitted), margin + 5, y + 22);
-    }
-    
-    y += 32;
-    
-    // ─────────────────────────────────────────────────────────────
-    // HELPER: Check if string is base64 image data or garbage
-    // ─────────────────────────────────────────────────────────────
-    function isBase64OrGarbage(str) {
-      if (!str || typeof str !== 'string') return false;
+    if (summary && typeof summary === 'string' && summary.length > 50) {
+      // Extract demographics
+      const demoMatch = summary.match(/(\d+)[- ]?(?:year[- ]?old|yo)[^,]*?(?:male|female|man|woman)?/i);
+      if (demoMatch) extracted.demographics = demoMatch[0].trim();
       
-      // Check for base64 image patterns
-      if (str.includes('data:image')) return true;
-      if (str.includes('base64,')) return true;
-      
-      // Check for very long strings with no spaces (likely encoded data)
-      if (str.length > 500 && !str.includes(' ') && !str.includes('\n')) return true;
-      
-      // Check for high ratio of non-readable characters
-      const readable = str.match(/[a-zA-Z0-9\s.,!?;:'"()-]/g) || [];
-      if (str.length > 100 && readable.length / str.length < 0.7) return true;
-      
-      return false;
-    }
-    
-    // ─────────────────────────────────────────────────────────────
-    // HELPER: Clean text content - remove base64, images, etc.
-    // ─────────────────────────────────────────────────────────────
-    function cleanText(str) {
-      if (!str || typeof str !== 'string') return str;
-      
-      // Remove base64 image data completely
-      let cleaned = str.replace(/data:image\/[^;]+;base64,[A-Za-z0-9+/=]+/g, '[Image]');
-      
-      // Remove any remaining long base64-like strings
-      cleaned = cleaned.replace(/[A-Za-z0-9+/=]{100,}/g, '[Data removed]');
-      
-      // Clean up multiple [Image] or [Data removed] markers
-      cleaned = cleaned.replace(/(\[Image\]\s*)+/g, '[Image attached] ');
-      cleaned = cleaned.replace(/(\[Data removed\]\s*)+/g, '');
-      
-      // Trim and clean whitespace
-      cleaned = cleaned.replace(/\s+/g, ' ').trim();
-      
-      return cleaned;
-    }
-    
-    // ─────────────────────────────────────────────────────────────
-    // HELPER: Format complex objects to readable text
-    // ─────────────────────────────────────────────────────────────
-    function formatContent(content) {
-      if (content === null || content === undefined) return '';
-      
-      // Already a string
-      if (typeof content === 'string') {
-        // Skip if it's mostly base64 garbage
-        if (isBase64OrGarbage(content)) return '';
-        return cleanText(content);
-      }
-      
-      // Number or boolean
-      if (typeof content !== 'object') return String(content);
-      
-      // Array handling
-      if (Array.isArray(content)) {
-        if (content.length === 0) return '';
-        
-        // Array of strings
-        if (typeof content[0] === 'string') {
-          const filtered = content.filter(s => !isBase64OrGarbage(s)).map(s => cleanText(s));
-          return filtered.join(', ');
-        }
-        
-        // Array of objects (like medications)
-        return content.map(item => {
-          if (typeof item === 'string') {
-            if (isBase64OrGarbage(item)) return '';
-            return cleanText(item);
-          }
-          if (typeof item !== 'object') return String(item);
-          
-          // Try to extract meaningful fields from object
-          const parts = [];
-          
-          // Common medication fields
-          if (item.name || item.medication || item.drug) {
-            const val = item.name || item.medication || item.drug;
-            if (!isBase64OrGarbage(val)) parts.push(cleanText(val));
-          }
-          if (item.dose || item.dosage) {
-            const val = item.dose || item.dosage;
-            if (!isBase64OrGarbage(val)) parts.push(cleanText(val));
-          }
-          if (item.frequency || item.schedule) {
-            const val = item.frequency || item.schedule;
-            if (!isBase64OrGarbage(val)) parts.push(cleanText(val));
-          }
-          if (item.route) {
-            if (!isBase64OrGarbage(item.route)) parts.push(cleanText(item.route));
-          }
-          
-          // If we found meaningful parts, join them
-          if (parts.length > 0) {
-            return parts.join(' ');
-          }
-          
-          // Otherwise try common value fields
-          if (item.value && !isBase64OrGarbage(item.value)) return cleanText(item.value);
-          if (item.text && !isBase64OrGarbage(item.text)) return cleanText(item.text);
-          if (item.description && !isBase64OrGarbage(item.description)) return cleanText(item.description);
-          
-          // Last resort: join all string values (excluding base64)
-          const values = Object.values(item).filter(v => 
-            (typeof v === 'string' && !isBase64OrGarbage(v)) || typeof v === 'number'
-          ).map(v => typeof v === 'string' ? cleanText(v) : v);
-          return values.length > 0 ? values.join(' - ') : '';
-        }).filter(s => s).join('\n');
-      }
-      
-      // Plain object - skip base64 fields
-      const parts = [];
-      for (const [key, val] of Object.entries(content)) {
-        // Skip image/data fields
-        if (key.toLowerCase().includes('image') || key.toLowerCase().includes('base64')) continue;
-        if (key.toLowerCase().includes('photo') || key.toLowerCase().includes('attachment')) continue;
-        
-        if (val && typeof val === 'string' && !isBase64OrGarbage(val)) {
-          parts.push(key + ': ' + cleanText(val));
-        } else if (val && typeof val === 'number') {
-          parts.push(key + ': ' + val);
-        }
-      }
-      return parts.join(', ');
-    }
-    
-    // ─────────────────────────────────────────────────────────────
-    // HELPER: Section with content
-    // ─────────────────────────────────────────────────────────────
-    function addSection(title, content) {
-      if (content === null || content === undefined) return;
-      
-      // Skip if content is base64 garbage
-      if (typeof content === 'string' && isBase64OrGarbage(content)) return;
-      
-      const textContent = formatContent(content);
-      
-      if (!textContent || textContent.trim() === '' || textContent === 'N/A' || textContent === '-') {
-        return;
-      }
-      
-      // Skip if still contains too much garbage after cleaning
-      if (textContent.length > 5000) {
-        console.log('Skipping oversized section:', title, textContent.length, 'chars');
-        return;
-      }
-      
-      if (y > pageHeight - 50) {
-        doc.addPage();
-        y = margin;
-      }
-      
-      doc.setFillColor(...primaryColor);
-      doc.rect(margin, y, 3, 7, 'F');
-      
-      doc.setTextColor(...darkColor);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.text(title.toUpperCase(), margin + 6, y + 5);
-      
-      y += 10;
-      
-      doc.setTextColor(...grayColor);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      
-      const lines = doc.splitTextToSize(textContent, contentWidth - 5);
-      
-      // Limit to reasonable number of lines per section
-      const maxLines = 100;
-      const linesToRender = lines.slice(0, maxLines);
-      
-      for (let i = 0; i < linesToRender.length; i++) {
-        if (y > pageHeight - 20) {
-          doc.addPage();
-          y = margin;
-        }
-        doc.text(linesToRender[i], margin + 6, y);
-        y += 4.5;
-      }
-      
-      if (lines.length > maxLines) {
-        doc.text('... [' + (lines.length - maxLines) + ' more lines]', margin + 6, y);
-        y += 4.5;
-      }
-      
-      y += 4;
-    }
-    
-    // ─────────────────────────────────────────────────────────────
-    // HELPER: Format dated entries (labs, progress notes, etc.)
-    // ─────────────────────────────────────────────────────────────
-    function formatDatedEntries(entries) {
-      if (!entries) return '';
-      if (typeof entries === 'string') {
-        if (isBase64OrGarbage(entries)) return '';
-        return cleanText(entries);
-      }
-      
-      if (Array.isArray(entries)) {
-        return entries.map(entry => {
-          if (typeof entry === 'string') {
-            if (isBase64OrGarbage(entry)) return '';
-            return cleanText(entry);
-          }
-          if (typeof entry !== 'object') return String(entry);
-          
-          let line = '';
-          
-          // Date first
-          const dateVal = entry.date || entry.timestamp || entry.datetime || entry.created || entry.createdAt;
-          if (dateVal) {
-            const d = new Date(dateVal);
-            if (!isNaN(d)) {
-              line += d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ': ';
-            } else if (!isBase64OrGarbage(String(dateVal))) {
-              line += dateVal + ': ';
-            }
-          }
-          
-          // Main content - check for base64
-          const content = entry.value || entry.text || entry.note || entry.result || entry.findings || 
-                         entry.content || entry.description || entry.summary || entry.details;
-          if (content && !isBase64OrGarbage(String(content))) {
-            line += cleanText(String(content));
-          } else {
-            // Try to extract all meaningful values (excluding base64)
-            const skip = ['date', 'timestamp', 'datetime', 'created', 'createdAt', 'id', '_id', 'patientId', 'image', 'photo', 'attachment', 'base64'];
-            const parts = [];
-            for (const [k, v] of Object.entries(entry)) {
-              if (!skip.includes(k) && v && typeof v !== 'object' && !isBase64OrGarbage(String(v))) {
-                parts.push(k + ': ' + cleanText(String(v)));
-              }
-            }
-            line += parts.join(' | ');
-          }
-          
-          return line;
-        }).filter(s => s && s.trim()).join('\n');
-      }
-      
-      // Single object
-      return formatContent(entries);
-    }
-    
-    // ─────────────────────────────────────────────────────────────
-    // HELPER: Format lab results
-    // ─────────────────────────────────────────────────────────────
-    function formatLabs(labs) {
-      if (!labs) return '';
-      if (typeof labs === 'string') {
-        if (isBase64OrGarbage(labs)) return '';
-        return cleanText(labs);
-      }
-      
-      if (Array.isArray(labs)) {
-        // Group by date if available
-        const byDate = {};
-        const noDate = [];
-        
-        labs.forEach(lab => {
-          if (typeof lab === 'string') {
-            if (!isBase64OrGarbage(lab)) noDate.push(cleanText(lab));
-            return;
-          }
-          if (typeof lab !== 'object') {
-            noDate.push(String(lab));
-            return;
-          }
-          
-          const dateVal = lab.date || lab.timestamp || lab.collectedAt || lab.resultDate;
-          let dateKey = 'Results';
-          if (dateVal) {
-            const d = new Date(dateVal);
-            if (!isNaN(d)) {
-              dateKey = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-            } else if (!isBase64OrGarbage(String(dateVal))) {
-              dateKey = String(dateVal);
-            }
-          }
-          
-          if (!byDate[dateKey]) byDate[dateKey] = [];
-          
-          // Format individual lab
-          const testName = lab.test || lab.name || lab.testName || lab.parameter || lab.type;
-          const result = lab.result || lab.value || lab.reading;
-          const unit = lab.unit || lab.units || '';
-          const ref = lab.reference || lab.refRange || lab.normalRange || lab.range || '';
-          const flag = lab.flag || lab.status || lab.abnormal || '';
-          
-          let labLine = '';
-          if (testName && !isBase64OrGarbage(String(testName))) labLine += cleanText(String(testName));
-          if (result !== undefined && result !== null && !isBase64OrGarbage(String(result))) labLine += ': ' + result;
-          if (unit && !isBase64OrGarbage(String(unit))) labLine += ' ' + unit;
-          if (ref && !isBase64OrGarbage(String(ref))) labLine += ' (ref: ' + ref + ')';
-          if (flag && flag !== 'normal' && flag !== 'Normal' && !isBase64OrGarbage(String(flag))) labLine += ' [' + String(flag).toUpperCase() + ']';
-          
-          if (labLine) {
-            byDate[dateKey].push(labLine);
-          } else {
-            // Fallback: extract all values (excluding base64)
-            const parts = [];
-            for (const [k, v] of Object.entries(lab)) {
-              if (v && typeof v !== 'object' && !['date', 'timestamp', 'id', '_id', 'image', 'photo', 'base64'].includes(k)) {
-                if (!isBase64OrGarbage(String(v))) {
-                  parts.push(k + ': ' + cleanText(String(v)));
-                }
-              }
-            }
-            if (parts.length) byDate[dateKey].push(parts.join(' | '));
-          }
-        });
-        
-        // Build output
-        const lines = [];
-        for (const [date, results] of Object.entries(byDate)) {
-          if (Object.keys(byDate).length > 1 || date !== 'Results') {
-            lines.push('--- ' + date + ' ---');
-          }
-          lines.push(...results);
-        }
-        if (noDate.length) lines.push(...noDate);
-        
-        return lines.join('\n');
-      }
-      
-      // Object with nested data
-      if (typeof labs === 'object') {
-        const lines = [];
-        for (const [category, values] of Object.entries(labs)) {
-          if (values && typeof values === 'object') {
-            lines.push('--- ' + category.toUpperCase() + ' ---');
-            if (Array.isArray(values)) {
-              lines.push(formatLabs(values));
-            } else {
-              for (const [k, v] of Object.entries(values)) {
-                if (v !== null && v !== undefined) {
-                  lines.push(k + ': ' + v);
-                }
-              }
-            }
-          } else if (values) {
-            lines.push(category + ': ' + values);
-          }
-        }
-        return lines.join('\n');
-      }
-      
-      return String(labs);
-    }
-    
-    // ─────────────────────────────────────────────────────────────
-    // HELPER: Format progress notes
-    // ─────────────────────────────────────────────────────────────
-    function formatProgressNotes(notes) {
-      if (!notes) return '';
-      if (typeof notes === 'string') {
-        if (isBase64OrGarbage(notes)) return '';
-        return cleanText(notes);
-      }
-      
-      if (Array.isArray(notes)) {
-        return notes.map(note => {
-          if (typeof note === 'string') {
-            if (isBase64OrGarbage(note)) return '';
-            return cleanText(note);
-          }
-          if (typeof note !== 'object') return String(note);
-          
-          let line = '';
-          
-          // Date
-          const dateVal = note.date || note.timestamp || note.datetime || note.createdAt;
-          if (dateVal) {
-            const d = new Date(dateVal);
-            if (!isNaN(d)) {
-              line += d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-              const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-              if (time !== '00:00') line += ' ' + time;
-              line += '\n';
-            } else if (!isBase64OrGarbage(String(dateVal))) {
-              line += dateVal + '\n';
-            }
-          }
-          
-          // Author
-          const author = note.author || note.by || note.doctor || note.user || note.writtenBy;
-          if (author && !isBase64OrGarbage(String(author))) line += 'By: ' + cleanText(String(author)) + '\n';
-          
-          // Content - skip if base64
-          const content = note.note || note.text || note.content || note.entry || note.body || note.summary;
-          if (content && !isBase64OrGarbage(String(content))) {
-            line += cleanText(String(content));
-          }
-          
-          // SOAP format - skip base64 fields
-          if (note.subjective || note.objective || note.assessment || note.plan) {
-            if (note.subjective && !isBase64OrGarbage(String(note.subjective))) line += '\nS: ' + cleanText(String(note.subjective));
-            if (note.objective && !isBase64OrGarbage(String(note.objective))) line += '\nO: ' + cleanText(String(note.objective));
-            if (note.assessment && !isBase64OrGarbage(String(note.assessment))) line += '\nA: ' + cleanText(String(note.assessment));
-            if (note.plan && !isBase64OrGarbage(String(note.plan))) line += '\nP: ' + cleanText(String(note.plan));
-          }
-          
-          return line.trim();
-        }).filter(s => s && s.length > 5).join('\n\n');
-      }
-      
-      return formatContent(notes);
-    }
-    
-    // ─────────────────────────────────────────────────────────────
-    // HELPER: Parse unified summary to extract structured data
-    // ─────────────────────────────────────────────────────────────
-    function parseUnifiedSummary(summary) {
-      if (!summary || typeof summary !== 'string') return null;
-      
-      const parsed = {};
-      
-      // Extract patient demographics
-      const demoMatch = summary.match(/(\d+)[- ]?(?:year[- ]?old|yo|y\/o)\s+(\w+)?\s*(\w+)?/i);
-      if (demoMatch) {
-        parsed.age = demoMatch[1];
-        parsed.demographics = demoMatch[0];
-      }
-      
-      // Extract risk factors (common patterns)
-      const riskFactors = [];
-      const riskPatterns = [
-        /(?:heavy |chronic )?smoking(?:\s+history)?/gi,
-        /(?:type\s*[12]\s*)?diabetes(?:\s+mellitus)?/gi,
-        /hypertension|HTN/gi,
-        /(?:ischemic |coronary )?heart disease|IHD|CAD/gi,
-        /hyperlipidemia|dyslipidemia/gi,
-        /obesity/gi,
-        /CKD|chronic kidney disease/gi,
-        /COPD|chronic obstructive/gi,
-        /atrial fibrillation|AF|AFib/gi,
-        /previous (?:MI|stroke|CVA|TIA)/gi
-      ];
-      riskPatterns.forEach(pattern => {
-        const matches = summary.match(pattern);
-        if (matches) {
-          matches.forEach(m => {
-            const cleaned = m.trim();
-            if (!riskFactors.includes(cleaned)) riskFactors.push(cleaned);
-          });
-        }
+      // Extract risk factors
+      const riskWords = ['smoking', 'diabetes', 'diabetic', 'hypertension', 'HTN', 'heart disease', 'IHD', 'CAD', 
+        'ischemic', 'hyperlipidemia', 'CKD', 'COPD', 'AF', 'atrial fibrillation'];
+      riskWords.forEach(r => {
+        const regex = new RegExp('(?:heavy\\s+)?(?:' + r + ')', 'gi');
+        const match = summary.match(regex);
+        if (match) match.forEach(m => { if (!extracted.riskFactors.includes(m.trim())) extracted.riskFactors.push(m.trim()); });
       });
-      if (riskFactors.length > 0) parsed.riskFactors = riskFactors;
       
       // Extract presenting complaint
-      const pcMatch = summary.match(/presenting\s+(?:with|complaint[s]?:?)\s+([^,.]+(?:[,.][^,.]+)?)/i);
-      if (pcMatch) parsed.presentingComplaint = pcMatch[1].trim();
+      const pcMatch = summary.match(/presenting\s+with\s+([^,\.]+)/i);
+      if (pcMatch) extracted.presentingComplaint = pcMatch[1].trim();
       
-      // Extract duration
-      const durationMatch = summary.match(/(?:over|for|x|×)\s*(\d+)\s*(days?|weeks?|months?|hours?)/i);
-      if (durationMatch) parsed.duration = durationMatch[0];
+      // Duration
+      const durMatch = summary.match(/(?:worsening\s+)?(?:over|for)\s+(\d+\s*days?)/i);
+      if (durMatch && extracted.presentingComplaint) extracted.presentingComplaint += ' (' + durMatch[1] + ')';
       
-      // Extract EF/cardiac function
-      const efMatch = summary.match(/(?:EF|ejection fraction)[:\s]+(\d+[-–]\d+|\d+)%?/i);
-      if (efMatch) parsed.ejectionFraction = efMatch[1] + '%';
+      // Current status
+      const statusMatch = summary.match(/(?:currently|vital signs)[:\s]+([^.]+(?:SpO2|BP|HR)[^.]+)/i);
+      if (statusMatch) extracted.currentStatus = statusMatch[1].trim();
       
-      // Extract key findings
-      const findings = [];
-      const findingPatterns = [
-        /pulmonary (?:edema|oedema)/gi,
-        /(?:bilateral |b\/l )?crepitations/gi,
-        /peripheral (?:edema|oedema)/gi,
-        /JVP (?:raised|elevated)/gi,
-        /AKI|acute kidney injury/gi,
-        /heart failure|HF/gi,
-        /decompensated/gi
-      ];
-      findingPatterns.forEach(pattern => {
-        const matches = summary.match(pattern);
-        if (matches) {
-          matches.forEach(m => {
-            const cleaned = m.trim();
-            if (!findings.includes(cleaned)) findings.push(cleaned);
-          });
-        }
+      // Key findings
+      ['pulmonary edema', 'crepitations', 'AKI', 'heart failure', 'decompensated', 'reduced EF', 'bilateral'].forEach(f => {
+        if (summary.toLowerCase().includes(f)) extracted.findings.push(f);
       });
-      if (findings.length > 0) parsed.keyFindings = findings;
-      
-      // Extract current vitals from summary
-      const vitalsFromSummary = {};
-      const spo2Match = summary.match(/SpO2[:\s]+(\d+)%?/i);
-      if (spo2Match) vitalsFromSummary.spo2 = spo2Match[1] + '%';
-      const bpMatch = summary.match(/BP[:\s]+(\d+\/\d+)/i);
-      if (bpMatch) vitalsFromSummary.bp = bpMatch[1];
-      const hrMatch = summary.match(/HR[:\s]+(\d+)/i);
-      if (hrMatch) vitalsFromSummary.hr = hrMatch[1];
-      const gcsMatch = summary.match(/GCS[:\s]+(\d+\/\d+)/i);
-      if (gcsMatch) vitalsFromSummary.gcs = gcsMatch[1];
-      if (Object.keys(vitalsFromSummary).length > 0) parsed.vitalsFromSummary = vitalsFromSummary;
-      
-      return parsed;
     }
     
-    // ─────────────────────────────────────────────────────────────
-    // HELPER: Add a table for vitals
-    // ─────────────────────────────────────────────────────────────
-    function addVitalsTable(vitals) {
-      if (!vitals || typeof vitals !== 'object') return;
-      
-      const rows = [];
-      const v = vitals;
-      
-      if (v.hr || v.heartRate || v.pulse) rows.push(['Heart Rate', (v.hr || v.heartRate || v.pulse) + ' bpm']);
-      if (v.bp || v.bloodPressure) rows.push(['Blood Pressure', v.bp || v.bloodPressure]);
-      if (v.temp || v.temperature) rows.push(['Temperature', (v.temp || v.temperature) + '°C']);
-      if (v.rr || v.respiratoryRate) rows.push(['Respiratory Rate', (v.rr || v.respiratoryRate) + '/min']);
-      if (v.spo2 || v.o2sat || v.saturation) rows.push(['SpO2', (v.spo2 || v.o2sat || v.saturation) + '%']);
-      if (v.weight) rows.push(['Weight', v.weight + ' kg']);
-      if (v.gcs) rows.push(['GCS', v.gcs]);
-      
-      if (rows.length === 0) return;
-      
-      // Add section header
-      if (y > pageHeight - 60) {
-        doc.addPage();
-        y = margin;
-      }
-      
-      doc.setFillColor(...primaryColor);
-      doc.rect(margin, y, 3, 7, 'F');
-      doc.setTextColor(...darkColor);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.text('VITALS', margin + 6, y + 5);
-      y += 12;
-      
-      doc.autoTable({
-        startY: y,
-        head: [['Parameter', 'Value']],
-        body: rows,
-        margin: { left: margin, right: margin },
-        styles: { fontSize: 9, cellPadding: 3 },
-        headStyles: { fillColor: primaryColor, textColor: [255, 255, 255] },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
-        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
-      });
-      
-      y = doc.lastAutoTable.finalY + 8;
-    }
+    // ═══════════════════════════════════════════════════════════════
+    // CLINICAL SECTIONS - Only show what exists
+    // ═══════════════════════════════════════════════════════════════
     
-    // ─────────────────────────────────────────────────────────────
-    // HELPER: Add a table for labs
-    // ─────────────────────────────────────────────────────────────
-    function addLabsTable(labs) {
-      if (!labs || (Array.isArray(labs) && labs.length === 0)) return;
-      
-      const rows = [];
-      let currentPanel = '';
-      
-      // Helper to add a lab row
-      function addLabRow(lab, panelName) {
-        if (typeof lab !== 'object') return;
-        
-        const testName = lab.test || lab.name || lab.testName || lab.parameter || lab.label || '';
-        const result = lab.result || lab.value || lab.reading || '';
-        const unit = lab.unit || lab.units || '';
-        const ref = lab.reference || lab.refRange || lab.normalRange || lab.range || '';
-        const flag = lab.flag || lab.status || lab.abnormal || '';
-        
-        if (testName && result !== '' && !isBase64OrGarbage(String(testName)) && !isBase64OrGarbage(String(result))) {
-          // Add panel header row if panel changed
-          if (panelName && panelName !== currentPanel) {
-            currentPanel = panelName;
-            rows.push([{ content: panelName.toUpperCase(), colSpan: 5, styles: { fontStyle: 'bold', fillColor: [226, 232, 240], textColor: [30, 41, 59] } }]);
-          }
-          
-          const flagStr = (flag && flag !== 'normal' && flag !== 'Normal') ? flag.toUpperCase() : '';
-          rows.push([
-            cleanText(String(testName)),
-            String(result),
-            cleanText(String(unit)),
-            cleanText(String(ref)),
-            flagStr
-          ]);
-        }
+    if (extracted.demographics) addSection('Patient', extracted.demographics);
+    if (extracted.riskFactors.length > 0) addSection('Risk Factors', extracted.riskFactors.join(', '));
+    
+    // Diagnosis (skip if just "Pending")
+    const dx = pt.diagnosis || pt.primaryDiagnosis;
+    if (dx && dx !== 'Pending') addSection('Diagnosis', dx);
+    
+    // Presenting Complaint
+    const pc = extracted.presentingComplaint || pt.presentingComplaint || pt.chiefComplaint;
+    if (hasData(pc)) addSection('Presenting Complaint', pc);
+    
+    if (extracted.findings.length > 0) addSection('Key Findings', extracted.findings.join(', '));
+    if (extracted.currentStatus) addSection('Current Status', extracted.currentStatus);
+    
+    // Standard sections - only if real data exists
+    if (hasData(pt.hopi)) addSection('History', pt.hopi);
+    if (hasData(pt.pmh)) addSection('Past Medical History', pt.pmh);
+    
+    // Medications
+    let medsText = '';
+    if (pt.medications) {
+      if (Array.isArray(pt.medications)) {
+        medsText = pt.medications.map(m => {
+          if (typeof m === 'string') return m;
+          if (typeof m === 'object') return [m.name || m.drug, m.dose, m.frequency, m.route].filter(x=>x).join(' ');
+          return '';
+        }).filter(x=>x).join(', ');
+      } else {
+        medsText = pt.medications;
       }
+    }
+    if (hasData(medsText)) addSection('Medications', medsText);
+    
+    if (hasData(pt.allergies)) addSection('Allergies', pt.allergies);
+    
+    // ═══════════════════════════════════════════════════════════════
+    // VITALS TABLE - Only if vitals exist
+    // ═══════════════════════════════════════════════════════════════
+    if (pt.vitals && typeof pt.vitals === 'object' && Object.keys(pt.vitals).length > 0) {
+      const v = pt.vitals;
+      const vitalsRows = [];
+      if (v.hr || v.heartRate || v.pulse) vitalsRows.push(['HR', (v.hr || v.heartRate || v.pulse) + ' bpm']);
+      if (v.bp || v.bloodPressure) vitalsRows.push(['BP', v.bp || v.bloodPressure]);
+      if (v.temp || v.temperature) vitalsRows.push(['Temp', (v.temp || v.temperature) + '°C']);
+      if (v.rr || v.respiratoryRate) vitalsRows.push(['RR', (v.rr || v.respiratoryRate) + '/min']);
+      if (v.spo2 || v.o2sat) vitalsRows.push(['SpO2', (v.spo2 || v.o2sat) + '%']);
       
-      // Process labs array
-      if (Array.isArray(labs)) {
-        // Check if labs have panel/category grouping
-        const grouped = {};
-        let hasGroups = false;
+      if (vitalsRows.length > 0) {
+        if (y > pageHeight - 50) { doc.addPage(); y = margin; }
         
-        labs.forEach(lab => {
-          if (typeof lab !== 'object') return;
-          const panel = lab.panel || lab.category || lab.group || lab.panelName || 'Results';
-          if (panel !== 'Results') hasGroups = true;
-          if (!grouped[panel]) grouped[panel] = [];
-          grouped[panel].push(lab);
+        doc.setFillColor(...primary);
+        doc.rect(margin, y, 2, 5, 'F');
+        doc.setTextColor(...dark);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.text('VITALS', margin + 5, y + 4);
+        y += 8;
+        
+        doc.autoTable({
+          startY: y,
+          body: vitalsRows,
+          margin: { left: margin, right: margin },
+          styles: { fontSize: 9, cellPadding: 2 },
+          columnStyles: { 0: { fontStyle: 'bold', cellWidth: 25 }, 1: { cellWidth: 40 } },
+          theme: 'plain'
         });
+        y = doc.lastAutoTable.finalY + 6;
+      }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // LABS TABLE - Only if labs exist
+    // ═══════════════════════════════════════════════════════════════
+    if (pt.labs && Array.isArray(pt.labs) && pt.labs.length > 0) {
+      const labRows = [];
+      
+      pt.labs.forEach(lab => {
+        if (typeof lab !== 'object') return;
+        const name = lab.name || lab.test || lab.label || lab.parameter || '';
+        const value = lab.value !== undefined ? lab.value : (lab.result || '');
+        const unit = lab.unit || lab.units || '';
+        const ref = lab.range || lab.reference || lab.refRange || '';
+        const flag = lab.flag || lab.status || '';
         
-        if (hasGroups) {
-          // Process by group
-          for (const [panelName, panelLabs] of Object.entries(grouped)) {
-            panelLabs.forEach(lab => addLabRow(lab, panelName));
-          }
-        } else {
-          // Process flat array
-          labs.forEach(lab => addLabRow(lab, ''));
-        }
-      }
-      
-      // Process labs object with panels (e.g., { renalFunction: [...], electrolytes: [...] })
-      else if (typeof labs === 'object') {
-        for (const [panelName, panelData] of Object.entries(labs)) {
-          if (Array.isArray(panelData)) {
-            panelData.forEach(lab => addLabRow(lab, panelName));
-          } else if (typeof panelData === 'object' && panelData !== null) {
-            // Single value object like { test: 'eGFR', value: 34, ... }
-            addLabRow(panelData, panelName);
-          }
-        }
-      }
-      
-      if (rows.length === 0) return;
-      
-      // Add section header
-      if (y > pageHeight - 60) {
-        doc.addPage();
-        y = margin;
-      }
-      
-      doc.setFillColor(...primaryColor);
-      doc.rect(margin, y, 3, 7, 'F');
-      doc.setTextColor(...darkColor);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.text('LABORATORY RESULTS', margin + 6, y + 5);
-      y += 12;
-      
-      doc.autoTable({
-        startY: y,
-        head: [['Test', 'Result', 'Unit', 'Reference', 'Flag']],
-        body: rows,
-        margin: { left: margin, right: margin },
-        styles: { fontSize: 8, cellPadding: 2 },
-        headStyles: { fillColor: primaryColor, textColor: [255, 255, 255] },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
-        columnStyles: { 
-          0: { fontStyle: 'bold', cellWidth: 45 },
-          1: { cellWidth: 25, halign: 'right' },
-          2: { cellWidth: 30 },
-          3: { cellWidth: 35 },
-          4: { cellWidth: 15, halign: 'center' }
-        },
-        didParseCell: function(data) {
-          // Highlight abnormal values in red
-          if (data.column.index === 4 && data.cell.raw && typeof data.cell.raw === 'string' && data.cell.raw.length > 0) {
-            data.cell.styles.textColor = [220, 38, 38];
-            data.cell.styles.fontStyle = 'bold';
-          }
-          // Also highlight the result value if flagged
-          if (data.column.index === 1 && data.row.raw && Array.isArray(data.row.raw) && data.row.raw[4]) {
-            data.cell.styles.textColor = [220, 38, 38];
-            data.cell.styles.fontStyle = 'bold';
-          }
+        if (name && value !== '' && value !== null) {
+          const flagStr = (flag && flag.toLowerCase() !== 'normal') ? flag.toUpperCase() : '';
+          labRows.push([clean(name), String(value), clean(unit), clean(ref), flagStr]);
         }
       });
       
-      y = doc.lastAutoTable.finalY + 8;
+      if (labRows.length > 0) {
+        if (y > pageHeight - 50) { doc.addPage(); y = margin; }
+        
+        doc.setFillColor(...primary);
+        doc.rect(margin, y, 2, 5, 'F');
+        doc.setTextColor(...dark);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.text('LABORATORY RESULTS', margin + 5, y + 4);
+        y += 8;
+        
+        doc.autoTable({
+          startY: y,
+          head: [['Test', 'Result', 'Unit', 'Ref', '']],
+          body: labRows,
+          margin: { left: margin, right: margin },
+          styles: { fontSize: 8, cellPadding: 2 },
+          headStyles: { fillColor: primary, textColor: [255,255,255], fontStyle: 'bold' },
+          columnStyles: { 
+            0: { fontStyle: 'bold', cellWidth: 40 },
+            1: { cellWidth: 22, halign: 'right' },
+            2: { cellWidth: 28 },
+            3: { cellWidth: 30 },
+            4: { cellWidth: 12, textColor: red }
+          },
+          alternateRowStyles: { fillColor: [248, 250, 252] },
+          didParseCell: function(data) {
+            if (data.section === 'body' && data.row.raw && data.row.raw[4]) {
+              if (data.column.index === 1 || data.column.index === 4) {
+                data.cell.styles.textColor = red;
+                data.cell.styles.fontStyle = 'bold';
+              }
+            }
+          }
+        });
+        y = doc.lastAutoTable.finalY + 6;
+      }
     }
     
-    // ─────────────────────────────────────────────────────────────
-    // HELPER: Add pending tasks table
-    // ─────────────────────────────────────────────────────────────
-    function addTasksTable(tasks) {
-      if (!tasks || !Array.isArray(tasks) || tasks.length === 0) return;
+    // ═══════════════════════════════════════════════════════════════
+    // PENDING TASKS - Only if tasks exist
+    // ═══════════════════════════════════════════════════════════════
+    const tasks = pt.tasks || pt.plans || pt.todos;
+    if (tasks && Array.isArray(tasks) && tasks.length > 0) {
+      const taskRows = [];
       
-      const rows = [];
-      tasks.forEach(task => {
-        if (typeof task === 'string') {
-          if (!isBase64OrGarbage(task)) rows.push([cleanText(task), '', '']);
-        } else if (typeof task === 'object') {
-          const title = task.title || task.name || task.task || task.description || task.text || '';
-          const priority = task.priority || task.urgency || '';
-          const category = task.category || task.type || '';
-          const status = task.status || task.state || '';
+      tasks.forEach(t => {
+        if (typeof t === 'string') {
+          taskRows.push([clean(t), '', '']);
+        } else if (typeof t === 'object') {
+          const title = t.title || t.name || t.task || t.text || '';
+          const cat = t.category || t.type || '';
+          const pri = t.priority || '';
+          const status = t.status || '';
           
-          if (title && !isBase64OrGarbage(String(title))) {
-            // Only show pending/incomplete tasks
-            if (!status || status === 'pending' || status === 'incomplete' || status === 'new') {
-              rows.push([
-                cleanText(String(title)),
-                cleanText(String(category)),
-                cleanText(String(priority))
-              ]);
-            }
+          if (title && (!status || status === 'pending' || status === 'incomplete')) {
+            taskRows.push([clean(title), clean(cat), clean(pri)]);
           }
         }
       });
       
-      if (rows.length === 0) return;
-      
-      // Add section header
-      if (y > pageHeight - 60) {
-        doc.addPage();
-        y = margin;
-      }
-      
-      doc.setFillColor(...primaryColor);
-      doc.rect(margin, y, 3, 7, 'F');
-      doc.setTextColor(...darkColor);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.text('PENDING TASKS', margin + 6, y + 5);
-      y += 12;
-      
-      doc.autoTable({
-        startY: y,
-        head: [['Task', 'Category', 'Priority']],
-        body: rows,
-        margin: { left: margin, right: margin },
-        styles: { fontSize: 9, cellPadding: 3 },
-        headStyles: { fillColor: primaryColor, textColor: [255, 255, 255] },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
-        columnStyles: { 
-          0: { cellWidth: 90 },
-          1: { cellWidth: 35 },
-          2: { cellWidth: 25 }
-        },
-        didParseCell: function(data) {
-          if (data.column.index === 2) {
-            const val = String(data.cell.raw).toLowerCase();
-            if (val === 'high' || val === 'urgent') {
-              data.cell.styles.textColor = [220, 38, 38];
-              data.cell.styles.fontStyle = 'bold';
-            } else if (val === 'med' || val === 'medium') {
-              data.cell.styles.textColor = [234, 179, 8];
+      if (taskRows.length > 0) {
+        if (y > pageHeight - 50) { doc.addPage(); y = margin; }
+        
+        doc.setFillColor(...primary);
+        doc.rect(margin, y, 2, 5, 'F');
+        doc.setTextColor(...dark);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.text('PENDING TASKS', margin + 5, y + 4);
+        y += 8;
+        
+        doc.autoTable({
+          startY: y,
+          head: [['Task', 'Category', 'Priority']],
+          body: taskRows,
+          margin: { left: margin, right: margin },
+          styles: { fontSize: 8, cellPadding: 2 },
+          headStyles: { fillColor: primary, textColor: [255,255,255] },
+          columnStyles: { 0: { cellWidth: 90 }, 1: { cellWidth: 35 }, 2: { cellWidth: 25 } },
+          alternateRowStyles: { fillColor: [248, 250, 252] },
+          didParseCell: function(data) {
+            if (data.section === 'body' && data.column.index === 2) {
+              const val = String(data.cell.raw).toLowerCase();
+              if (val === 'high') data.cell.styles.textColor = red;
             }
           }
+        });
+        y = doc.lastAutoTable.finalY + 6;
+      }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // CLINICAL SUMMARY - At the end (cleaned)
+    // ═══════════════════════════════════════════════════════════════
+    if (summary && summary.length > 100) {
+      let cleanSummary = summary.replace(/---.*?Disclaimer.*$/is, '').replace(/\*\*/g, '').trim();
+      
+      if (cleanSummary.length > 50) {
+        if (y > pageHeight - 60) { doc.addPage(); y = margin; }
+        
+        doc.setFillColor(...primary);
+        doc.rect(margin, y, 2, 5, 'F');
+        doc.setTextColor(...dark);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.text('CLINICAL SUMMARY', margin + 5, y + 4);
+        y += 8;
+        
+        doc.setTextColor(...gray);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        const lines = doc.splitTextToSize(cleanSummary, contentWidth - 5);
+        for (let i = 0; i < Math.min(lines.length, 30); i++) {
+          if (y > pageHeight - 15) { doc.addPage(); y = margin; }
+          doc.text(lines[i], margin + 5, y);
+          y += 3.5;
         }
-      });
-      
-      y = doc.lastAutoTable.finalY + 8;
-    }
-    
-    // ─────────────────────────────────────────────────────────────
-    // CLINICAL SECTIONS - Start with unified summary parsing
-    // ─────────────────────────────────────────────────────────────
-    const unifiedSummary = pt.unifiedSummary || pt.summary || pt.clinicalSummary || pt.aiSummary;
-    let parsedSummary = null;
-    if (unifiedSummary && !isBase64OrGarbage(String(unifiedSummary))) {
-      parsedSummary = parseUnifiedSummary(String(unifiedSummary));
-    }
-    
-    // Demographics & Risk Factors from parsed summary
-    if (parsedSummary) {
-      if (parsedSummary.demographics) {
-        addSection('Patient', parsedSummary.demographics);
-      }
-      if (parsedSummary.riskFactors && parsedSummary.riskFactors.length > 0) {
-        addSection('Risk Factors', parsedSummary.riskFactors.join(', '));
       }
     }
     
-    // Diagnosis
-    addSection('Diagnosis', pt.diagnosis || pt.primaryDiagnosis || pt.dx);
-    
-    // Presenting Complaint - from parsed summary or direct field
-    const pc = pt.presentingComplaint || pt.chiefComplaint || pt.pc || pt.cc || 
-               (parsedSummary ? parsedSummary.presentingComplaint : null);
-    addSection('Presenting Complaint', pc);
-    
-    // Duration
-    if (parsedSummary && parsedSummary.duration) {
-      addSection('Duration', parsedSummary.duration);
-    }
-    
-    // History of Presenting Illness
-    addSection('History of Presenting Illness', pt.hopi || pt.hpi || pt.history || pt.historyOfPresentingIllness);
-    
-    // Key Findings from parsed summary
-    if (parsedSummary && parsedSummary.keyFindings && parsedSummary.keyFindings.length > 0) {
-      addSection('Key Clinical Findings', parsedSummary.keyFindings.join(', '));
-    }
-    
-    // Cardiac function
-    if (parsedSummary && parsedSummary.ejectionFraction) {
-      addSection('Ejection Fraction', parsedSummary.ejectionFraction);
-    }
-    
-    // Standard history sections
-    addSection('Past Medical History', pt.pmh || pt.pastMedicalHistory || pt.medicalHistory);
-    addSection('Past Surgical History', pt.psh || pt.pastSurgicalHistory || pt.surgicalHistory);
-    addSection('Drug History', pt.drugHistory || pt.dh);
-    addSection('Current Medications', pt.medications || pt.currentMedications || pt.meds);
-    addSection('Allergies', pt.allergies || pt.allergy);
-    addSection('Social History', pt.socialHistory || pt.shx || pt.sh);
-    addSection('Family History', pt.familyHistory || pt.fhx || pt.fh);
-    
-    // Examination sections
-    addSection('Examination Findings', pt.examination || pt.physicalExam || pt.exam || pt.findings || pt.oe);
-    
-    // ─────────────────────────────────────────────────────────────
-    // VITALS TABLE
-    // ─────────────────────────────────────────────────────────────
-    if (pt.vitals && typeof pt.vitals === 'object' && !Array.isArray(pt.vitals)) {
-      addVitalsTable(pt.vitals);
-    } else if (parsedSummary && parsedSummary.vitalsFromSummary) {
-      addVitalsTable(parsedSummary.vitalsFromSummary);
-    }
-    
-    // ─────────────────────────────────────────────────────────────
-    // LABS TABLE
-    // ─────────────────────────────────────────────────────────────
-    const labData = pt.labs || pt.labResults || pt.laboratory || pt.bloodTests || pt.bloodWork;
-    if (labData) {
-      addLabsTable(labData);
-    }
-    
-    // ─────────────────────────────────────────────────────────────
-    // PENDING TASKS TABLE
-    // ─────────────────────────────────────────────────────────────
-    const tasksData = pt.tasks || pt.todos || pt.plans || pt.pendingTasks || pt.jobs || pt.outstanding;
-    if (tasksData) {
-      addTasksTable(tasksData);
-    }
-    
-    // Other investigations
-    addSection('ECG', pt.ecg || pt.ekg || pt.electrocardiogram);
-    addSection('Imaging', pt.imaging || pt.radiology || pt.scans);
-    addSection('Echo', pt.echo || pt.echocardiogram);
-    
-    // Assessment & Plan
-    addSection('Assessment', pt.assessment || pt.impression || pt.clinicalImpression);
-    addSection('Differential Diagnosis', pt.differentials || pt.differentialDiagnosis || pt.ddx);
-    addSection('Management Plan', pt.plan || pt.managementPlan || pt.treatment || pt.management || pt.rx);
-    
-    // Follow-up
-    addSection('Consultations', pt.consults || pt.consultations || pt.referrals);
-    addSection('Follow-up', pt.followUp || pt.followup || pt.fup);
-    
-    // Clinical Summary (the full AI summary at the end)
-    if (unifiedSummary && !isBase64OrGarbage(String(unifiedSummary))) {
-      addSection('Clinical Summary', cleanText(String(unifiedSummary)));
-    }
-    
-    // Code status and other important fields
-    addSection('Code Status', pt.codeStatus || pt.resuscitationStatus || pt.dnar || pt.dnr || pt.ceiling);
-    addSection('Doctor', pt.doctor || pt.consultant || pt.attendingPhysician);
-    addSection('Status', pt.status);
-    
-    // ─────────────────────────────────────────────────────────────
-    // CATCH-ALL: Any remaining fields not already covered
-    // ─────────────────────────────────────────────────────────────
-    const coveredFields = new Set([
-      'id', '_id', 'patientId', 'name', 'age', 'gender', 'sex', 'dob', 'dateOfBirth',
-      'mrn', 'ward', 'bed', 'room', 'unitId', 'unit', 'admissionDate', 'dateAdmitted',
-      'diagnosis', 'primaryDiagnosis', 'chiefComplaint', 'dx', 'presentingComplaint', 'pc', 'cc',
-      'hopi', 'hpi', 'history', 'historyOfPresentingIllness',
-      'pmh', 'pastMedicalHistory', 'medicalHistory',
-      'psh', 'pastSurgicalHistory', 'surgicalHistory',
-      'drugHistory', 'dh', 'medications', 'currentMedications', 'meds',
-      'allergies', 'allergy', 'socialHistory', 'shx', 'sh', 'familyHistory', 'fhx', 'fh',
-      'ros', 'reviewOfSystems', 'systemsReview',
-      'generalExam', 'general', 'examination', 'physicalExam', 'exam', 'findings', 'oe',
-      'cvs', 'cardiovascular', 'cardiac', 'respiratory', 'chest', 'lungs',
-      'abdominal', 'abdomen', 'gi', 'neuro', 'neurological', 'cns', 'msk', 'musculoskeletal',
-      'vitals', 'labs', 'labResults', 'laboratory', 'bloodTests', 'bloodWork',
-      'ecg', 'ekg', 'electrocardiogram', 'imaging', 'radiology', 'scans',
-      'echo', 'echocardiogram', 'assessment', 'impression', 'clinicalImpression',
-      'differentials', 'differentialDiagnosis', 'ddx',
-      'plan', 'managementPlan', 'treatment', 'management', 'rx', 'plans',
-      'tasks', 'todos', 'outstanding', 'pendingTasks', 'jobs',
-      'consults', 'consultations', 'referrals', 'followUp', 'followup', 'fup',
-      'codeStatus', 'resuscitationStatus', 'dnar', 'dnr', 'ceiling',
-      'doctor', 'consultant', 'attendingPhysician', 'status',
-      // Unified summary already handled
-      'unifiedSummary', 'summary', 'clinicalSummary', 'aiSummary',
-      // Skip progress notes - often contain garbage
-      'progressNotes', 'notes', 'progress', 'entries', 'dailyNotes', 'clinicalNotes',
-      // Skip timestamps and metadata
-      'sharedBy', 'sharedAt', 'createdAt', 'updatedAt', 'lastUpdated', 'timestamp',
-      // Skip image/attachment fields
-      'image', 'images', 'photo', 'photos', 'attachment', 'attachments',
-      'base64', 'thumbnail', 'avatar', 'picture', 'file', 'files',
-      'document', 'documents', 'scan', 'signature', 'data'
-    ]);
-    
-    // Add any fields that weren't covered (skip images/base64)
-    for (const [key, value] of Object.entries(pt)) {
-      // Skip covered fields
-      if (coveredFields.has(key)) continue;
-      
-      // Skip empty values
-      if (value === null || value === undefined || value === '') continue;
-      
-      // Skip fields that look like they contain images
-      const keyLower = key.toLowerCase();
-      if (keyLower.includes('image') || keyLower.includes('photo') || keyLower.includes('base64') ||
-          keyLower.includes('attachment') || keyLower.includes('file') || keyLower.includes('thumbnail')) {
-        continue;
-      }
-      
-      // Skip if value is base64 garbage
-      if (typeof value === 'string' && isBase64OrGarbage(value)) continue;
-      
-      // Convert camelCase to Title Case
-      const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim();
-      addSection(title, value);
-    }
-    
-    // ─────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════
     // FOOTER
-    // ─────────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════
     const totalPages = doc.internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
       doc.setDrawColor(...lightGray);
-      doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
-      doc.setTextColor(...grayColor);
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Generated by MedWard Pro | Confidential Medical Document', margin, pageHeight - 10);
-      doc.text('Page ' + i + ' of ' + totalPages, pageWidth - margin, pageHeight - 10, { align: 'right' });
+      doc.line(margin, pageHeight - 12, pageWidth - margin, pageHeight - 12);
+      doc.setTextColor(...gray);
+      doc.setFontSize(7);
+      doc.text('MedWard Pro | Confidential', margin, pageHeight - 8);
+      doc.text('Page ' + i + '/' + totalPages, pageWidth - margin, pageHeight - 8, { align: 'right' });
     }
     
-    // ─────────────────────────────────────────────────────────────
-    // SAVE PDF
-    // ─────────────────────────────────────────────────────────────
-    const safePatientName = (pt.name || 'patient').replace(/[^a-zA-Z0-9]/g, '_');
-    const filename = 'Patient_' + safePatientName + '_' + now.toISOString().slice(0,10) + '.pdf';
+    // ═══════════════════════════════════════════════════════════════
+    // SAVE PDF with unique timestamp filename
+    // ═══════════════════════════════════════════════════════════════
+    const safeName = (pt.name || 'Patient').replace(/[^a-zA-Z0-9]/g, '_');
+    const filename = safeName + '_' + timestamp + '.pdf';
     
     doc.save(filename);
-    
     hideLoad();
-    toast('PDF downloaded');
+    toast('PDF saved');
     
   } catch (e) {
     hideLoad();
-    console.error('PDF generation error:', e);
-    toast('PDF error: ' + e.message);
+    console.error('PDF error:', e);
+    toast('Error: ' + e.message);
   }
 }
-
 function generateBadge() {
   document.getElementById('badgeName').textContent = 'DR. ' + AUTH.user.toUpperCase();
   const wrapper = document.getElementById('qrWrapper');
