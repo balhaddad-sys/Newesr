@@ -928,13 +928,59 @@ function generatePatientPDF(pt) {
     y += 32;
     
     // ─────────────────────────────────────────────────────────────
+    // HELPER: Check if string is base64 image data or garbage
+    // ─────────────────────────────────────────────────────────────
+    function isBase64OrGarbage(str) {
+      if (!str || typeof str !== 'string') return false;
+      
+      // Check for base64 image patterns
+      if (str.includes('data:image')) return true;
+      if (str.includes('base64,')) return true;
+      
+      // Check for very long strings with no spaces (likely encoded data)
+      if (str.length > 500 && !str.includes(' ') && !str.includes('\n')) return true;
+      
+      // Check for high ratio of non-readable characters
+      const readable = str.match(/[a-zA-Z0-9\s.,!?;:'"()-]/g) || [];
+      if (str.length > 100 && readable.length / str.length < 0.7) return true;
+      
+      return false;
+    }
+    
+    // ─────────────────────────────────────────────────────────────
+    // HELPER: Clean text content - remove base64, images, etc.
+    // ─────────────────────────────────────────────────────────────
+    function cleanText(str) {
+      if (!str || typeof str !== 'string') return str;
+      
+      // Remove base64 image data completely
+      let cleaned = str.replace(/data:image\/[^;]+;base64,[A-Za-z0-9+/=]+/g, '[Image]');
+      
+      // Remove any remaining long base64-like strings
+      cleaned = cleaned.replace(/[A-Za-z0-9+/=]{100,}/g, '[Data removed]');
+      
+      // Clean up multiple [Image] or [Data removed] markers
+      cleaned = cleaned.replace(/(\[Image\]\s*)+/g, '[Image attached] ');
+      cleaned = cleaned.replace(/(\[Data removed\]\s*)+/g, '');
+      
+      // Trim and clean whitespace
+      cleaned = cleaned.replace(/\s+/g, ' ').trim();
+      
+      return cleaned;
+    }
+    
+    // ─────────────────────────────────────────────────────────────
     // HELPER: Format complex objects to readable text
     // ─────────────────────────────────────────────────────────────
     function formatContent(content) {
       if (content === null || content === undefined) return '';
       
       // Already a string
-      if (typeof content === 'string') return content;
+      if (typeof content === 'string') {
+        // Skip if it's mostly base64 garbage
+        if (isBase64OrGarbage(content)) return '';
+        return cleanText(content);
+      }
       
       // Number or boolean
       if (typeof content !== 'object') return String(content);
@@ -945,12 +991,16 @@ function generatePatientPDF(pt) {
         
         // Array of strings
         if (typeof content[0] === 'string') {
-          return content.join(', ');
+          const filtered = content.filter(s => !isBase64OrGarbage(s)).map(s => cleanText(s));
+          return filtered.join(', ');
         }
         
         // Array of objects (like medications)
         return content.map(item => {
-          if (typeof item === 'string') return item;
+          if (typeof item === 'string') {
+            if (isBase64OrGarbage(item)) return '';
+            return cleanText(item);
+          }
           if (typeof item !== 'object') return String(item);
           
           // Try to extract meaningful fields from object
@@ -958,16 +1008,19 @@ function generatePatientPDF(pt) {
           
           // Common medication fields
           if (item.name || item.medication || item.drug) {
-            parts.push(item.name || item.medication || item.drug);
+            const val = item.name || item.medication || item.drug;
+            if (!isBase64OrGarbage(val)) parts.push(cleanText(val));
           }
           if (item.dose || item.dosage) {
-            parts.push(item.dose || item.dosage);
+            const val = item.dose || item.dosage;
+            if (!isBase64OrGarbage(val)) parts.push(cleanText(val));
           }
           if (item.frequency || item.schedule) {
-            parts.push(item.frequency || item.schedule);
+            const val = item.frequency || item.schedule;
+            if (!isBase64OrGarbage(val)) parts.push(cleanText(val));
           }
           if (item.route) {
-            parts.push(item.route);
+            if (!isBase64OrGarbage(item.route)) parts.push(cleanText(item.route));
           }
           
           // If we found meaningful parts, join them
@@ -976,20 +1029,28 @@ function generatePatientPDF(pt) {
           }
           
           // Otherwise try common value fields
-          if (item.value) return item.value;
-          if (item.text) return item.text;
-          if (item.description) return item.description;
+          if (item.value && !isBase64OrGarbage(item.value)) return cleanText(item.value);
+          if (item.text && !isBase64OrGarbage(item.text)) return cleanText(item.text);
+          if (item.description && !isBase64OrGarbage(item.description)) return cleanText(item.description);
           
-          // Last resort: join all string values
-          const values = Object.values(item).filter(v => typeof v === 'string' || typeof v === 'number');
+          // Last resort: join all string values (excluding base64)
+          const values = Object.values(item).filter(v => 
+            (typeof v === 'string' && !isBase64OrGarbage(v)) || typeof v === 'number'
+          ).map(v => typeof v === 'string' ? cleanText(v) : v);
           return values.length > 0 ? values.join(' - ') : '';
         }).filter(s => s).join('\n');
       }
       
-      // Plain object
+      // Plain object - skip base64 fields
       const parts = [];
       for (const [key, val] of Object.entries(content)) {
-        if (val && typeof val !== 'object') {
+        // Skip image/data fields
+        if (key.toLowerCase().includes('image') || key.toLowerCase().includes('base64')) continue;
+        if (key.toLowerCase().includes('photo') || key.toLowerCase().includes('attachment')) continue;
+        
+        if (val && typeof val === 'string' && !isBase64OrGarbage(val)) {
+          parts.push(key + ': ' + cleanText(val));
+        } else if (val && typeof val === 'number') {
           parts.push(key + ': ' + val);
         }
       }
@@ -1002,9 +1063,18 @@ function generatePatientPDF(pt) {
     function addSection(title, content) {
       if (content === null || content === undefined) return;
       
+      // Skip if content is base64 garbage
+      if (typeof content === 'string' && isBase64OrGarbage(content)) return;
+      
       const textContent = formatContent(content);
       
       if (!textContent || textContent.trim() === '' || textContent === 'N/A' || textContent === '-') {
+        return;
+      }
+      
+      // Skip if still contains too much garbage after cleaning
+      if (textContent.length > 5000) {
+        console.log('Skipping oversized section:', title, textContent.length, 'chars');
         return;
       }
       
@@ -1029,12 +1099,21 @@ function generatePatientPDF(pt) {
       
       const lines = doc.splitTextToSize(textContent, contentWidth - 5);
       
-      for (let i = 0; i < lines.length; i++) {
+      // Limit to reasonable number of lines per section
+      const maxLines = 100;
+      const linesToRender = lines.slice(0, maxLines);
+      
+      for (let i = 0; i < linesToRender.length; i++) {
         if (y > pageHeight - 20) {
           doc.addPage();
           y = margin;
         }
-        doc.text(lines[i], margin + 6, y);
+        doc.text(linesToRender[i], margin + 6, y);
+        y += 4.5;
+      }
+      
+      if (lines.length > maxLines) {
+        doc.text('... [' + (lines.length - maxLines) + ' more lines]', margin + 6, y);
         y += 4.5;
       }
       
@@ -1046,11 +1125,17 @@ function generatePatientPDF(pt) {
     // ─────────────────────────────────────────────────────────────
     function formatDatedEntries(entries) {
       if (!entries) return '';
-      if (typeof entries === 'string') return entries;
+      if (typeof entries === 'string') {
+        if (isBase64OrGarbage(entries)) return '';
+        return cleanText(entries);
+      }
       
       if (Array.isArray(entries)) {
         return entries.map(entry => {
-          if (typeof entry === 'string') return entry;
+          if (typeof entry === 'string') {
+            if (isBase64OrGarbage(entry)) return '';
+            return cleanText(entry);
+          }
           if (typeof entry !== 'object') return String(entry);
           
           let line = '';
@@ -1061,30 +1146,30 @@ function generatePatientPDF(pt) {
             const d = new Date(dateVal);
             if (!isNaN(d)) {
               line += d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ': ';
-            } else {
+            } else if (!isBase64OrGarbage(String(dateVal))) {
               line += dateVal + ': ';
             }
           }
           
-          // Main content
+          // Main content - check for base64
           const content = entry.value || entry.text || entry.note || entry.result || entry.findings || 
                          entry.content || entry.description || entry.summary || entry.details;
-          if (content) {
-            line += content;
+          if (content && !isBase64OrGarbage(String(content))) {
+            line += cleanText(String(content));
           } else {
-            // Try to extract all meaningful values
-            const skip = ['date', 'timestamp', 'datetime', 'created', 'createdAt', 'id', '_id', 'patientId'];
+            // Try to extract all meaningful values (excluding base64)
+            const skip = ['date', 'timestamp', 'datetime', 'created', 'createdAt', 'id', '_id', 'patientId', 'image', 'photo', 'attachment', 'base64'];
             const parts = [];
             for (const [k, v] of Object.entries(entry)) {
-              if (!skip.includes(k) && v && typeof v !== 'object') {
-                parts.push(k + ': ' + v);
+              if (!skip.includes(k) && v && typeof v !== 'object' && !isBase64OrGarbage(String(v))) {
+                parts.push(k + ': ' + cleanText(String(v)));
               }
             }
             line += parts.join(' | ');
           }
           
           return line;
-        }).filter(s => s).join('\n');
+        }).filter(s => s && s.trim()).join('\n');
       }
       
       // Single object
@@ -1096,7 +1181,10 @@ function generatePatientPDF(pt) {
     // ─────────────────────────────────────────────────────────────
     function formatLabs(labs) {
       if (!labs) return '';
-      if (typeof labs === 'string') return labs;
+      if (typeof labs === 'string') {
+        if (isBase64OrGarbage(labs)) return '';
+        return cleanText(labs);
+      }
       
       if (Array.isArray(labs)) {
         // Group by date if available
@@ -1105,7 +1193,7 @@ function generatePatientPDF(pt) {
         
         labs.forEach(lab => {
           if (typeof lab === 'string') {
-            noDate.push(lab);
+            if (!isBase64OrGarbage(lab)) noDate.push(cleanText(lab));
             return;
           }
           if (typeof lab !== 'object') {
@@ -1119,8 +1207,8 @@ function generatePatientPDF(pt) {
             const d = new Date(dateVal);
             if (!isNaN(d)) {
               dateKey = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-            } else {
-              dateKey = dateVal;
+            } else if (!isBase64OrGarbage(String(dateVal))) {
+              dateKey = String(dateVal);
             }
           }
           
@@ -1134,20 +1222,22 @@ function generatePatientPDF(pt) {
           const flag = lab.flag || lab.status || lab.abnormal || '';
           
           let labLine = '';
-          if (testName) labLine += testName;
-          if (result !== undefined && result !== null) labLine += ': ' + result;
-          if (unit) labLine += ' ' + unit;
-          if (ref) labLine += ' (ref: ' + ref + ')';
-          if (flag && flag !== 'normal' && flag !== 'Normal') labLine += ' [' + flag.toUpperCase() + ']';
+          if (testName && !isBase64OrGarbage(String(testName))) labLine += cleanText(String(testName));
+          if (result !== undefined && result !== null && !isBase64OrGarbage(String(result))) labLine += ': ' + result;
+          if (unit && !isBase64OrGarbage(String(unit))) labLine += ' ' + unit;
+          if (ref && !isBase64OrGarbage(String(ref))) labLine += ' (ref: ' + ref + ')';
+          if (flag && flag !== 'normal' && flag !== 'Normal' && !isBase64OrGarbage(String(flag))) labLine += ' [' + String(flag).toUpperCase() + ']';
           
           if (labLine) {
             byDate[dateKey].push(labLine);
           } else {
-            // Fallback: extract all values
+            // Fallback: extract all values (excluding base64)
             const parts = [];
             for (const [k, v] of Object.entries(lab)) {
-              if (v && typeof v !== 'object' && !['date', 'timestamp', 'id', '_id'].includes(k)) {
-                parts.push(k + ': ' + v);
+              if (v && typeof v !== 'object' && !['date', 'timestamp', 'id', '_id', 'image', 'photo', 'base64'].includes(k)) {
+                if (!isBase64OrGarbage(String(v))) {
+                  parts.push(k + ': ' + cleanText(String(v)));
+                }
               }
             }
             if (parts.length) byDate[dateKey].push(parts.join(' | '));
@@ -1197,11 +1287,17 @@ function generatePatientPDF(pt) {
     // ─────────────────────────────────────────────────────────────
     function formatProgressNotes(notes) {
       if (!notes) return '';
-      if (typeof notes === 'string') return notes;
+      if (typeof notes === 'string') {
+        if (isBase64OrGarbage(notes)) return '';
+        return cleanText(notes);
+      }
       
       if (Array.isArray(notes)) {
         return notes.map(note => {
-          if (typeof note === 'string') return note;
+          if (typeof note === 'string') {
+            if (isBase64OrGarbage(note)) return '';
+            return cleanText(note);
+          }
           if (typeof note !== 'object') return String(note);
           
           let line = '';
@@ -1215,29 +1311,31 @@ function generatePatientPDF(pt) {
               const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
               if (time !== '00:00') line += ' ' + time;
               line += '\n';
-            } else {
+            } else if (!isBase64OrGarbage(String(dateVal))) {
               line += dateVal + '\n';
             }
           }
           
           // Author
           const author = note.author || note.by || note.doctor || note.user || note.writtenBy;
-          if (author) line += 'By: ' + author + '\n';
+          if (author && !isBase64OrGarbage(String(author))) line += 'By: ' + cleanText(String(author)) + '\n';
           
-          // Content
+          // Content - skip if base64
           const content = note.note || note.text || note.content || note.entry || note.body || note.summary;
-          if (content) line += content;
+          if (content && !isBase64OrGarbage(String(content))) {
+            line += cleanText(String(content));
+          }
           
-          // SOAP format
+          // SOAP format - skip base64 fields
           if (note.subjective || note.objective || note.assessment || note.plan) {
-            if (note.subjective) line += '\nS: ' + note.subjective;
-            if (note.objective) line += '\nO: ' + note.objective;
-            if (note.assessment) line += '\nA: ' + note.assessment;
-            if (note.plan) line += '\nP: ' + note.plan;
+            if (note.subjective && !isBase64OrGarbage(String(note.subjective))) line += '\nS: ' + cleanText(String(note.subjective));
+            if (note.objective && !isBase64OrGarbage(String(note.objective))) line += '\nO: ' + cleanText(String(note.objective));
+            if (note.assessment && !isBase64OrGarbage(String(note.assessment))) line += '\nA: ' + cleanText(String(note.assessment));
+            if (note.plan && !isBase64OrGarbage(String(note.plan))) line += '\nP: ' + cleanText(String(note.plan));
           }
           
           return line.trim();
-        }).filter(s => s).join('\n\n');
+        }).filter(s => s && s.length > 5).join('\n\n');
       }
       
       return formatContent(notes);
@@ -1337,11 +1435,11 @@ function generatePatientPDF(pt) {
     addSection('Consultations', pt.consults || pt.consultations || pt.referrals);
     addSection('Follow-up', pt.followUp || pt.followup || pt.fup);
     
-    // Progress Notes
-    const progressData = pt.progressNotes || pt.notes || pt.progress || pt.entries || pt.dailyNotes;
+    // Progress Notes / Clinical Notes
+    const progressData = pt.progressNotes || pt.clinicalNotes || pt.notes || pt.progress || pt.entries || pt.dailyNotes;
     if (progressData && (Array.isArray(progressData) || typeof progressData === 'object')) {
       const formattedNotes = formatProgressNotes(progressData);
-      if (formattedNotes && formattedNotes.length > 10) {
+      if (formattedNotes && formattedNotes.length > 10 && !isBase64OrGarbage(formattedNotes)) {
         addSection('Progress Notes', formattedNotes);
       }
     }
@@ -1389,23 +1487,41 @@ function generatePatientPDF(pt) {
       'tasks', 'todos', 'outstanding', 'pendingTasks', 'jobs',
       'pendingResults', 'awaitingResults', 'pending',
       'consults', 'consultations', 'referrals', 'followUp', 'followup', 'fup',
-      'progressNotes', 'notes', 'progress', 'entries', 'dailyNotes',
+      'progressNotes', 'notes', 'progress', 'entries', 'dailyNotes', 'clinicalNotes',
       'codeStatus', 'resuscitationStatus', 'dnar', 'dnr', 'ceiling',
       'infectionControl', 'isolation', 'precautions',
       'vte', 'dvtProphylaxis', 'anticoagulation',
       'discharge', 'dischargePlan', 'dischargePlanning',
       'socialIssues', 'socialConcerns', 'barriers',
       'specialInstructions', 'additionalNotes', 'comments', 'remarks',
-      'sharedBy', 'sharedAt', 'createdAt', 'updatedAt', 'lastUpdated'
+      'sharedBy', 'sharedAt', 'createdAt', 'updatedAt', 'lastUpdated',
+      // Skip image/attachment fields
+      'image', 'images', 'photo', 'photos', 'attachment', 'attachments',
+      'base64', 'thumbnail', 'avatar', 'picture', 'file', 'files',
+      'document', 'documents', 'scan', 'signature'
     ]);
     
-    // Add any fields that weren't covered
+    // Add any fields that weren't covered (skip images/base64)
     for (const [key, value] of Object.entries(pt)) {
-      if (!coveredFields.has(key) && value !== null && value !== undefined && value !== '') {
-        // Convert camelCase to Title Case
-        const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim();
-        addSection(title, value);
+      // Skip covered fields
+      if (coveredFields.has(key)) continue;
+      
+      // Skip empty values
+      if (value === null || value === undefined || value === '') continue;
+      
+      // Skip fields that look like they contain images
+      const keyLower = key.toLowerCase();
+      if (keyLower.includes('image') || keyLower.includes('photo') || keyLower.includes('base64') ||
+          keyLower.includes('attachment') || keyLower.includes('file') || keyLower.includes('thumbnail')) {
+        continue;
       }
+      
+      // Skip if value is base64 garbage
+      if (typeof value === 'string' && isBase64OrGarbage(value)) continue;
+      
+      // Convert camelCase to Title Case
+      const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim();
+      addSection(title, value);
     }
     
     // ─────────────────────────────────────────────────────────────
