@@ -843,12 +843,21 @@ function exportPatientPDF(idx) {
 function generatePatientPDF(pt) {
   showLoad('Generating PDF...');
   
-  // Debug: Log patient data structure
-  console.log('=== PDF DEBUG ===');
-  console.log('Keys:', Object.keys(pt));
-  console.log('Labs:', pt.labs);
-  console.log('Vitals:', pt.vitals);
-  console.log('Tasks:', pt.tasks || pt.plans);
+  // Debug: Log FULL patient data structure to find labs
+  console.log('=== PDF DEBUG - FULL PATIENT DATA ===');
+  console.log('All keys:', Object.keys(pt));
+  
+  // Check all possible lab field names
+  const labFields = ['labs', 'labResults', 'laboratory', 'bloodTests', 'bloodWork', 'results', 'investigations', 'labData'];
+  labFields.forEach(field => {
+    if (pt[field]) console.log('Found ' + field + ':', pt[field]);
+  });
+  
+  // Log full patient object (truncated strings)
+  console.log('Full patient:', JSON.stringify(pt, (k, v) => {
+    if (typeof v === 'string' && v.length > 100) return v.substring(0, 100) + '...';
+    return v;
+  }, 2));
   
   try {
     const { jsPDF } = window.jspdf;
@@ -1091,24 +1100,78 @@ function generatePatientPDF(pt) {
     }
     
     // ═══════════════════════════════════════════════════════════════
-    // LABS TABLE - Only if labs exist
+    // LABS TABLE - Handle multiple possible data structures
     // ═══════════════════════════════════════════════════════════════
-    if (pt.labs && Array.isArray(pt.labs) && pt.labs.length > 0) {
+    
+    // Find labs data from various possible field names
+    let labsData = pt.labs || pt.labResults || pt.laboratory || pt.bloodTests || pt.bloodWork || pt.results;
+    
+    console.log('Labs data found:', labsData);
+    
+    // Also check for nested structures
+    if (!labsData && pt.investigations) labsData = pt.investigations;
+    if (!labsData && pt.labData) labsData = pt.labData;
+    
+    // Process labs if we found any
+    if (labsData) {
       const labRows = [];
       
-      pt.labs.forEach(lab => {
-        if (typeof lab !== 'object') return;
-        const name = lab.name || lab.test || lab.label || lab.parameter || '';
-        const value = lab.value !== undefined ? lab.value : (lab.result || '');
-        const unit = lab.unit || lab.units || '';
-        const ref = lab.range || lab.reference || lab.refRange || '';
-        const flag = lab.flag || lab.status || '';
+      // Helper to extract lab from various object formats
+      function extractLab(lab, panelName) {
+        if (!lab || typeof lab !== 'object') return null;
         
-        if (name && value !== '' && value !== null) {
-          const flagStr = (flag && flag.toLowerCase() !== 'normal') ? flag.toUpperCase() : '';
-          labRows.push([clean(name), String(value), clean(unit), clean(ref), flagStr]);
+        // Try all possible field names
+        const name = lab.name || lab.test || lab.label || lab.parameter || lab.testName || '';
+        const value = lab.value !== undefined ? lab.value : (lab.result !== undefined ? lab.result : (lab.reading || ''));
+        const unit = lab.unit || lab.units || lab.unitOfMeasure || '';
+        const ref = lab.range || lab.reference || lab.refRange || lab.normalRange || lab.referenceRange || '';
+        const flag = lab.flag || lab.status || lab.abnormal || lab.interpretation || '';
+        
+        if (name && value !== '' && value !== null && value !== undefined) {
+          const flagStr = (flag && String(flag).toLowerCase() !== 'normal') ? String(flag).toUpperCase() : '';
+          return [clean(name), String(value), clean(unit), clean(ref), flagStr];
         }
-      });
+        return null;
+      }
+      
+      // Process based on data structure
+      if (Array.isArray(labsData)) {
+        // Flat array of labs
+        labsData.forEach(lab => {
+          // Check if this is a panel with nested labs
+          if (lab.results && Array.isArray(lab.results)) {
+            // Panel header
+            if (lab.panelName || lab.name || lab.category) {
+              labRows.push([{ content: (lab.panelName || lab.name || lab.category).toUpperCase(), colSpan: 5, styles: { fontStyle: 'bold', fillColor: [230, 240, 250] } }]);
+            }
+            lab.results.forEach(l => {
+              const row = extractLab(l);
+              if (row) labRows.push(row);
+            });
+          } else {
+            const row = extractLab(lab);
+            if (row) labRows.push(row);
+          }
+        });
+      } else if (typeof labsData === 'object') {
+        // Object with panels as keys (e.g., { renalFunction: [...], electrolytes: [...] })
+        for (const [panelName, panelData] of Object.entries(labsData)) {
+          if (Array.isArray(panelData) && panelData.length > 0) {
+            // Add panel header
+            labRows.push([{ content: panelName.replace(/([A-Z])/g, ' $1').toUpperCase(), colSpan: 5, styles: { fontStyle: 'bold', fillColor: [230, 240, 250] } }]);
+            panelData.forEach(lab => {
+              const row = extractLab(lab);
+              if (row) labRows.push(row);
+            });
+          } else if (typeof panelData === 'object' && panelData !== null) {
+            // Single lab value
+            const row = extractLab(panelData);
+            if (row) labRows.push(row);
+          }
+        }
+      }
+      
+      console.log('Lab rows extracted:', labRows.length);
       
       if (labRows.length > 0) {
         if (y > pageHeight - 50) { doc.addPage(); y = margin; }
@@ -1137,7 +1200,7 @@ function generatePatientPDF(pt) {
           },
           alternateRowStyles: { fillColor: [248, 250, 252] },
           didParseCell: function(data) {
-            if (data.section === 'body' && data.row.raw && data.row.raw[4]) {
+            if (data.section === 'body' && data.row.raw && Array.isArray(data.row.raw) && data.row.raw[4]) {
               if (data.column.index === 1 || data.column.index === 4) {
                 data.cell.styles.textColor = red;
                 data.cell.styles.fontStyle = 'bold';
