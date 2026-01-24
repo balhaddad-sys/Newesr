@@ -11,7 +11,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>MedWard Pro v17.0</title>
+<title>MedWard Pro v17.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -4436,9 +4436,9 @@ const CONFIG = {
   // ═══════════════════════════════════════════════════════════════════
   // APP METADATA
   // ═══════════════════════════════════════════════════════════════════
-  VERSION: '17.0.0',
+  VERSION: '17.1.0',
   BUILD_DATE: '2026-01-24',
-  BUILD_ID: '2026-01-24.2',  // ★ BUMP ON EVERY DEPLOY - triggers cache purge
+  BUILD_ID: '2026-01-24.3-cloudfirst',  // ★ BUMP ON EVERY DEPLOY - triggers cache purge
   APP_NAME: 'MedWard Pro',
   
   // ═══════════════════════════════════════════════════════════════════
@@ -4473,6 +4473,12 @@ const CONFIG = {
   SYNC_DEBOUNCE_MS: 1500,
   FETCH_TIMEOUT_MS: 30000,
   MAX_RETRIES: 2,
+  
+  // ═══════════════════════════════════════════════════════════════════
+  // CLOUD-FIRST BOOT SETTINGS
+  // ═══════════════════════════════════════════════════════════════════
+  CLOUD_BOOT_TIMEOUT_MS: 4000,   // Max wait for cloud on boot (then fallback to local)
+  CACHE_WARM_DELAY_MS: 10000,    // Delay before writing local cache after cloud boot
   
   // ═══════════════════════════════════════════════════════════════════
   // CLINICAL SETTINGS
@@ -5711,6 +5717,16 @@ let syncState = {
   isSyncing: false // Prevents concurrent syncs
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// CLOUD-FIRST BOOT FLAGS - Controls local cache read/write during boot
+// ═══════════════════════════════════════════════════════════════════════════
+const boot = {
+  cloudLoaded: false,        // True only after successful cloud load
+  allowLocalReads: false,    // Block local snapshot reads until cloud fails
+  allowLocalWrites: false,   // Block local writes until stability window passes
+  bootPhase: 'init'          // Track: 'init' -> 'loading' -> 'ready'
+};
+
 const $ = id => document.getElementById(id);
 const $$ = sel => document.querySelectorAll(sel);
 const esc = t => { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; };
@@ -6105,6 +6121,14 @@ function generateSparkline(param, maxPoints = 7) {
 let isSyncing = false;
 
 function loadLocal() {
+  // ═══════════════════════════════════════════════════════════════════
+  // CLOUD-FIRST: Only read local if explicitly allowed (cloud failed/timed out)
+  // ═══════════════════════════════════════════════════════════════════
+  if (!boot.allowLocalReads) {
+    console.log('⏳ loadLocal blocked: Cloud-first boot in progress');
+    return;
+  }
+  
   try {
     const s = localStorage.getItem(CONFIG.STORAGE_KEY);
     if (s) {
@@ -6166,6 +6190,14 @@ function saveLocalDeferred() {
 }
 
 function saveLocalNow() {
+  // ═══════════════════════════════════════════════════════════════════
+  // CLOUD-FIRST: Block local writes during boot stability window
+  // ═══════════════════════════════════════════════════════════════════
+  if (!boot.allowLocalWrites) {
+    console.log('⏳ saveLocalNow blocked: Boot stability window active');
+    return;
+  }
+  
   try {
     const payload = JSON.stringify({
       units: state.units,
@@ -6323,6 +6355,15 @@ function markDirty() {
 // ───────────────────────────────────────────────────────────────────
 
 async function performSync() {
+  // ═══════════════════════════════════════════════════════════════════
+  // CLOUD-FIRST BOOT GUARD - Never upload until cloud boot completes
+  // This prevents zombie cache from wiping server data on boot
+  // ═══════════════════════════════════════════════════════════════════
+  if (!boot.cloudLoaded) {
+    console.warn('⛔ Sync blocked: Cloud-first boot not yet complete');
+    return;
+  }
+  
   if (!syncState.pendingChanges) return;
   if (syncState.isSyncing) {
     // Already syncing - reschedule
@@ -6527,6 +6568,14 @@ async function saveCloud() {
 
 // Force immediate sync - bypasses debounce for critical operations like lab saves
 async function forceSync() {
+  // ═══════════════════════════════════════════════════════════════════
+  // CLOUD-FIRST BOOT GUARD - Never upload until cloud boot completes
+  // ═══════════════════════════════════════════════════════════════════
+  if (!boot.cloudLoaded) {
+    console.warn('⛔ forceSync blocked: Cloud-first boot not yet complete');
+    return false;
+  }
+  
   // ═══════════════════════════════════════════════════════════════════
   // FIRST-LOGIN GUARD - Never upload until we've downloaded from cloud
   // This prevents new devices from wiping existing cloud data
@@ -14222,9 +14271,188 @@ function initDebugPanel() {
 
 // Old diagnostics functions removed - now using Diagnostics object in CONFIG section
 
+// ═══════════════════════════════════════════════════════════════════════════
+// CLOUD-FIRST BOOT SEQUENCE - Professional pattern for data consistency
+// ═══════════════════════════════════════════════════════════════════════════
+// 
+// Boot order:
+// 1. Show loading indicator
+// 2. Try to load from cloud (with timeout)
+// 3. If cloud succeeds → use cloud data as truth
+// 4. If cloud fails/times out → fall back to local cache
+// 5. After 10 seconds of stability → warm local cache once
+// 
+// This prevents "local snapshot overwrites good cloud data" bugs
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function cloudFirstBoot() {
+  boot.bootPhase = 'loading';
+  showSyncStatusBar('☁️ Loading from cloud...', 'orange');
+  showLoading('Loading your data...');
+  
+  console.log('🚀 Cloud-first boot starting...');
+  console.log('   Timeout:', CONFIG.CLOUD_BOOT_TIMEOUT_MS, 'ms');
+  console.log('   Cache warm delay:', CONFIG.CACHE_WARM_DELAY_MS, 'ms');
+  
+  // Ensure API URL is set before cloud call
+  state.settings.apiUrl = CONFIG.API_URL;
+  
+  // Try cloud load with timeout
+  let cloudSuccess = false;
+  
+  try {
+    // Race between cloud load and timeout
+    const cloudPromise = (async () => {
+      const res = await fetch(state.settings.apiUrl, {
+        method: 'POST',
+        cache: 'no-store',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ 
+          action: 'loadData',
+          username: AUTH.user,
+          password: AUTH.pass,
+          clientRev: syncState.clientRev
+        })
+      });
+      
+      const text = await res.text();
+      
+      // Check for HTML response (wrong URL)
+      if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+        throw new Error('Server returned HTML');
+      }
+      
+      return JSON.parse(text);
+    })();
+    
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Cloud timeout')), CONFIG.CLOUD_BOOT_TIMEOUT_MS)
+    );
+    
+    const data = await Promise.race([cloudPromise, timeoutPromise]);
+    
+    // ═══════════════════════════════════════════════════════════════════
+    // CLOUD SUCCESS - Apply cloud data as source of truth
+    // ═══════════════════════════════════════════════════════════════════
+    if (data.success && (data.data || data.unchanged)) {
+      if (data.unchanged) {
+        // Server says we're already in sync - allow local reads for this case
+        console.log('⚡ Already in sync (rev:', data.rev, ')');
+        boot.allowLocalReads = true;
+        loadLocal(); // Load local since we're in sync
+      } else if (data.data) {
+        // Apply cloud data directly
+        console.log('☁️ Applying cloud data...');
+        
+        if (data.rev) {
+          syncState.clientRev = data.rev;
+          localStorage.setItem('MW_REV', String(syncState.clientRev));
+        }
+        
+        if (data.data.units?.length) {
+          state.units = data.data.units;
+          console.log('   Units loaded:', state.units.length);
+        }
+        
+        if (data.data.settings) {
+          const localApiUrl = state.settings.apiUrl;
+          state.settings = { ...state.settings, ...data.data.settings };
+          state.settings.apiUrl = localApiUrl; // Keep local API URL
+        }
+        
+        if (data.data.patients) {
+          state.patients = data.data.patients;
+          console.log('   Patients loaded:', state.patients.length);
+        }
+        
+        if (data.data.unitRequests?.length) {
+          state.unitRequests = data.data.unitRequests;
+        }
+        
+        if (data.data.trash) {
+          state.trash = data.data.trash;
+        }
+        
+        syncState.lastServerTimestamp = data.data.updatedAt || new Date().toISOString();
+      }
+      
+      // ✅ MARK CLOUD BOOT COMPLETE
+      boot.cloudLoaded = true;
+      syncState.isHydrated = true;
+      syncState.isReadOnly = false;
+      syncState.hasEverSyncedThisSession = true;
+      syncState.lastServerPatientCount = state.patients?.length || 0;
+      syncState.lastServerUnitCount = state.units?.length || 0;
+      
+      cloudSuccess = true;
+      console.log('✅ Cloud boot successful:', state.patients.length, 'patients');
+      showSyncStatusBar('☁️ Cloud connected', 'green');
+    } else {
+      throw new Error('Cloud returned no data');
+    }
+    
+  } catch (e) {
+    // ═══════════════════════════════════════════════════════════════════
+    // CLOUD FAILED - Fall back to local cache
+    // ═══════════════════════════════════════════════════════════════════
+    console.warn('⚠️ Cloud boot failed:', e.message);
+    console.log('📱 Falling back to local cache...');
+    
+    // Now allow local reads
+    boot.allowLocalReads = true;
+    
+    const localCount = loadLocalCacheForDisplay();
+    loadLocal();
+    
+    if (localCount > 0 || state.patients.length > 0) {
+      console.log('📱 Loaded from local cache:', state.patients.length, 'patients');
+      showSyncStatusBar('📱 Offline - View Only', 'orange');
+      
+      // Mark as hydrated but READ-ONLY (can view but not sync)
+      syncState.isHydrated = true;
+      syncState.lastServerPatientCount = state.patients.length;
+      syncState.lastServerUnitCount = state.units.length;
+      // isReadOnly stays TRUE - prevents zombie cache attack
+    } else {
+      console.warn('❌ No cloud and no cache');
+      showSyncStatusBar('⚠️ No data - Try refreshing', 'red');
+    }
+  }
+  
+  hideLoading();
+  
+  // ═══════════════════════════════════════════════════════════════════
+  // ENSURE DEFAULT UNIT EXISTS - Critical for new users / empty state
+  // ═══════════════════════════════════════════════════════════════════
+  if (!state.units.length) {
+    state.units = [{ id: 'med-e', name: 'Medicine Unit E', icon: '🏥', desc: 'Internal Medicine', code: '1234', color: '#14b8a6' }];
+    console.log('📋 Created default unit');
+  }
+  state.settings.adminPassword = state.settings.adminPassword || CONFIG.ADMIN_PASSWORD;
+  
+  // ═══════════════════════════════════════════════════════════════════
+  // DELAYED CACHE WARM - Write to local storage after stability window
+  // ═══════════════════════════════════════════════════════════════════
+  if (cloudSuccess) {
+    console.log('⏱️ Cache warm scheduled in', CONFIG.CACHE_WARM_DELAY_MS/1000, 'seconds');
+    setTimeout(() => {
+      boot.allowLocalWrites = true;
+      boot.bootPhase = 'ready';
+      console.log('🔓 Cache writes enabled - warming local cache');
+      saveLocalNow(); // One-time cache warm
+    }, CONFIG.CACHE_WARM_DELAY_MS);
+  } else {
+    // If cloud failed, allow writes immediately (we're using local anyway)
+    boot.allowLocalWrites = true;
+    boot.bootPhase = 'ready';
+  }
+  
+  return cloudSuccess;
+}
+
 async function init() {
-  console.log('🚀 MedWard Pro v17.0 - Build:', CONFIG.BUILD_ID);
-  console.log('🔒 Starting in READ-ONLY mode until cloud sync completes');
+  console.log('🚀 MedWard Pro v17.1 - Build:', CONFIG.BUILD_ID);
+  console.log('🔒 CLOUD-FIRST BOOT: Blocking local cache until cloud responds');
   
   // Run boot diagnostics
   if (!Diagnostics.run()) {
@@ -14236,22 +14464,12 @@ async function init() {
   Diagnostics.showDebugPanel();
   
   // ═══════════════════════════════════════════════════════════════════
-  // CHECK STALE CACHE FLAG - Build migration marked cache as potentially stale
+  // CLOUD-FIRST BOOT: Don't read local until cloud responds or times out
   // ═══════════════════════════════════════════════════════════════════
-  const isCacheStale = localStorage.getItem('MW_CACHE_STALE') === '1';
-  if (isCacheStale) {
-    console.warn('⚠️ Cache marked as STALE from build migration - will trust cloud');
-    showSyncStatusBar('🔄 Verifying data with cloud...', 'orange');
-  }
+  await cloudFirstBoot();
   
-  // ═══════════════════════════════════════════════════════════════════
-  // LOCAL-FIRST: Load from phone memory for INSTANT display (0ms latency)
-  // NOTE: This is just for instant UI - cloud will overwrite if different
-  // ═══════════════════════════════════════════════════════════════════
-  const localPatientCount = loadLocalCacheForDisplay();
-  
-  // Also load from legacy storage
-  loadLocal();
+  // Clear any stale cache flags since we've now done proper boot
+  localStorage.removeItem('MW_CACHE_STALE');
   
   // Load unit from session
   const unitId = sessionStorage.getItem('MW_UNIT');
@@ -14271,11 +14489,11 @@ async function init() {
     if (currentDate) currentDate.textContent = formatDate();
   }
 
-  // Render immediately with local data (User sees data INSTANTLY)
+  // Render UI with loaded data (cloud or local fallback)
   renderScoresGrid();
   renderRef();
   renderPatients();
-  console.log('✨ UI rendered from local data');
+  console.log('✨ UI rendered:', state.patients.length, 'patients');
 
   // Setup event handlers
   const mainTabs = $('mainTabs');
@@ -14313,36 +14531,13 @@ async function init() {
   // Modal close on backdrop click
   $$('.modal').forEach(m => m.onclick = e => { if (e.target === m) m.classList.remove('active'); });
 
-  // ═══════════════════════════════════════════════════════════════════
-  // CLOUD-FIRST RECONCILIATION: Cloud is the source of truth
-  // ═══════════════════════════════════════════════════════════════════
-  try {
-    await syncFromCloud();
-    
-    // ═══════════════════════════════════════════════════════════════════
-    // CRITICAL: If local was empty but cloud has data, we got it from syncFromCloud
-    // If local had data but cloud had MORE data, cloud wins (already applied)
-    // Clear stale flag since we've now reconciled
-    // ═══════════════════════════════════════════════════════════════════
-    localStorage.removeItem('MW_CACHE_STALE');
-    
-    // Re-render to show cloud data
-    renderPatients();
-    console.log('✅ Cloud reconciliation complete');
-    
-  } catch (e) {
-    // If offline, just keep using local data - no error popup needed
-    console.log('📴 Offline mode - using local data');
-    // Keep stale flag - we couldn't verify with cloud
-  }
-  
   // Initialize debug panel if enabled
   initDebugPanel();
 
   // Periodic background sync (every 60 seconds)
   setInterval(() => {
     // Only pull from cloud if we're not in read-only mode and no pending changes
-    if (!syncState.isReadOnly && !syncState.pendingChanges) {
+    if (boot.cloudLoaded && !syncState.isReadOnly && !syncState.pendingChanges) {
       syncFromCloud().catch(() => console.log('📴 Background sync skipped - offline'));
     }
   }, 60000);
@@ -14353,8 +14548,8 @@ async function init() {
   
   // Save when leaving page
   window.addEventListener('beforeunload', () => {
-    // Synchronous save - must complete before page unloads
-    if (syncState.pendingChanges || syncState.patchQueue.length > 0) {
+    // Only save if boot allows writes and there are pending changes
+    if (boot.allowLocalWrites && (syncState.pendingChanges || syncState.patchQueue.length > 0)) {
       saveLocalNow(); // Force immediate save
     }
   });
@@ -14362,13 +14557,20 @@ async function init() {
   // Save when app goes to background (mobile)
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
-      // Going to background - save locally immediately
-      saveLocalNow();
+      // Going to background - save locally immediately (if allowed)
+      if (boot.allowLocalWrites) {
+        saveLocalNow();
+      }
       
       // ═══════════════════════════════════════════════════════════════════
-      // CRITICAL: Only send beacon if we've successfully loaded from cloud
+      // CRITICAL: Only send beacon if cloud boot completed successfully
       // This prevents zombie cache from wiping server data
       // ═══════════════════════════════════════════════════════════════════
+      if (!boot.cloudLoaded) {
+        console.warn('⛔ Beacon blocked: Cloud-first boot not complete');
+        return;
+      }
+      
       if (syncState.isReadOnly) {
         console.warn('⛔ Beacon blocked: App is in read-only mode');
         return;
@@ -14397,6 +14599,14 @@ async function init() {
 // Load local cache ONLY for instant display - cloud will overwrite this
 // Returns the number of patients loaded (for logging)
 function loadLocalCacheForDisplay() {
+  // ═══════════════════════════════════════════════════════════════════
+  // CLOUD-FIRST: Only read local if explicitly allowed (cloud failed/timed out)
+  // ═══════════════════════════════════════════════════════════════════
+  if (!boot.allowLocalReads) {
+    console.log('⏳ loadLocalCacheForDisplay blocked: Cloud-first boot in progress');
+    return 0;
+  }
+  
   const localCache = localStorage.getItem(CONFIG.CACHE_KEY);
   if (localCache) {
     try {
@@ -14404,8 +14614,7 @@ function loadLocalCacheForDisplay() {
       state.patients = cached.patients || [];
       state.units = cached.units || [];
       state.trash = cached.trash || { patients: [], units: [] };
-      console.log('⚡ Loaded from local cache (for instant display):', state.patients.length, 'patients');
-      console.log('   ⚠️ This is UNVERIFIED - cloud will be checked next');
+      console.log('⚡ Loaded from local cache (fallback mode):', state.patients.length, 'patients');
       return state.patients.length;
     } catch (e) {
       console.warn('⚠️ Cache parse error, starting fresh');
