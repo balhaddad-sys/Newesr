@@ -526,7 +526,7 @@ body {
 .pdf-btn:not(:disabled):hover { background: var(--primary-light); border-color: var(--primary); }
 
 .send-btn {
-  flex: 1.5;
+  width: 100%;
   padding: 14px;
   background: var(--primary);
   color: #fff;
@@ -734,16 +734,10 @@ body {
     </div>
     <div class="patient-list" id="patientList"></div>
     <div class="modal-footer">
-      <div class="modal-footer-btns">
-        <button class="pdf-btn" id="pdfBtn" disabled onclick="generateHandoverPDF()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          Export PDF
-        </button>
-        <button class="send-btn" id="sendBtn" disabled onclick="sendPatient()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          Send Patient
-        </button>
-      </div>
+      <button class="send-btn" id="sendBtn" disabled onclick="sendPatient()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Send Patient
+      </button>
     </div>
   </div>
 </div>
@@ -934,21 +928,81 @@ function generatePatientPDF(pt) {
     y += 32;
     
     // ─────────────────────────────────────────────────────────────
+    // HELPER: Format complex objects to readable text
+    // ─────────────────────────────────────────────────────────────
+    function formatContent(content) {
+      if (content === null || content === undefined) return '';
+      
+      // Already a string
+      if (typeof content === 'string') return content;
+      
+      // Number or boolean
+      if (typeof content !== 'object') return String(content);
+      
+      // Array handling
+      if (Array.isArray(content)) {
+        if (content.length === 0) return '';
+        
+        // Array of strings
+        if (typeof content[0] === 'string') {
+          return content.join(', ');
+        }
+        
+        // Array of objects (like medications)
+        return content.map(item => {
+          if (typeof item === 'string') return item;
+          if (typeof item !== 'object') return String(item);
+          
+          // Try to extract meaningful fields from object
+          const parts = [];
+          
+          // Common medication fields
+          if (item.name || item.medication || item.drug) {
+            parts.push(item.name || item.medication || item.drug);
+          }
+          if (item.dose || item.dosage) {
+            parts.push(item.dose || item.dosage);
+          }
+          if (item.frequency || item.schedule) {
+            parts.push(item.frequency || item.schedule);
+          }
+          if (item.route) {
+            parts.push(item.route);
+          }
+          
+          // If we found meaningful parts, join them
+          if (parts.length > 0) {
+            return parts.join(' ');
+          }
+          
+          // Otherwise try common value fields
+          if (item.value) return item.value;
+          if (item.text) return item.text;
+          if (item.description) return item.description;
+          
+          // Last resort: join all string values
+          const values = Object.values(item).filter(v => typeof v === 'string' || typeof v === 'number');
+          return values.length > 0 ? values.join(' - ') : '';
+        }).filter(s => s).join('\n');
+      }
+      
+      // Plain object
+      const parts = [];
+      for (const [key, val] of Object.entries(content)) {
+        if (val && typeof val !== 'object') {
+          parts.push(key + ': ' + val);
+        }
+      }
+      return parts.join(', ');
+    }
+    
+    // ─────────────────────────────────────────────────────────────
     // HELPER: Section with content
     // ─────────────────────────────────────────────────────────────
     function addSection(title, content) {
       if (content === null || content === undefined) return;
       
-      let textContent;
-      if (typeof content === 'object') {
-        if (Array.isArray(content)) {
-          textContent = content.join(', ');
-        } else {
-          textContent = JSON.stringify(content);
-        }
-      } else {
-        textContent = String(content);
-      }
+      const textContent = formatContent(content);
       
       if (!textContent || textContent.trim() === '' || textContent === 'N/A' || textContent === '-') {
         return;
@@ -988,45 +1042,371 @@ function generatePatientPDF(pt) {
     }
     
     // ─────────────────────────────────────────────────────────────
-    // CLINICAL SECTIONS
+    // HELPER: Format dated entries (labs, progress notes, etc.)
     // ─────────────────────────────────────────────────────────────
-    addSection('Diagnosis', pt.diagnosis || pt.primaryDiagnosis || pt.chiefComplaint);
-    addSection('Presenting Complaint', pt.presentingComplaint || pt.chiefComplaint);
+    function formatDatedEntries(entries) {
+      if (!entries) return '';
+      if (typeof entries === 'string') return entries;
+      
+      if (Array.isArray(entries)) {
+        return entries.map(entry => {
+          if (typeof entry === 'string') return entry;
+          if (typeof entry !== 'object') return String(entry);
+          
+          let line = '';
+          
+          // Date first
+          const dateVal = entry.date || entry.timestamp || entry.datetime || entry.created || entry.createdAt;
+          if (dateVal) {
+            const d = new Date(dateVal);
+            if (!isNaN(d)) {
+              line += d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ': ';
+            } else {
+              line += dateVal + ': ';
+            }
+          }
+          
+          // Main content
+          const content = entry.value || entry.text || entry.note || entry.result || entry.findings || 
+                         entry.content || entry.description || entry.summary || entry.details;
+          if (content) {
+            line += content;
+          } else {
+            // Try to extract all meaningful values
+            const skip = ['date', 'timestamp', 'datetime', 'created', 'createdAt', 'id', '_id', 'patientId'];
+            const parts = [];
+            for (const [k, v] of Object.entries(entry)) {
+              if (!skip.includes(k) && v && typeof v !== 'object') {
+                parts.push(k + ': ' + v);
+              }
+            }
+            line += parts.join(' | ');
+          }
+          
+          return line;
+        }).filter(s => s).join('\n');
+      }
+      
+      // Single object
+      return formatContent(entries);
+    }
+    
+    // ─────────────────────────────────────────────────────────────
+    // HELPER: Format lab results
+    // ─────────────────────────────────────────────────────────────
+    function formatLabs(labs) {
+      if (!labs) return '';
+      if (typeof labs === 'string') return labs;
+      
+      if (Array.isArray(labs)) {
+        // Group by date if available
+        const byDate = {};
+        const noDate = [];
+        
+        labs.forEach(lab => {
+          if (typeof lab === 'string') {
+            noDate.push(lab);
+            return;
+          }
+          if (typeof lab !== 'object') {
+            noDate.push(String(lab));
+            return;
+          }
+          
+          const dateVal = lab.date || lab.timestamp || lab.collectedAt || lab.resultDate;
+          let dateKey = 'Results';
+          if (dateVal) {
+            const d = new Date(dateVal);
+            if (!isNaN(d)) {
+              dateKey = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            } else {
+              dateKey = dateVal;
+            }
+          }
+          
+          if (!byDate[dateKey]) byDate[dateKey] = [];
+          
+          // Format individual lab
+          const testName = lab.test || lab.name || lab.testName || lab.parameter || lab.type;
+          const result = lab.result || lab.value || lab.reading;
+          const unit = lab.unit || lab.units || '';
+          const ref = lab.reference || lab.refRange || lab.normalRange || lab.range || '';
+          const flag = lab.flag || lab.status || lab.abnormal || '';
+          
+          let labLine = '';
+          if (testName) labLine += testName;
+          if (result !== undefined && result !== null) labLine += ': ' + result;
+          if (unit) labLine += ' ' + unit;
+          if (ref) labLine += ' (ref: ' + ref + ')';
+          if (flag && flag !== 'normal' && flag !== 'Normal') labLine += ' [' + flag.toUpperCase() + ']';
+          
+          if (labLine) {
+            byDate[dateKey].push(labLine);
+          } else {
+            // Fallback: extract all values
+            const parts = [];
+            for (const [k, v] of Object.entries(lab)) {
+              if (v && typeof v !== 'object' && !['date', 'timestamp', 'id', '_id'].includes(k)) {
+                parts.push(k + ': ' + v);
+              }
+            }
+            if (parts.length) byDate[dateKey].push(parts.join(' | '));
+          }
+        });
+        
+        // Build output
+        const lines = [];
+        for (const [date, results] of Object.entries(byDate)) {
+          if (Object.keys(byDate).length > 1 || date !== 'Results') {
+            lines.push('--- ' + date + ' ---');
+          }
+          lines.push(...results);
+        }
+        if (noDate.length) lines.push(...noDate);
+        
+        return lines.join('\n');
+      }
+      
+      // Object with nested data
+      if (typeof labs === 'object') {
+        const lines = [];
+        for (const [category, values] of Object.entries(labs)) {
+          if (values && typeof values === 'object') {
+            lines.push('--- ' + category.toUpperCase() + ' ---');
+            if (Array.isArray(values)) {
+              lines.push(formatLabs(values));
+            } else {
+              for (const [k, v] of Object.entries(values)) {
+                if (v !== null && v !== undefined) {
+                  lines.push(k + ': ' + v);
+                }
+              }
+            }
+          } else if (values) {
+            lines.push(category + ': ' + values);
+          }
+        }
+        return lines.join('\n');
+      }
+      
+      return String(labs);
+    }
+    
+    // ─────────────────────────────────────────────────────────────
+    // HELPER: Format progress notes
+    // ─────────────────────────────────────────────────────────────
+    function formatProgressNotes(notes) {
+      if (!notes) return '';
+      if (typeof notes === 'string') return notes;
+      
+      if (Array.isArray(notes)) {
+        return notes.map(note => {
+          if (typeof note === 'string') return note;
+          if (typeof note !== 'object') return String(note);
+          
+          let line = '';
+          
+          // Date
+          const dateVal = note.date || note.timestamp || note.datetime || note.createdAt;
+          if (dateVal) {
+            const d = new Date(dateVal);
+            if (!isNaN(d)) {
+              line += d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+              const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+              if (time !== '00:00') line += ' ' + time;
+              line += '\n';
+            } else {
+              line += dateVal + '\n';
+            }
+          }
+          
+          // Author
+          const author = note.author || note.by || note.doctor || note.user || note.writtenBy;
+          if (author) line += 'By: ' + author + '\n';
+          
+          // Content
+          const content = note.note || note.text || note.content || note.entry || note.body || note.summary;
+          if (content) line += content;
+          
+          // SOAP format
+          if (note.subjective || note.objective || note.assessment || note.plan) {
+            if (note.subjective) line += '\nS: ' + note.subjective;
+            if (note.objective) line += '\nO: ' + note.objective;
+            if (note.assessment) line += '\nA: ' + note.assessment;
+            if (note.plan) line += '\nP: ' + note.plan;
+          }
+          
+          return line.trim();
+        }).filter(s => s).join('\n\n');
+      }
+      
+      return formatContent(notes);
+    }
+    
+    // ─────────────────────────────────────────────────────────────
+    // CLINICAL SECTIONS - Standard fields
+    // ─────────────────────────────────────────────────────────────
+    addSection('Diagnosis', pt.diagnosis || pt.primaryDiagnosis || pt.chiefComplaint || pt.dx);
+    addSection('Presenting Complaint', pt.presentingComplaint || pt.chiefComplaint || pt.pc || pt.cc);
     addSection('History of Presenting Illness', pt.hopi || pt.hpi || pt.history || pt.historyOfPresentingIllness);
     addSection('Past Medical History', pt.pmh || pt.pastMedicalHistory || pt.medicalHistory);
     addSection('Past Surgical History', pt.psh || pt.pastSurgicalHistory || pt.surgicalHistory);
+    addSection('Drug History', pt.drugHistory || pt.dh);
     addSection('Current Medications', pt.medications || pt.currentMedications || pt.meds);
     addSection('Allergies', pt.allergies || pt.allergy);
-    addSection('Social History', pt.socialHistory || pt.shx);
-    addSection('Family History', pt.familyHistory || pt.fhx);
-    addSection('Examination Findings', pt.examination || pt.physicalExam || pt.exam || pt.findings);
+    addSection('Social History', pt.socialHistory || pt.shx || pt.sh);
+    addSection('Family History', pt.familyHistory || pt.fhx || pt.fh);
+    addSection('Review of Systems', pt.ros || pt.reviewOfSystems || pt.systemsReview);
+    
+    // Examination
+    addSection('General Examination', pt.generalExam || pt.general);
+    addSection('Examination Findings', pt.examination || pt.physicalExam || pt.exam || pt.findings || pt.oe);
+    addSection('Cardiovascular', pt.cvs || pt.cardiovascular || pt.cardiac);
+    addSection('Respiratory', pt.respiratory || pt.chest || pt.lungs);
+    addSection('Abdominal', pt.abdominal || pt.abdomen || pt.gi);
+    addSection('Neurological', pt.neuro || pt.neurological || pt.cns);
+    addSection('Musculoskeletal', pt.msk || pt.musculoskeletal);
     
     // Vitals
     let vitalsText = '';
     if (pt.vitals) {
-      if (typeof pt.vitals === 'object') {
+      if (typeof pt.vitals === 'object' && !Array.isArray(pt.vitals)) {
         const v = pt.vitals;
         const vitalsArr = [];
         if (v.bp || v.bloodPressure) vitalsArr.push('BP: ' + (v.bp || v.bloodPressure));
         if (v.hr || v.heartRate || v.pulse) vitalsArr.push('HR: ' + (v.hr || v.heartRate || v.pulse));
         if (v.temp || v.temperature) vitalsArr.push('Temp: ' + (v.temp || v.temperature));
         if (v.rr || v.respiratoryRate) vitalsArr.push('RR: ' + (v.rr || v.respiratoryRate));
-        if (v.spo2 || v.o2sat) vitalsArr.push('SpO2: ' + (v.spo2 || v.o2sat));
+        if (v.spo2 || v.o2sat || v.saturation) vitalsArr.push('SpO2: ' + (v.spo2 || v.o2sat || v.saturation));
+        if (v.weight) vitalsArr.push('Weight: ' + v.weight);
+        if (v.height) vitalsArr.push('Height: ' + v.height);
+        if (v.bmi) vitalsArr.push('BMI: ' + v.bmi);
+        if (v.pain) vitalsArr.push('Pain: ' + v.pain + '/10');
         vitalsText = vitalsArr.join('  |  ');
       } else {
-        vitalsText = pt.vitals;
+        vitalsText = formatDatedEntries(pt.vitals);
       }
     }
     addSection('Vitals', vitalsText);
     
-    addSection('Investigations', pt.investigations || pt.labs || pt.labResults || pt.results);
+    // Labs - with special formatting
+    const labData = pt.labs || pt.labResults || pt.laboratory || pt.bloodTests || pt.bloodWork;
+    if (labData) {
+      const formattedLabs = formatLabs(labData);
+      if (formattedLabs) {
+        addSection('Laboratory Results', formattedLabs);
+      }
+    }
+    
+    // Specific lab panels
+    addSection('CBC / FBC', formatLabs(pt.cbc || pt.fbc || pt.fullBloodCount || pt.completeBloodCount));
+    addSection('Metabolic Panel', formatLabs(pt.bmp || pt.cmp || pt.metabolicPanel || pt.uAndE || pt.electrolytes));
+    addSection('Liver Function', formatLabs(pt.lft || pt.liverFunction || pt.hepatic));
+    addSection('Renal Function', formatLabs(pt.rft || pt.renalFunction || pt.kidney || pt.urea || pt.creatinine));
+    addSection('Coagulation', formatLabs(pt.coags || pt.coagulation || pt.clotting || pt.inr || pt.pt || pt.aptt));
+    addSection('Cardiac Markers', formatLabs(pt.cardiacMarkers || pt.troponin || pt.bnp));
+    addSection('Thyroid Function', formatLabs(pt.tft || pt.thyroid));
+    addSection('Lipid Panel', formatLabs(pt.lipids || pt.lipidPanel || pt.cholesterol));
+    addSection('HbA1c / Glucose', formatLabs(pt.hba1c || pt.glucose || pt.diabetic));
+    addSection('Urinalysis', formatLabs(pt.urinalysis || pt.urine || pt.ua));
+    addSection('Blood Gas', formatLabs(pt.abg || pt.vbg || pt.bloodGas || pt.arterialBloodGas));
+    addSection('Microbiology', formatLabs(pt.microbiology || pt.cultures || pt.micro));
+    
+    // Other investigations
+    addSection('Investigations', pt.investigations || pt.results);
+    addSection('ECG', pt.ecg || pt.ekg || pt.electrocardiogram);
     addSection('Imaging', pt.imaging || pt.radiology || pt.scans);
-    addSection('Assessment', pt.assessment || pt.impression);
-    addSection('Management Plan', pt.plan || pt.managementPlan || pt.treatment || pt.management);
-    addSection('Outstanding Tasks', pt.tasks || pt.todos || pt.outstanding || pt.pendingTasks);
-    addSection('Consultations', pt.consults || pt.consultations);
-    addSection('Code Status', pt.codeStatus || pt.resuscitationStatus);
-    addSection('Special Notes', pt.notes || pt.specialInstructions || pt.additionalNotes);
+    addSection('X-Ray', pt.xray || pt.cxr || pt.chestXray);
+    addSection('CT Scan', pt.ct || pt.ctScan);
+    addSection('MRI', pt.mri);
+    addSection('Ultrasound', pt.ultrasound || pt.us || pt.uss);
+    addSection('Echo', pt.echo || pt.echocardiogram);
+    
+    // Assessment & Plan
+    addSection('Assessment', pt.assessment || pt.impression || pt.clinicalImpression);
+    addSection('Differential Diagnosis', pt.differentials || pt.differentialDiagnosis || pt.ddx);
+    addSection('Management Plan', pt.plan || pt.managementPlan || pt.treatment || pt.management || pt.rx);
+    addSection('Medications Prescribed', pt.prescriptions || pt.prescribed || pt.newMeds);
+    addSection('IV Fluids', pt.ivFluids || pt.fluids || pt.ivf);
+    addSection('Diet', pt.diet || pt.nutrition);
+    addSection('Activity', pt.activity || pt.mobility);
+    
+    // Tasks & Follow-up
+    addSection('Outstanding Tasks', pt.tasks || pt.todos || pt.outstanding || pt.pendingTasks || pt.jobs);
+    addSection('Pending Results', pt.pendingResults || pt.awaitingResults || pt.pending);
+    addSection('Consultations', pt.consults || pt.consultations || pt.referrals);
+    addSection('Follow-up', pt.followUp || pt.followup || pt.fup);
+    
+    // Progress Notes
+    const progressData = pt.progressNotes || pt.notes || pt.progress || pt.entries || pt.dailyNotes;
+    if (progressData && (Array.isArray(progressData) || typeof progressData === 'object')) {
+      const formattedNotes = formatProgressNotes(progressData);
+      if (formattedNotes && formattedNotes.length > 10) {
+        addSection('Progress Notes', formattedNotes);
+      }
+    }
+    
+    // Other important fields
+    addSection('Code Status', pt.codeStatus || pt.resuscitationStatus || pt.dnar || pt.dnr || pt.ceiling);
+    addSection('Infection Control', pt.infectionControl || pt.isolation || pt.precautions);
+    addSection('VTE Prophylaxis', pt.vte || pt.dvtProphylaxis || pt.anticoagulation);
+    addSection('Discharge Planning', pt.discharge || pt.dischargePlan || pt.dischargePlanning);
+    addSection('Social Issues', pt.socialIssues || pt.socialConcerns || pt.barriers);
+    addSection('Special Notes', pt.specialInstructions || pt.additionalNotes || pt.comments || pt.remarks);
+    
+    // ─────────────────────────────────────────────────────────────
+    // CATCH-ALL: Any remaining fields not already covered
+    // ─────────────────────────────────────────────────────────────
+    const coveredFields = new Set([
+      'id', '_id', 'patientId', 'name', 'age', 'gender', 'sex', 'dob', 'dateOfBirth',
+      'mrn', 'ward', 'bed', 'room', 'unitId', 'unit', 'admissionDate', 'dateAdmitted',
+      'diagnosis', 'primaryDiagnosis', 'chiefComplaint', 'dx', 'presentingComplaint', 'pc', 'cc',
+      'hopi', 'hpi', 'history', 'historyOfPresentingIllness',
+      'pmh', 'pastMedicalHistory', 'medicalHistory',
+      'psh', 'pastSurgicalHistory', 'surgicalHistory',
+      'drugHistory', 'dh', 'medications', 'currentMedications', 'meds',
+      'allergies', 'allergy', 'socialHistory', 'shx', 'sh', 'familyHistory', 'fhx', 'fh',
+      'ros', 'reviewOfSystems', 'systemsReview',
+      'generalExam', 'general', 'examination', 'physicalExam', 'exam', 'findings', 'oe',
+      'cvs', 'cardiovascular', 'cardiac', 'respiratory', 'chest', 'lungs',
+      'abdominal', 'abdomen', 'gi', 'neuro', 'neurological', 'cns', 'msk', 'musculoskeletal',
+      'vitals', 'labs', 'labResults', 'laboratory', 'bloodTests', 'bloodWork',
+      'cbc', 'fbc', 'fullBloodCount', 'completeBloodCount',
+      'bmp', 'cmp', 'metabolicPanel', 'uAndE', 'electrolytes',
+      'lft', 'liverFunction', 'hepatic', 'rft', 'renalFunction', 'kidney', 'urea', 'creatinine',
+      'coags', 'coagulation', 'clotting', 'inr', 'pt', 'aptt',
+      'cardiacMarkers', 'troponin', 'bnp', 'tft', 'thyroid',
+      'lipids', 'lipidPanel', 'cholesterol', 'hba1c', 'glucose', 'diabetic',
+      'urinalysis', 'urine', 'ua', 'abg', 'vbg', 'bloodGas', 'arterialBloodGas',
+      'microbiology', 'cultures', 'micro', 'investigations', 'results',
+      'ecg', 'ekg', 'electrocardiogram', 'imaging', 'radiology', 'scans',
+      'xray', 'cxr', 'chestXray', 'ct', 'ctScan', 'mri', 'ultrasound', 'us', 'uss',
+      'echo', 'echocardiogram', 'assessment', 'impression', 'clinicalImpression',
+      'differentials', 'differentialDiagnosis', 'ddx',
+      'plan', 'managementPlan', 'treatment', 'management', 'rx',
+      'prescriptions', 'prescribed', 'newMeds', 'ivFluids', 'fluids', 'ivf',
+      'diet', 'nutrition', 'activity', 'mobility',
+      'tasks', 'todos', 'outstanding', 'pendingTasks', 'jobs',
+      'pendingResults', 'awaitingResults', 'pending',
+      'consults', 'consultations', 'referrals', 'followUp', 'followup', 'fup',
+      'progressNotes', 'notes', 'progress', 'entries', 'dailyNotes',
+      'codeStatus', 'resuscitationStatus', 'dnar', 'dnr', 'ceiling',
+      'infectionControl', 'isolation', 'precautions',
+      'vte', 'dvtProphylaxis', 'anticoagulation',
+      'discharge', 'dischargePlan', 'dischargePlanning',
+      'socialIssues', 'socialConcerns', 'barriers',
+      'specialInstructions', 'additionalNotes', 'comments', 'remarks',
+      'sharedBy', 'sharedAt', 'createdAt', 'updatedAt', 'lastUpdated'
+    ]);
+    
+    // Add any fields that weren't covered
+    for (const [key, value] of Object.entries(pt)) {
+      if (!coveredFields.has(key) && value !== null && value !== undefined && value !== '') {
+        // Convert camelCase to Title Case
+        const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim();
+        addSection(title, value);
+      }
+    }
     
     // ─────────────────────────────────────────────────────────────
     // FOOTER
@@ -1133,11 +1513,11 @@ function startScanner() {
   
   const status = document.getElementById('scanStatus');
   status.className = 'scanner-status scanning';
-  status.textContent = '🔍 Scanning...';
+  status.textContent = 'Scanning...';
   
   if (typeof Html5Qrcode === 'undefined') {
     status.className = 'scanner-status error';
-    status.textContent = '❌ Scanner unavailable';
+    status.textContent = 'Scanner unavailable';
     return;
   }
   
@@ -1152,7 +1532,7 @@ function startScanner() {
     () => {}
   ).catch(() => {
     status.className = 'scanner-status error';
-    status.textContent = '❌ Camera denied';
+    status.textContent = 'Camera denied';
   });
 }
 
@@ -1166,7 +1546,7 @@ function stopScanner() {
 function onScan(username) {
   const status = document.getElementById('scanStatus');
   status.className = 'scanner-status success';
-  status.textContent = '✅ Found: Dr. ' + username;
+  status.textContent = 'Found: Dr. ' + username;
   
   recipient = username;
   openSelect(username);
@@ -1178,7 +1558,7 @@ function openSelect(rec) {
   
   const list = document.getElementById('patientList');
   if (!patients.length) {
-    list.innerHTML = '<div class="inbox-empty"><div class="inbox-empty-icon">📋</div><div>No patients</div></div>';
+    list.innerHTML = '<div class="inbox-empty"><div class="inbox-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg></div><div>No patients available</div></div>';
   } else {
     list.innerHTML = patients.map((p, idx) => `
       <div class="patient-item" data-idx="${idx}" onclick="selectPtByIdx(${idx})">
@@ -1194,7 +1574,6 @@ function openSelect(rec) {
   
   selectedId = null;
   document.getElementById('sendBtn').disabled = true;
-  document.getElementById('pdfBtn').disabled = true;
   document.getElementById('selectModal').classList.add('active');
 }
 
@@ -1216,7 +1595,6 @@ function selectPtByIdx(idx) {
       el.classList.toggle('selected', i === idx);
     });
     document.getElementById('sendBtn').disabled = false;
-    document.getElementById('pdfBtn').disabled = false;
   }
 }
 
@@ -1227,7 +1605,6 @@ function selectPt(id) {
     el.classList.toggle('selected', el.dataset.id === selectedId);
   });
   document.getElementById('sendBtn').disabled = false;
-  document.getElementById('pdfBtn').disabled = false;
 }
 
 async function sendPatient() {
