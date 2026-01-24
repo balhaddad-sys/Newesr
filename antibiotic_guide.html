@@ -20,7 +20,9 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 .hdr-icon{width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
 .hdr-title{font-weight:700;font-size:1.1rem}
 .hdr-sub{font-size:0.75rem;opacity:0.9}
-.close-btn{width:44px;height:44px;border-radius:10px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:#fff;font-size:1.2rem;cursor:pointer}
+.close-btn{width:44px;height:44px;border-radius:10px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:#fff;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.close-btn:hover{background:rgba(255,255,255,0.2)}
+.close-btn .ico{width:20px;height:20px}
 .main{max-width:600px;margin:0 auto;padding:16px}
 .search-box{position:relative;margin-bottom:16px}
 .search-input{width:100%;padding:14px 16px 14px 44px;border:1px solid var(--border);border-radius:12px;font-size:16px;background:var(--card)}
@@ -200,39 +202,39 @@ body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var
 
 <script>
 const SYSTEMS=[
-{id:"resp",name:"Respiratory",icon:"",color:"blue",protocols:[
+{id:"resp",name:"Respiratory",icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32"><path d="M6.081 20C2.572 15.57 4.132 12.57 4.132 12.57c1.94-4.09 4.57-4.09 7.868-9.57 3.298 5.48 5.928 5.48 7.868 9.57 0 0 1.56 3-1.949 7.43"/><path d="M12 21v-8"/><path d="M12 13l-3-3"/><path d="M12 16l3-3"/></svg>',color:"blue",protocols:[
 {name:"CAP - Outpatient",src:"IDSA/ATS 2019",criteria:"No comorbidities, no recent antibiotics",regimens:[{type:"Primary",drug:"Amoxicillin 1g PO TID x 5d",note:"First-line for healthy adults"},{type:"Allergy",drug:"Doxycycline 100mg PO BID x 5d",note:"Or azithromycin if atypical suspected"}],dur:"5 days"},
 {name:"CAP - Inpatient (Ward)",src:"IDSA/ATS 2019",criteria:"Requires hospitalization, non-ICU",regimens:[{type:"Primary",drug:"Ceftriaxone 1g IV q24h + Azithromycin 500mg IV/PO daily",note:"Beta-lactam + macrolide"},{type:"Allergy",drug:"Levofloxacin 750mg IV/PO q24h",note:"Respiratory FQ monotherapy"}],dur:"5 days"},
 {name:"CAP - ICU",src:"IDSA/ATS 2019",criteria:"Severe pneumonia requiring ICU",regimens:[{type:"Primary",drug:"Ceftriaxone 2g IV q24h + Azithromycin 500mg IV daily",note:"Higher ceftriaxone dose"},{type:"Risk",drug:"Add Vancomycin if MRSA risk",note:"Recent influenza, cavitary lesion"}],dur:"5-7 days"},
 {name:"COPD Exacerbation",src:"GOLD 2023",criteria:"Increased dyspnea, sputum purulence/volume",regimens:[{type:"Primary",drug:"Amoxicillin-Clavulanate 875mg PO BID",note:"First-line"},{type:"Alt",drug:"Azithromycin 500mg x1, then 250mg daily x 4d",note:"If penicillin allergy"},{type:"Alt",drug:"Doxycycline 100mg PO BID",note:"Alternative option"}],dur:"5 days"}
 ]},
-{id:"uti",name:"Urinary",icon:"",color:"amber",protocols:[
+{id:"uti",name:"Urinary",icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32"><ellipse cx="12" cy="6" rx="6" ry="3"/><path d="M6 6v4c0 1.657 2.686 3 6 3s6-1.343 6-3V6"/><path d="M6 10v4c0 1.657 2.686 3 6 3s6-1.343 6-3v-4"/><path d="M6 14v4c0 1.657 2.686 3 6 3s6-1.343 6-3v-4"/></svg>',color:"amber",protocols:[
 {name:"Cystitis (Uncomplicated)",src:"IDSA 2011",criteria:"Female, no fever, no structural abnormality",regimens:[{type:"Primary",drug:"Nitrofurantoin 100mg PO BID x 5d",note:"Avoid if CrCl <30"},{type:"Primary",drug:"TMP-SMX DS PO BID x 3d",note:"If local resistance <20%"},{type:"Alt",drug:"Fosfomycin 3g PO x 1 dose",note:"Single dose option"}],dur:"3-5 days"},
 {name:"Pyelonephritis - Outpatient",src:"IDSA 2011",criteria:"No nausea/vomiting, can tolerate PO",regimens:[{type:"Primary",drug:"Ciprofloxacin 500mg PO BID x 7d",note:"If FQ resistance <10%"},{type:"Primary",drug:"TMP-SMX DS PO BID x 14d",note:"After susceptibilities known"},{type:"Alt",drug:"Ceftriaxone 1g IV/IM x1, then PO switch",note:"If FQ-resistant"}],dur:"7-14 days"},
 {name:"Pyelonephritis - Inpatient",src:"IDSA 2011",criteria:"Severe sepsis, unable to tolerate PO",regimens:[{type:"Primary",drug:"Ceftriaxone 1g IV q24h",note:"Empiric first-line"},{type:"Primary",drug:"Ciprofloxacin 400mg IV q12h",note:"Alternative"},{type:"Risk",drug:"Piperacillin-Tazobactam 3.375g IV q6h",note:"If MDR risk factors"}],dur:"10-14 days"},
 {name:"CAUTI",src:"IDSA 2010",criteria:"Catheter-associated, symptomatic",regimens:[{type:"Primary",drug:"Ceftriaxone 1g IV q24h",note:"Remove/replace catheter"},{type:"Risk",drug:"Cefepime 2g IV q12h",note:"If Pseudomonas risk"}],dur:"7 days (10-14 if delayed response)"}
 ]},
-{id:"sepsis",name:"Sepsis / Blood",icon:"🩸",color:"red",protocols:[
+{id:"sepsis",name:"Sepsis / Blood",icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32"><path d="M12 2v6l3-3"/><path d="M12 8l-3-3"/><path d="M5 12a7 7 0 0014 0"/><path d="M5 12h14"/><circle cx="8" cy="16" r="1" fill="currentColor"/><circle cx="12" cy="17" r="1" fill="currentColor"/><circle cx="16" cy="16" r="1" fill="currentColor"/></svg>',color:"red",protocols:[
 {name:"Sepsis - Unknown Source",src:"Surviving Sepsis 2021",criteria:"Hemodynamic instability, source unclear",regimens:[{type:"Primary",drug:"Vancomycin 15-20mg/kg IV + Piperacillin-Tazobactam 4.5g IV q6h",note:"Broad coverage including MRSA"},{type:"Allergy",drug:"Vancomycin + Aztreonam 2g IV q8h + Metronidazole 500mg IV q8h",note:"If severe penicillin allergy"}],dur:"Source-dependent"},
 {name:"MSSA Bacteremia",src:"IDSA 2015",criteria:"Blood cultures positive for MSSA",regimens:[{type:"Primary",drug:"Cefazolin 2g IV q8h",note:"Preferred over vancomycin for MSSA"},{type:"Allergy",drug:"Vancomycin 15-20mg/kg IV q8-12h",note:"If cephalosporin allergy"}],dur:"2-6 weeks (source-dependent)"},
 {name:"MRSA Bacteremia",src:"IDSA 2011",criteria:"Blood cultures positive for MRSA",regimens:[{type:"Primary",drug:"Vancomycin 15-20mg/kg IV q8-12h",note:"Target AUC 400-600 or trough 15-20"},{type:"Alt",drug:"Daptomycin 8-10mg/kg IV q24h",note:"If vancomycin-intolerant"}],dur:"Minimum 2 weeks (4-6 if complicated)"},
 {name:"GNR Bacteremia",src:"IDSA",criteria:"Gram-negative rod bacteremia",regimens:[{type:"Primary",drug:"Ceftriaxone 2g IV q24h",note:"Narrow based on susceptibilities"},{type:"Risk",drug:"Meropenem 1g IV q8h",note:"If ESBL risk"},{type:"Risk",drug:"Cefepime 2g IV q8h",note:"If Pseudomonas suspected"}],dur:"7-14 days"}
 ]},
-{id:"ssti",name:"Skin/Soft Tissue",icon:"🦵",color:"green",protocols:[
+{id:"ssti",name:"Skin/Soft Tissue",icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32"><path d="M4 4h16v16H4z" stroke-dasharray="2 2"/><path d="M8 8c0 2 1 4 4 4s4-2 4-4"/><path d="M8 16c0-2 1-4 4-4s4 2 4 4"/><path d="M12 4v16"/></svg>',color:"green",protocols:[
 {name:"Cellulitis - Non-purulent",src:"IDSA 2014",criteria:"No abscess, no purulent drainage (likely Strep)",regimens:[{type:"Primary",drug:"Cephalexin 500mg PO QID",note:"Covers Strep and MSSA"},{type:"Allergy",drug:"Clindamycin 300-450mg PO TID",note:"If penicillin allergy"}],dur:"5 days"},
 {name:"Cellulitis - Purulent/Abscess",src:"IDSA 2014",criteria:"Abscess present (likely MRSA)",regimens:[{type:"Primary",drug:"I&D + TMP-SMX DS PO BID",note:"I&D may be sufficient alone"},{type:"Primary",drug:"I&D + Doxycycline 100mg PO BID",note:"Alternative MRSA coverage"}],dur:"5-10 days"},
 {name:"Diabetic Foot - Mild",src:"IDSA 2012",criteria:"Superficial, <2cm cellulitis",regimens:[{type:"Primary",drug:"Amoxicillin-Clavulanate 875mg PO BID",note:"Covers Strep, Staph, anaerobes"},{type:"Allergy",drug:"Clindamycin 300mg PO TID + Ciprofloxacin 500mg PO BID",note:"If penicillin allergy"}],dur:"1-2 weeks"},
 {name:"Diabetic Foot - Moderate/Severe",src:"IDSA 2012",criteria:"Deep tissue involvement, systemic signs",regimens:[{type:"Primary",drug:"Piperacillin-Tazobactam 3.375g IV q6h",note:"Broad aerobic + anaerobic"},{type:"Risk",drug:"Add Vancomycin 15-20mg/kg IV",note:"If MRSA risk"}],dur:"2-4 weeks"},
 {name:"Necrotizing Fasciitis",src:"IDSA 2014",criteria:"Surgical emergency - pain out of proportion",regimens:[{type:"Primary",drug:"Vancomycin + Piperacillin-Tazobactam 4.5g IV q6h + Clindamycin 900mg IV q8h",note:"URGENT surgical debridement"},{type:"Primary",drug:"Clindamycin for TOXIN SUPPRESSION",note:"Inhibits toxin production"}],dur:"Until debridement complete + cultures negative"}
 ]},
-{id:"abdom",name:"Intra-abdominal",icon:"🤰",color:"purple",protocols:[
+{id:"abdom",name:"Intra-abdominal",icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32"><ellipse cx="12" cy="12" rx="8" ry="9"/><path d="M4 12c0-2 3.582-3.5 8-3.5S20 10 20 12"/><path d="M8 15c1.5 1 2.5 1.5 4 1.5s2.5-.5 4-1.5"/></svg>',color:"purple",protocols:[
 {name:"Appendicitis (Uncomplicated)",src:"IDSA 2010",criteria:"Non-perforated, post-appendectomy",regimens:[{type:"Primary",drug:"Cefazolin 2g IV x 1 pre-op",note:"Single dose if uncomplicated"},{type:"Primary",drug:"Cefoxitin 2g IV x 1",note:"Alternative"}],dur:"Single dose (24h if complicated)"},
 {name:"Cholecystitis / Cholangitis",src:"IDSA 2010",criteria:"Biliary infection",regimens:[{type:"Primary",drug:"Piperacillin-Tazobactam 3.375g IV q6h",note:"Broad biliary coverage"},{type:"Alt",drug:"Ceftriaxone 1g IV q24h + Metronidazole 500mg IV q8h",note:"Alternative"}],dur:"4-7 days post source control"},
 {name:"Spontaneous Bacterial Peritonitis",src:"AASLD 2021",criteria:"Ascites PMN >250/mm³",regimens:[{type:"Primary",drug:"Ceftriaxone 2g IV q24h",note:"First-line"},{type:"Alt",drug:"Ciprofloxacin 400mg IV q12h",note:"If cephalosporin allergy"}],dur:"5 days"},
 {name:"Secondary Peritonitis",src:"IDSA 2010",criteria:"Bowel perforation, post-surgical",regimens:[{type:"Primary",drug:"Piperacillin-Tazobactam 4.5g IV q6h",note:"Source control critical"},{type:"Alt",drug:"Meropenem 1g IV q8h",note:"If critically ill/MDR risk"}],dur:"4-7 days post source control"},
 {name:"C. difficile Infection",src:"IDSA/SHEA 2021",criteria:"Toxin-positive, symptomatic diarrhea",regimens:[{type:"Primary",drug:"Fidaxomicin 200mg PO BID x 10d",note:"Preferred, lower recurrence"},{type:"Alt",drug:"Vancomycin 125mg PO QID x 10d",note:"Alternative first-line"},{type:"Risk",drug:"Vancomycin 500mg PO/NG QID + 500mg PR QID",note:"Fulminant (ileus/toxic megacolon)"}],dur:"10 days (extended taper if recurrent)"}
 ]},
-{id:"cns",name:"CNS",icon:"",color:"pink",protocols:[
+{id:"cns",name:"CNS",icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32"><path d="M12 2C8 2 5 5.5 5 9c0 2.5 1 4.5 2.5 6 .5.5 1 1.5 1 2.5V19h7v-1.5c0-1 .5-2 1-2.5C18 13.5 19 11.5 19 9c0-3.5-3-7-7-7z"/><path d="M9 19v1a3 3 0 006 0v-1"/><path d="M12 2v3"/><path d="M8 9h8"/><path d="M9 12h6"/></svg>',color:"pink",protocols:[
 {name:"Bacterial Meningitis - Empiric",src:"IDSA 2004/2017",criteria:"Suspected bacterial meningitis, pending cultures",regimens:[{type:"Primary",drug:"Ceftriaxone 2g IV q12h + Vancomycin 15-20mg/kg IV q8-12h",note:"Add Ampicillin 2g IV q4h if >50yo or immunocompromised (Listeria)"},{type:"Primary",drug:"Add Dexamethasone 0.15mg/kg IV q6h x 4d",note:"Give 15-20 min BEFORE first antibiotic dose"}],dur:"7-21 days (organism-dependent)"},
 {name:"Brain Abscess",src:"IDSA",criteria:"Ring-enhancing lesion, compatible presentation",regimens:[{type:"Primary",drug:"Ceftriaxone 2g IV q12h + Metronidazole 500mg IV q8h",note:"Covers Strep + anaerobes"},{type:"Risk",drug:"Add Vancomycin if post-surgical/trauma",note:"MRSA coverage"}],dur:"4-8 weeks (longer if cannot drain)"}
 ]}
@@ -257,9 +259,9 @@ const ABX={
 };
 
 // Theme System
-function initTheme(){const t=localStorage.getItem('MEDWARD_THEME');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.body.classList.add('dark-theme');updateThemeIcon(true);}}
+function initTheme(){const t=localStorage.getItem('MEDWARD_THEME');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.body.classList.add('dark-theme');updateThemeIcon(true);}else{updateThemeIcon(false);}}
 function toggleTheme(){const d=document.body.classList.toggle('dark-theme');updateThemeIcon(d);localStorage.setItem('MEDWARD_THEME',d?'dark':'light');}
-function updateThemeIcon(d){const i=document.getElementById('theme-icon');if(i)i.innerText=d?'':'';}
+function updateThemeIcon(d){const i=document.getElementById('theme-icon');if(i)i.innerHTML=d?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ico"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ico"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';}
 initTheme();
 
 let curSys=null,curDrug=null;
