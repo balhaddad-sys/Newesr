@@ -499,18 +499,12 @@ body {
 .form-hint {
   font-size: 0.75rem;
   color: var(--text-muted);
-  text-align: center;
   margin-top: 8px;
-}
-
-.modal-footer {
-  padding: 16px 20px;
-  border-top: 1px solid var(--border);
 }
 
 .btn {
   width: 100%;
-  padding: 14px;
+  padding: 14px 20px;
   border-radius: var(--radius-sm);
   font-family: inherit;
   font-size: 1rem;
@@ -523,54 +517,103 @@ body {
   background: var(--primary);
   color: #fff;
   border: none;
+  box-shadow: 0 4px 12px rgba(0, 94, 184, 0.3);
 }
 
 .btn-primary:hover {
   background: var(--primary-dark);
 }
 
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Add/Edit Unit Modal */
-.emoji-picker {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.emoji-option {
-  width: 40px;
-  height: 40px;
+.btn-secondary {
+  background: transparent;
+  color: var(--text-main);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg-elevated);
-  font-size: 1.3rem;
-  cursor: pointer;
-  transition: all 0.2s;
+  margin-top: 12px;
 }
 
-.emoji-option:hover,
-.emoji-option.selected {
+.btn-secondary:hover {
   border-color: var(--primary);
-  background: var(--primary-light);
+  color: var(--primary);
 }
 
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  border: none;
+}
+
+/* Settings Styles */
+.settings-section {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-section:last-child {
+  border-bottom: none;
+}
+
+.settings-section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  padding: 0 20px;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.settings-row:hover {
+  background: var(--bg-elevated);
+}
+
+.settings-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 1.1rem;
+}
+
+.settings-label {
+  flex: 1;
+  font-weight: 500;
+}
+
+.settings-value {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.settings-arrow {
+  color: var(--text-muted);
+  margin-left: 8px;
+}
+
+/* Color Picker */
 .color-picker {
   display: flex;
+  gap: 8px;
   flex-wrap: wrap;
-  gap: 10px;
   margin-top: 8px;
 }
 
 .color-option {
   width: 36px;
   height: 36px;
-  border: 2px solid transparent;
   border-radius: 50%;
+  border: 3px solid transparent;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -581,27 +624,106 @@ body {
 
 .color-option.selected {
   border-color: var(--text-main);
-  box-shadow: 0 0 0 3px var(--bg-surface), 0 0 0 5px currentColor;
 }
 
-/* Trash Modal */
-.trash-list {
-  max-height: 300px;
-  overflow-y: auto;
+/* Emoji Picker */
+.emoji-picker {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.emoji-option {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  background: var(--bg-elevated);
+  cursor: pointer;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.emoji-option:hover {
+  border-color: var(--primary);
+}
+
+.emoji-option.selected {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+/* Sync Status */
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.sync-status.syncing {
+  color: var(--primary);
+}
+
+.sync-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--success);
+  border-radius: 50%;
+}
+
+.sync-status.syncing .sync-dot {
+  background: var(--primary);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Trash Styles */
+.trash-empty {
+  text-align: center;
+  padding: 32px 20px;
+  color: var(--text-muted);
+}
+
+.trash-empty-icon {
+  margin-bottom: 8px;
+  opacity: 0.5;
 }
 
 .trash-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: var(--bg-elevated);
-  border-radius: var(--radius-sm);
-  margin-bottom: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.trash-item:last-child {
+  border-bottom: none;
 }
 
 .trash-item-icon {
-  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  background: var(--bg-elevated);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 1.2rem;
 }
 
 .trash-item-info {
@@ -619,38 +741,28 @@ body {
 
 .trash-item-action {
   padding: 6px 12px;
+  background: var(--primary-light);
+  color: var(--primary);
   border: none;
   border-radius: 6px;
-  background: var(--success);
-  color: #fff;
+  font-family: inherit;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
 }
 
-.trash-empty {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--text-muted);
-}
-
-.trash-empty-icon {
-  font-size: 2.5rem;
-  margin-bottom: 8px;
-}
-
 /* Toast */
 .toast {
   position: fixed;
-  bottom: 24px;
+  bottom: 80px;
   left: 50%;
   transform: translateX(-50%) translateY(100px);
   background: var(--text-main);
-  color: var(--bg-surface);
+  color: var(--bg-app);
   padding: 12px 24px;
   border-radius: 100px;
-  font-weight: 600;
   font-size: 0.9rem;
+  font-weight: 500;
   opacity: 0;
   transition: all 0.3s;
   z-index: 2000;
@@ -661,11 +773,12 @@ body {
   transform: translateX(-50%) translateY(0);
 }
 
-/* Loading */
+/* Loading Overlay */
 .loading-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
   display: none;
   align-items: center;
   justify-content: center;
@@ -678,7 +791,7 @@ body {
 
 .loading-box {
   background: var(--bg-surface);
-  padding: 32px;
+  padding: 32px 48px;
   border-radius: var(--radius);
   text-align: center;
 }
@@ -690,49 +803,16 @@ body {
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-  margin: 0 auto 12px;
+  margin: 0 auto 16px;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
 .loading-text {
   color: var(--text-secondary);
   font-weight: 500;
-}
-
-/* Sync Status */
-.sync-status {
-  position: fixed;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 100px;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  z-index: 50;
-}
-
-.sync-dot {
-  width: 8px;
-  height: 8px;
-  background: var(--success);
-  border-radius: 50%;
-}
-
-.sync-status.syncing .sync-dot {
-  background: var(--warning);
-  animation: pulse 1s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
 }
 </style>
 </head>
@@ -754,55 +834,43 @@ body {
       <div class="user-avatar" id="userAvatar">DR</div>
       <span id="userName">Doctor</span>
     </div>
+    <div class="sync-status" id="syncStatus">
+      <div class="sync-dot"></div>
+      <span id="syncText">Synced</span>
+    </div>
   </div>
   <div class="header-actions">
     <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
-    <button class="icon-btn danger" onclick="doLogout()" title="Logout">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-        <polyline points="16 17 21 12 16 7"/>
-        <line x1="21" y1="12" x2="9" y2="12"/>
-      </svg>
-    </button>
+    <button class="icon-btn" onclick="openSettingsModal()">⚙️</button>
+    <button class="icon-btn danger" onclick="doLogout()">🚪</button>
   </div>
 </header>
 
-<!-- Sync Status -->
-<div class="sync-status" id="syncStatus">
-  <div class="sync-dot"></div>
-  <span id="syncText">Synced</span>
-</div>
-
-<!-- Logo -->
+<!-- Main Content -->
 <div class="logo">
   <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
 </div>
 
 <h1 class="title">MedWard Pro</h1>
-<p class="subtitle">Ward Management & Decision Support</p>
-<p class="version">Lab Analysis • Drug Reference • Clinical Scoring • v17.1</p>
+<p class="subtitle">Clinical Ward Management</p>
+<p class="version">v8.1.0 • Multi-Device Sync</p>
 
 <!-- Disclaimer -->
 <div class="disclaimer">
-  <div class="disclaimer-title">⚕️ Clinical Decision Support Only</div>
-  <div class="disclaimer-text">Verify all outputs with local protocols. Not a substitute for clinical judgment. If unstable: activate emergency pathway.</div>
+  <div class="disclaimer-title">⚠️ Clinical Tool Disclaimer</div>
+  <div class="disclaimer-text">For educational use only. Always verify critical information and follow clinical guidelines.</div>
 </div>
 
 <!-- Quick Links -->
 <div class="quick-links">
-  <a href="oncall_assistant.html" class="quick-link purple">
-    <span class="quick-link-icon">⚡</span>
-    <span class="quick-link-text">OnCall Assistant</span>
+  <a href="oncall.html" class="quick-link purple">
+    <span class="quick-link-icon">📋</span>
+    <span class="quick-link-text">On-Call Handover</span>
     <span class="quick-link-arrow">→</span>
   </a>
-  <a href="ai_assistant.html" class="quick-link teal">
-    <span class="quick-link-icon">🤖</span>
-    <span class="quick-link-text">AI Assistant</span>
-    <span class="quick-link-arrow">→</span>
-  </a>
-  <a href="antibiotic_guide.html" class="quick-link blue">
-    <span class="quick-link-icon">🛡️</span>
-    <span class="quick-link-text">Antibiotic Guide</span>
+  <a href="inbox.html" class="quick-link teal">
+    <span class="quick-link-icon">📥</span>
+    <span class="quick-link-text">Inbox</span>
     <span class="quick-link-arrow">→</span>
   </a>
 </div>
@@ -810,178 +878,89 @@ body {
 <!-- Units Section -->
 <div class="section-title">Your Units</div>
 <div class="units-grid" id="unitsGrid">
-  <!-- Units will be rendered here -->
+  <!-- Units render here -->
 </div>
 
-<!-- Action Buttons -->
 <div class="action-buttons">
   <button class="action-btn" onclick="openAddUnitModal()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 5v14M5 12h14"/></svg>
-    Add Unit
-  </button>
-  <button class="action-btn" onclick="openSettingsModal()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-    Settings
+    <span>+ Add Unit</span>
   </button>
 </div>
 
-<!-- Unit Access Modal -->
-<div class="modal-overlay" id="accessModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Enter Unit</div>
-      <button class="modal-close" onclick="closeModal('accessModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-unit-info">
-        <div class="modal-unit-icon" id="accessUnitIcon" style="display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40" style="color:var(--primary)"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg></div>
-        <div>
-          <div class="modal-unit-name" id="accessUnitName">Unit Name</div>
-          <div class="modal-unit-desc" id="accessUnitDesc">Description</div>
-        </div>
-      </div>
-      <p style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin-top:8px">Tap Enter to access this unit</p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('accessModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="enterUnit()" id="accessBtn">Enter Unit</button>
-    </div>
-  </div>
-</div>
-
-<!-- Add/Edit Unit Modal -->
+<!-- Unit Modal -->
 <div class="modal-overlay" id="unitModal">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="unitModalTitle">Add Unit</div>
-      <button class="modal-close" onclick="closeModal('unitModal')">✕</button>
+      <h3 class="modal-title" id="unitModalTitle">Add Unit</h3>
+      <button class="modal-close" onclick="closeModal('unitModal')">×</button>
     </div>
     <div class="modal-body">
       <div class="form-group">
         <label class="form-label">Unit Name</label>
-        <input type="text" class="form-input" id="unitName" placeholder="e.g., Cardiology" style="text-align:left;letter-spacing:normal;">
+        <input type="text" class="form-input" id="unitName" placeholder="e.g. Medicine Unit E" style="letter-spacing: normal; text-align: left;">
       </div>
       <div class="form-group">
         <label class="form-label">Description (optional)</label>
-        <input type="text" class="form-input" id="unitDesc" placeholder="e.g., Ward 14" style="text-align:left;letter-spacing:normal;">
+        <input type="text" class="form-input" id="unitDesc" placeholder="e.g. Internal Medicine" style="letter-spacing: normal; text-align: left;">
       </div>
       <div class="form-group">
         <label class="form-label">Color</label>
-        <div class="color-picker" id="colorPicker">
-          <button type="button" class="color-option selected" data-color="#005eb8" style="background:#005eb8"></button>
-          <button type="button" class="color-option" data-color="#059669" style="background:#059669"></button>
-          <button type="button" class="color-option" data-color="#7c3aed" style="background:#7c3aed"></button>
-          <button type="button" class="color-option" data-color="#dc2626" style="background:#dc2626"></button>
-          <button type="button" class="color-option" data-color="#d97706" style="background:#d97706"></button>
-          <button type="button" class="color-option" data-color="#0891b2" style="background:#0891b2"></button>
+        <div class="color-picker">
+          <button class="color-option selected" style="background: #005eb8" data-color="#005eb8"></button>
+          <button class="color-option" style="background: #14b8a6" data-color="#14b8a6"></button>
+          <button class="color-option" style="background: #8b5cf6" data-color="#8b5cf6"></button>
+          <button class="color-option" style="background: #f59e0b" data-color="#f59e0b"></button>
+          <button class="color-option" style="background: #ec4899" data-color="#ec4899"></button>
+          <button class="color-option" style="background: #10b981" data-color="#10b981"></button>
         </div>
       </div>
-    </div>
-    <div class="modal-footer">
       <button class="btn btn-primary" onclick="saveUnit()">Save Unit</button>
     </div>
   </div>
 </div>
 
-<!-- Settings Modal (Contains Trash & Preferences) -->
+<!-- Settings Modal -->
 <div class="modal-overlay" id="settingsModal">
-  <div class="modal" style="max-width:450px">
+  <div class="modal" style="max-width: 400px;">
     <div class="modal-header">
-      <div class="modal-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20" style="margin-right:8px"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-        Settings
-      </div>
-      <button class="modal-close" onclick="closeModal('settingsModal')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
+      <h3 class="modal-title">Settings</h3>
+      <button class="modal-close" onclick="closeModal('settingsModal')">×</button>
     </div>
-    <div class="modal-body" style="padding:0">
-      <!-- Data Management Section -->
-      <div style="padding:16px 20px;border-bottom:1px solid var(--border)">
-        <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px">Data & Storage</div>
-        
-        <!-- Recycle Bin -->
-        <div class="settings-row" onclick="toggleTrashView()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--bg-input);border-radius:12px;margin-bottom:10px">
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:40px;height:40px;background:var(--bg-surface);border-radius:10px;display:flex;align-items:center;justify-content:center">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-            </div>
-            <div>
-              <div style="font-weight:600;color:var(--text-main)">Recycle Bin</div>
-              <div style="font-size:0.75rem;color:var(--text-muted)">Recover deleted units</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;color:var(--text-secondary)">
-            <span id="trashCountBadge" style="font-size:0.75rem;background:var(--bg-surface);padding:4px 10px;border-radius:20px">0 items</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
+    <div class="modal-body" style="padding: 0;">
+      <div class="settings-section">
+        <div class="settings-section-title">Data</div>
+        <div class="settings-row" onclick="forceCloudSync()">
+          <div class="settings-icon">☁️</div>
+          <div class="settings-label">Force Cloud Sync</div>
+          <div class="settings-arrow">→</div>
         </div>
-        
-        <!-- Force Sync -->
-        <div class="settings-row" onclick="forceCloudSync()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--bg-input);border-radius:12px">
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:40px;height:40px;background:var(--bg-surface);border-radius:10px;display:flex;align-items:center;justify-content:center">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-            </div>
-            <div>
-              <div style="font-weight:600;color:var(--text-main)">Force Cloud Sync</div>
-              <div style="font-size:0.75rem;color:var(--text-muted)">Ensure all data is saved</div>
-            </div>
-          </div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="color:var(--text-secondary)"><polyline points="9 18 15 12 9 6"/></svg>
+        <div class="settings-row" onclick="openTrashModal()">
+          <div class="settings-icon">🗑️</div>
+          <div class="settings-label">Trash</div>
+          <div class="settings-value" id="trashCountBadge">0 items</div>
+          <div class="settings-arrow">→</div>
         </div>
       </div>
-      
-      <!-- Trash View (hidden by default) -->
-      <div id="trashViewSection" style="display:none;padding:16px 20px;border-bottom:1px solid var(--border)">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <button onclick="toggleTrashView()" style="background:none;border:none;color:var(--primary);font-size:0.85rem;cursor:pointer;display:flex;align-items:center;gap:4px">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
-            Back
-          </button>
-          <span style="font-weight:600;color:var(--text-main)">Recycle Bin</span>
-          <div style="width:50px"></div>
+      <div class="settings-section">
+        <div class="settings-section-title">Account</div>
+        <div class="settings-row" onclick="doLogout()">
+          <div class="settings-icon">🚪</div>
+          <div class="settings-label" style="color: var(--danger)">Log Out</div>
         </div>
-        <div class="trash-list" id="trashList">
-          <div class="trash-empty">
-            <div class="trash-empty-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-            </div>
-            <div>Trash is empty</div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- App Info -->
-      <div style="padding:16px 20px;text-align:center">
-        <div style="font-size:0.75rem;color:var(--text-muted)">MedWard Pro v17.0</div>
-        <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">Clinical Ward Management</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Trash Modal (Legacy - redirect to settings) -->
+<!-- Trash Modal -->
 <div class="modal-overlay" id="trashModal">
-  <div class="modal">
+  <div class="modal" style="max-width: 400px;">
     <div class="modal-header">
-      <div class="modal-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20" style="margin-right:8px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-        Trash
-      </div>
-      <button class="modal-close" onclick="closeModal('trashModal')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
+      <h3 class="modal-title">Trash</h3>
+      <button class="modal-close" onclick="closeModal('trashModal')">×</button>
     </div>
-    <div class="modal-body">
-      <div class="trash-list" id="trashListLegacy">
-        <div class="trash-empty">
-          <div class="trash-empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-          </div>
-          <div>Trash is empty</div>
-        </div>
-      </div>
+    <div class="modal-body" style="padding: 0; max-height: 400px; overflow-y: auto;">
+      <div id="trashList"></div>
     </div>
   </div>
 </div>
@@ -999,7 +978,7 @@ body {
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbzmWYRlBlhcXAvyB_l6F8oj3tbBm_YY2wwyR5hJNSxPs-QBP5OI4dZ8prQLindVcoKfHA/exec';
-const BUILD_ID = '2026-01-24.2';  // ★ MUST MATCH dashboard.html - bump on every deploy
+const BUILD_ID = '2026-01-24.3';  // ★ MUST MATCH dashboard.html - bump on every deploy
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 🚨 BOOT MIGRATION - Purges stale cache on new builds
@@ -1015,6 +994,7 @@ const BUILD_ID = '2026-01-24.2';  // ★ MUST MATCH dashboard.html - bump on eve
     localStorage.removeItem('MW_REV');
     localStorage.removeItem('MW_BUILD_ID');
     localStorage.removeItem('MW_DIRTY');
+    localStorage.removeItem('MW_PATCH_QUEUE');
     url.searchParams.delete('fresh');
     location.replace(url.toString());
     return;
@@ -1026,6 +1006,7 @@ const BUILD_ID = '2026-01-24.2';  // ★ MUST MATCH dashboard.html - bump on eve
     await purgeServiceWorkerAndCaches();
     localStorage.removeItem('MW_REV');
     localStorage.removeItem('MW_DIRTY');
+    localStorage.removeItem('MW_PATCH_QUEUE');
     localStorage.setItem('MW_CACHE_STALE', '1');
     localStorage.setItem('MW_BUILD_ID', BUILD_ID);
     url.searchParams.set('v', BUILD_ID);
@@ -1059,6 +1040,10 @@ const AUTH = {
   pass: sessionStorage.getItem('MW_PASS') || localStorage.getItem('MW_PASS')
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// SYNC ENGINE V2 - Consistent with dashboard-integrated.html
+// ═══════════════════════════════════════════════════════════════════════════
+
 // App state with revision tracking
 let state = {
   rev: parseInt(localStorage.getItem('MW_REV') || '0', 10),
@@ -1067,16 +1052,32 @@ let state = {
   trash: { units: [], patients: [] },
   settings: {},
   unitRequests: [],
-  // ═══════════════════════════════════════════════════════════════════
-  // HYDRATION GATE - Prevents zombie cache from overwriting cloud
-  // ═══════════════════════════════════════════════════════════════════
+  // Hydration gate
   isHydrated: false,
-  isReadOnly: true,  // Start in read-only until cloud loads
+  isReadOnly: true,
   lastServerTimestamp: null
 };
 
-// Patch queue for delta sync
-let patchQueue = [];
+// Device identification (consistent with dashboard)
+const DEVICE_ID = localStorage.getItem('MW_DEVICE_ID') || (() => {
+  const id = 'dev_' + Math.random().toString(36).slice(2, 10);
+  localStorage.setItem('MW_DEVICE_ID', id);
+  return id;
+})();
+const SESSION_ID = 'ses_' + Math.random().toString(36).slice(2, 10);
+
+// Sync state
+let syncState = {
+  clientRev: parseInt(localStorage.getItem('MW_REV') || '0', 10),
+  patchQueue: JSON.parse(localStorage.getItem('MW_PATCH_QUEUE') || '[]'),
+  isSyncing: false,
+  lastSyncTime: null,
+  pendingChanges: false
+};
+
+// Debounce timer
+let syncDebounceTimer = null;
+const DEBOUNCE_MS = 800;
 
 let editingUnitId = null;
 let selectedUnitId = null;
@@ -1095,27 +1096,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateThemeIcon();
   updateUserDisplay();
   
-  // Load data from cloud
+  // Load data from cache (verified by loading.html)
   await loadData();
   
-  // Setup emoji picker
-  document.querySelectorAll('.emoji-option').forEach(btn => {
+  // Setup color picker handlers
+  document.querySelectorAll('.color-option').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.emoji-option').forEach(b => b.classList.remove('selected'));
+      document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
-      selectedIcon = btn.dataset.emoji;
     });
   });
-  
-  // Auto-verify on code input
-  document.getElementById('accessCode').addEventListener('input', function() {
-    if (this.value.length === 4) {
-      verifyAccess();
-    }
-  });
-  
-  // Select first emoji by default
-  document.querySelector('.emoji-option').classList.add('selected');
 });
 
 function updateUserDisplay() {
@@ -1124,12 +1114,12 @@ function updateUserDisplay() {
   document.getElementById('userName').textContent = AUTH.user || 'Doctor';
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// LOAD DATA - Uses verified cache from loading.html
+// ═══════════════════════════════════════════════════════════════════════════
+
 async function loadData() {
   showLoading('Loading your data...');
-  
-  // ═══════════════════════════════════════════════════════════════════
-  // CACHE-ONLY LOAD - loading.html already fetched from cloud
-  // ═══════════════════════════════════════════════════════════════════
   
   const cloudVerified = localStorage.getItem('MW_CLOUD_VERIFIED');
   
@@ -1151,16 +1141,23 @@ async function loadData() {
       state.settings = data.settings || {};
       state.unitRequests = data.unitRequests || [];
       state.rev = data.rev || parseInt(localStorage.getItem('MW_REV') || '1', 10);
+      syncState.clientRev = state.rev;
       
       // Cache is verified - full access
       state.isHydrated = true;
       state.isReadOnly = false;
-      console.log('✅ Loaded from verified cache:', state.patients.length, 'patients,', state.units.length, 'units');
+      console.log('✅ Loaded from verified cache:', state.patients.length, 'patients,', state.units.length, 'units, rev:', state.rev);
     } else {
       // No cache - redirect to loading page
       console.log('❌ No cache found - redirecting to loading page');
       window.location.href = 'loading.html';
       return;
+    }
+    
+    // Restore any pending patches from localStorage
+    if (syncState.patchQueue.length > 0) {
+      console.log('📦 Restored', syncState.patchQueue.length, 'pending patches from localStorage');
+      markDirtyV2();
     }
     
     renderUnits();
@@ -1169,102 +1166,235 @@ async function loadData() {
     hideLoading();
     toast('Failed to load data');
     console.error(e);
-    // Redirect to loading page to fetch fresh data
     window.location.href = 'loading.html';
   }
 }
 
-// Enqueue a patch for delta sync
-function enqueuePatch(operation, payload) {
-  patchQueue.push({ operation, payload });
+// ═══════════════════════════════════════════════════════════════════════════
+// SYNC ENGINE V2 FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Enqueue a patch for delta sync (v2)
+ */
+function enqueuePatchV2(operation, payload) {
+  const patch = {
+    id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    operation,
+    payload,
+    timestamp: new Date().toISOString(),
+    deviceId: DEVICE_ID
+  };
+  
+  syncState.patchQueue.push(patch);
+  
+  // Persist to localStorage for crash recovery
+  localStorage.setItem('MW_PATCH_QUEUE', JSON.stringify(syncState.patchQueue));
+  
+  console.log('📝 Patch queued:', operation, payload?.id || '');
+  return patch;
 }
 
-async function saveData() {
-  // ═══════════════════════════════════════════════════════════════════
-  // CRITICAL GUARD: Block saves until cloud load completes
-  // ═══════════════════════════════════════════════════════════════════
-  if (state.isReadOnly) {
-    console.warn('⛔ saveData blocked: App is in read-only mode (not yet hydrated)');
-    toast('Cannot save - still loading from cloud');
+/**
+ * Mark state as dirty and trigger debounced sync
+ */
+function markDirtyV2() {
+  syncState.pendingChanges = true;
+  updateSyncStatus('pending');
+  
+  // Debounce - batch changes within 800ms window
+  clearTimeout(syncDebounceTimer);
+  syncDebounceTimer = setTimeout(() => {
+    flushPatchesV2();
+  }, DEBOUNCE_MS);
+}
+
+/**
+ * Flush pending patches to server with optimistic concurrency
+ */
+async function flushPatchesV2() {
+  if (syncState.isSyncing) {
+    console.log('⏳ Sync already in progress, will retry...');
     return;
   }
   
+  if (syncState.patchQueue.length === 0 && !syncState.pendingChanges) {
+    updateSyncStatus('synced');
+    return;
+  }
+  
+  syncState.isSyncing = true;
+  updateSyncStatus('syncing');
+  
   try {
-    // ═══════════════════════════════════════════════════════════════════
-    // SAFEGUARD: Don't overwrite cloud with empty units if we have none locally
-    // but cloud might have data (prevents accidental data loss on code updates)
-    // ═══════════════════════════════════════════════════════════════════
-    const hasLocalData = state.units.length > 0 || state.patients.length > 0;
-    
-    let res;
-    
-    // Use delta sync if we have patches queued
-    if (patchQueue.length > 0) {
-      console.log('⚡ Delta sync:', patchQueue.length, 'patches');
-      res = await callAPI('patches', { patches: patchQueue });
+    // Try delta sync first if we have patches
+    if (syncState.patchQueue.length > 0) {
+      console.log('⚡ Delta sync:', syncState.patchQueue.length, 'patches, baseRev:', syncState.clientRev);
+      
+      const res = await callAPI('patches', {
+        patches: syncState.patchQueue,
+        baseRev: syncState.clientRev,
+        deviceId: DEVICE_ID,
+        sessionId: SESSION_ID
+      });
       
       if (res.success) {
-        patchQueue = []; // Clear queue on success
-        state.rev = res.rev || state.rev;
-        state.lastServerTimestamp = res.timestamp || new Date().toISOString();
-        localStorage.setItem('MW_REV', String(state.rev));
-      } else {
-        // Fall back to snapshot only if we have data
-        console.warn('⚠️ Patch failed, using snapshot');
-        if (!hasLocalData) {
-          console.warn('⚠️ SAFEGUARD: Refusing to save empty state to cloud');
-          updateSyncStatus('error');
-          return;
-        }
-        res = await callAPI('saveData', {
-          payload: {
-            units: state.units,
-            patients: state.patients,
-            trash: state.trash,
-            settings: state.settings,
-            unitRequests: state.unitRequests,
-            updatedAt: state.lastServerTimestamp  // Timestamp for conflict detection
-          }
-        });
+        // Success - clear queue and update rev
+        syncState.patchQueue = [];
+        localStorage.removeItem('MW_PATCH_QUEUE');
+        syncState.clientRev = res.rev;
+        state.rev = res.rev;
+        localStorage.setItem('MW_REV', String(res.rev));
+        syncState.pendingChanges = false;
+        syncState.lastSyncTime = Date.now();
+        updateSyncStatus('synced');
+        updateLocalCache();
+        console.log('✅ Patches applied, new rev:', res.rev);
+        return;
       }
-    } else if (hasLocalData) {
-      // Full snapshot save - only if we have data
-      res = await callAPI('saveData', {
-        payload: {
-          units: state.units,
-          patients: state.patients,
-          trash: state.trash,
-          settings: state.settings,
-          unitRequests: state.unitRequests,
-          updatedAt: state.lastServerTimestamp  // Timestamp for conflict detection
-        }
-      });
-    } else {
-      console.log('ℹ️ No local data to save, skipping sync');
-      updateSyncStatus('synced');
-      return;
+      
+      // Check for conflict
+      if (res.conflict) {
+        console.warn('⚠️ Conflict detected! Server rev:', res.serverRev, 'Client rev:', syncState.clientRev);
+        await handleConflict(res);
+        return;
+      }
+      
+      // Other error - fall back to snapshot
+      console.warn('⚠️ Patch failed:', res.error, '- falling back to snapshot');
     }
     
+    // Snapshot fallback
+    await saveSnapshotV2();
+    
+  } catch (e) {
+    console.error('❌ Sync failed:', e);
+    updateSyncStatus('error');
+    toast('Sync failed - will retry');
+  } finally {
+    syncState.isSyncing = false;
+  }
+}
+
+/**
+ * Save full snapshot to server
+ */
+async function saveSnapshotV2(options = {}) {
+  if (state.isReadOnly && !options.force) {
+    console.warn('⛔ Save blocked: App is in read-only mode');
+    return;
+  }
+  
+  updateSyncStatus('syncing');
+  
+  try {
+    const res = await callAPI('saveData', {
+      payload: {
+        units: state.units,
+        patients: state.patients,
+        trash: state.trash,
+        settings: state.settings,
+        unitRequests: state.unitRequests
+      },
+      baseRev: options.force ? null : syncState.clientRev,
+      deviceId: DEVICE_ID,
+      sessionId: SESSION_ID,
+      allowEmpty: options.allowEmpty || false
+    });
+    
     if (res.success) {
-      if (res.rev) {
-        state.rev = res.rev;
-        localStorage.setItem('MW_REV', String(state.rev));
-        patchQueue = []; // Clear queue after successful snapshot
-      }
+      syncState.patchQueue = [];
+      localStorage.removeItem('MW_PATCH_QUEUE');
+      syncState.clientRev = res.rev;
+      state.rev = res.rev;
+      localStorage.setItem('MW_REV', String(res.rev));
+      syncState.pendingChanges = false;
       updateSyncStatus('synced');
+      updateLocalCache();
+      console.log('✅ Snapshot saved, rev:', res.rev);
+    } else if (res.conflict) {
+      await handleConflict(res);
     } else {
       throw new Error(res.error || 'Save failed');
     }
   } catch (e) {
+    console.error('❌ Snapshot save failed:', e);
     updateSyncStatus('error');
-    console.error(e);
   }
 }
+
+/**
+ * Handle sync conflict
+ */
+async function handleConflict(res) {
+  console.log('🔀 Handling conflict...');
+  
+  // For landing page, auto-resolve by accepting server version
+  // (Unit changes are less frequent and this is safer)
+  toast('Syncing latest changes...');
+  
+  // Apply server data
+  if (res.serverData) {
+    const serverData = typeof res.serverData === 'string' ? JSON.parse(res.serverData) : res.serverData;
+    state.units = serverData.units || [];
+    state.patients = serverData.patients || [];
+    state.trash = serverData.trash || { units: [], patients: [] };
+    state.settings = serverData.settings || {};
+    state.unitRequests = serverData.unitRequests || [];
+  }
+  
+  syncState.clientRev = res.serverRev;
+  state.rev = res.serverRev;
+  localStorage.setItem('MW_REV', String(res.serverRev));
+  
+  // Clear patch queue since we're accepting server state
+  syncState.patchQueue = [];
+  localStorage.removeItem('MW_PATCH_QUEUE');
+  
+  updateLocalCache();
+  renderUnits();
+  updateSyncStatus('synced');
+  toast('Synced with latest changes');
+}
+
+/**
+ * Update local cache (consistent with dashboard)
+ */
+function updateLocalCache() {
+  const cachePayload = JSON.stringify({
+    units: state.units,
+    settings: state.settings,
+    patients: state.patients,
+    unitRequests: state.unitRequests,
+    trash: state.trash,
+    rev: state.rev,
+    lastUpdated: new Date().toISOString()
+  });
+  
+  localStorage.setItem('medward_pro_v12', cachePayload);
+  localStorage.setItem('MEDWARD_CACHE', cachePayload);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LEGACY WRAPPERS - For backward compatibility
+// ═══════════════════════════════════════════════════════════════════════════
+
+function enqueuePatch(operation, payload) {
+  enqueuePatchV2(operation, payload);
+  markDirtyV2();
+}
+
+async function saveData() {
+  await flushPatchesV2();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UNIT MANAGEMENT FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════
 
 function renderUnits() {
   const grid = document.getElementById('unitsGrid');
   
-  // SVG icon for hospital/unit
   const unitSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32" style="color:var(--primary)"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>`;
   
   if (state.units.length === 0) {
@@ -1310,14 +1440,6 @@ function openAddUnitModal() {
   document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
   document.querySelector('.color-option[data-color="#005eb8"]')?.classList.add('selected');
   
-  // Add click handlers to color options
-  document.querySelectorAll('.color-option').forEach(btn => {
-    btn.onclick = () => {
-      document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-    };
-  });
-  
   openModal('unitModal');
 }
 
@@ -1333,14 +1455,6 @@ function editUnit(unitId) {
   // Set color picker
   document.querySelectorAll('.color-option').forEach(b => {
     b.classList.toggle('selected', b.dataset.color === unit.color);
-  });
-  
-  // Add click handlers
-  document.querySelectorAll('.color-option').forEach(btn => {
-    btn.onclick = () => {
-      document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-    };
   });
   
   openModal('unitModal');
@@ -1360,9 +1474,14 @@ async function saveUnit() {
   if (editingUnitId) {
     const idx = state.units.findIndex(u => u.id === editingUnitId);
     if (idx !== -1) {
-      const updatedUnit = { ...state.units[idx], name, desc, color };
+      const updatedUnit = { 
+        ...state.units[idx], 
+        name, 
+        desc, 
+        color,
+        updatedAt: new Date().toISOString()
+      };
       state.units[idx] = updatedUnit;
-      // DELTA SYNC: Queue update patch
       enqueuePatch('updateUnit', updatedUnit);
     }
   } else {
@@ -1370,18 +1489,16 @@ async function saveUnit() {
       id: 'u' + Date.now(),
       name,
       desc,
-      color
+      color,
+      createdAt: new Date().toISOString()
     };
     state.units.push(newUnit);
-    // DELTA SYNC: Queue add patch
     enqueuePatch('addUnit', newUnit);
   }
   
   closeModal('unitModal');
   renderUnits();
-  
-  updateSyncStatus('syncing');
-  await saveData();
+  updateLocalCache();
   toast(editingUnitId ? 'Unit updated' : 'Unit added');
 }
 
@@ -1395,18 +1512,16 @@ async function deleteUnit(unitId) {
   state.trash.units = state.trash.units || [];
   state.trash.units.push({ ...unit, deletedAt: new Date().toISOString() });
   
-  // DELTA SYNC: Queue delete patch
   enqueuePatch('deleteUnit', { id: unitId });
   
   renderUnits();
-  updateSyncStatus('syncing');
-  await saveData();
+  updateLocalCache();
   toast('Unit moved to trash');
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// SETTINGS MODAL FUNCTIONS
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
+// SETTINGS & TRASH FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════
 
 function openSettingsModal() {
   updateTrashCount();
@@ -1421,21 +1536,10 @@ function updateTrashCount() {
   }
 }
 
-function toggleTrashView() {
-  const section = document.getElementById('trashViewSection');
-  if (section) {
-    const isHidden = section.style.display === 'none';
-    section.style.display = isHidden ? 'block' : 'none';
-    if (isHidden) {
-      renderTrash();
-    }
-  }
-}
-
 async function forceCloudSync() {
   toast('Syncing with cloud...');
   try {
-    await saveData();
+    await saveSnapshotV2({ force: true });
     toast('Sync complete');
   } catch (e) {
     toast('Sync failed');
@@ -1448,39 +1552,36 @@ function openTrashModal() {
 }
 
 function renderTrash() {
-  // Update both trash list locations
-  ['trashList', 'trashListLegacy'].forEach(listId => {
-    const list = document.getElementById(listId);
-    if (!list) return;
-    
-    const items = [...(state.trash.units || []), ...(state.trash.patients || [])];
-    
-    if (items.length === 0) {
-      list.innerHTML = `
-        <div class="trash-empty">
-          <div class="trash-empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-          </div>
-          <div>Trash is empty</div>
+  const list = document.getElementById('trashList');
+  if (!list) return;
+  
+  const items = [...(state.trash.units || []), ...(state.trash.patients || [])];
+  
+  if (items.length === 0) {
+    list.innerHTML = `
+      <div class="trash-empty">
+        <div class="trash-empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
         </div>
-      `;
-      return;
-    }
-    
-    list.innerHTML = items.map(item => {
-      const isUnit = item.code !== undefined;
-      return `
-        <div class="trash-item">
-          <div class="trash-item-icon">${isUnit ? (item.icon || '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg>') : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'}</div>
-          <div class="trash-item-info">
-            <div class="trash-item-name">${escapeHtml(item.name)}</div>
-            <div class="trash-item-meta">${isUnit ? 'Unit' : 'Patient'}</div>
-          </div>
-          <button class="trash-item-action" onclick="restoreItem('${item.id}', ${isUnit})">Restore</button>
+        <div>Trash is empty</div>
+      </div>
+    `;
+    return;
+  }
+  
+  list.innerHTML = items.map(item => {
+    const isUnit = !item.mrn; // Units don't have MRN
+    return `
+      <div class="trash-item">
+        <div class="trash-item-icon">${isUnit ? '🏥' : '👤'}</div>
+        <div class="trash-item-info">
+          <div class="trash-item-name">${escapeHtml(item.name)}</div>
+          <div class="trash-item-meta">${isUnit ? 'Unit' : 'Patient'}</div>
         </div>
-      `;
-    }).join('');
-  });
+        <button class="trash-item-action" onclick="restoreItem('${item.id}', ${isUnit})">Restore</button>
+      </div>
+    `;
+  }).join('');
   
   updateTrashCount();
 }
@@ -1492,6 +1593,7 @@ async function restoreItem(id, isUnit) {
       const unit = state.trash.units.splice(idx, 1)[0];
       delete unit.deletedAt;
       state.units.push(unit);
+      enqueuePatch('restoreUnit', { id });
     }
   } else {
     const idx = state.trash.patients.findIndex(p => p.id === id);
@@ -1499,18 +1601,21 @@ async function restoreItem(id, isUnit) {
       const patient = state.trash.patients.splice(idx, 1)[0];
       delete patient.deletedAt;
       state.patients.push(patient);
+      enqueuePatch('restorePatient', { id });
     }
   }
   
   renderUnits();
   renderTrash();
   updateTrashCount();
-  updateSyncStatus('syncing');
-  await saveData();
+  updateLocalCache();
   toast('Item restored');
 }
 
-// Modal helpers
+// ═══════════════════════════════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════════════════════════════
+
 function openModal(id) {
   document.getElementById(id).classList.add('active');
 }
@@ -1519,7 +1624,6 @@ function closeModal(id) {
   document.getElementById(id).classList.remove('active');
 }
 
-// API helper
 async function callAPI(action, extra = {}) {
   const res = await fetch(API_URL, {
     method: 'POST',
@@ -1529,7 +1633,6 @@ async function callAPI(action, extra = {}) {
   return res.json();
 }
 
-// UI helpers
 function showLoading(text = 'Loading...') {
   document.getElementById('loadingText').textContent = text;
   document.getElementById('loading').classList.add('active');
@@ -1557,6 +1660,8 @@ function updateSyncStatus(status) {
     text.textContent = 'Syncing...';
   } else if (status === 'synced') {
     text.textContent = 'Synced';
+  } else if (status === 'pending') {
+    text.textContent = 'Pending...';
   } else {
     text.textContent = 'Offline';
   }
@@ -1574,6 +1679,11 @@ function updateThemeIcon() {
 
 function doLogout() {
   if (!confirm('Log out of MedWard Pro?')) return;
+  
+  // Flush any pending changes first
+  if (syncState.patchQueue.length > 0) {
+    flushPatchesV2();
+  }
   
   localStorage.removeItem('MW_USER');
   localStorage.removeItem('MW_PASS');
