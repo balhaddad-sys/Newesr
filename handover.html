@@ -112,19 +112,19 @@ body {
 
 .mode-tab {
   flex: 1;
-  padding: 12px 8px;
+  padding: 10px 4px;
   border: none;
   background: transparent;
   border-radius: var(--radius-sm);
   font-family: inherit;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: var(--text-secondary);
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .mode-tab.active {
@@ -133,7 +133,7 @@ body {
 }
 
 .mode-tab-icon { display:flex;align-items:center;justify-content:center }
-.mode-tab-icon svg { width:22px;height:22px }
+.mode-tab-icon svg { width:20px;height:20px }
 
 .panel { display: none; }
 .panel.active { display: block; animation: fadeIn 0.3s; }
@@ -318,6 +318,55 @@ body {
   color: #fff;
   border: none;
   border-radius: 8px;
+
+}
+
+/* Export List */
+.export-list { padding: 12px; max-height: 65vh; overflow-y: auto; }
+
+.export-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  border-left: 4px solid var(--primary);
+}
+
+.export-avatar {
+  width: 44px;
+  height: 44px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.export-info { flex: 1; min-width: 0; }
+.export-name { font-weight: 600; margin-bottom: 2px; }
+.export-meta { font-size: 0.75rem; color: var(--text-muted); }
+
+.export-btn {
+  padding: 8px 14px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.export-btn:active { opacity: 0.8; }
   font-weight: 600;
   font-size: 0.8rem;
   cursor: pointer;
@@ -553,7 +602,7 @@ body {
   padding: 60px 20px;
 }
 
-.not-logged-icon { font-size: 4rem; margin-bottom: 16px; }
+.not-logged-icon { margin-bottom: 16px; opacity: 0.5; }
 .not-logged h2 { margin-bottom: 8px; }
 .not-logged p { color: var(--text-muted); margin-bottom: 24px; }
 
@@ -600,6 +649,10 @@ body {
       <span class="mode-tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
       Scan & Send
     </button>
+    <button class="mode-tab" data-mode="export" onclick="switchMode('export')">
+      <span class="mode-tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+      Export
+    </button>
     <button class="mode-tab" data-mode="inbox" onclick="switchMode('inbox')">
       <span class="mode-tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>
       Inbox
@@ -630,6 +683,21 @@ body {
         <div id="qr-reader"></div>
       </div>
       <div class="scanner-status scanning" id="scanStatus">Scanning...</div>
+    </div>
+  </div>
+
+  <!-- Export Panel -->
+  <div class="panel" id="panelExport">
+    <div class="inbox-card">
+      <div class="inbox-header">
+        <div class="inbox-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="margin-right:6px;vertical-align:middle"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Export PDF</div>
+      </div>
+      <div class="export-list" id="exportList">
+        <div class="inbox-empty">
+          <div class="inbox-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+          <div>No patients to export</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -718,10 +786,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 function showNotLogged() {
   document.getElementById('mainContent').innerHTML = `
     <div class="not-logged">
-      <div class="not-logged-icon">🔐</div>
+      <div class="not-logged-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
       <h2>Login Required</h2>
       <p>Please log in to MedWard Pro first</p>
-      <a href="login.html" class="login-link">→ Go to Login</a>
+      <a href="login.html" class="login-link">Go to Login</a>
     </div>
   `;
 }
@@ -735,6 +803,262 @@ function switchMode(mode) {
   
   if (mode === 'send') startScanner();
   else stopScanner();
+  
+  if (mode === 'export') renderExportList();
+}
+
+function renderExportList() {
+  const list = document.getElementById('exportList');
+  
+  if (!patients.length) {
+    list.innerHTML = `<div class="inbox-empty">
+      <div class="inbox-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div>No patients to export</div>
+    </div>`;
+    return;
+  }
+  
+  list.innerHTML = patients.map((p, idx) => `
+    <div class="export-item">
+      <div class="export-avatar">${initials(p.name)}</div>
+      <div class="export-info">
+        <div class="export-name">${esc(p.name)}</div>
+        <div class="export-meta">${esc(p.ward || 'No ward')} ${p.bed ? '• Bed ' + esc(p.bed) : ''}</div>
+      </div>
+      <button class="export-btn" onclick="exportPatientPDF(${idx})">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        PDF
+      </button>
+    </div>
+  `).join('');
+}
+
+function exportPatientPDF(idx) {
+  if (idx < 0 || idx >= patients.length) {
+    toast('Patient not found');
+    return;
+  }
+  
+  const pt = patients[idx];
+  generatePatientPDF(pt);
+}
+
+// Standalone PDF generator (no recipient needed)
+function generatePatientPDF(pt) {
+  showLoad('Generating PDF...');
+  
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+    
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    const contentWidth = pageWidth - (margin * 2);
+    let y = margin;
+    
+    // Colors
+    const primaryColor = [0, 94, 184];
+    const darkColor = [15, 23, 42];
+    const grayColor = [71, 85, 105];
+    const lightGray = [226, 232, 240];
+    
+    // ─────────────────────────────────────────────────────────────
+    // HEADER
+    // ─────────────────────────────────────────────────────────────
+    doc.setFillColor(...primaryColor);
+    doc.rect(0, 0, pageWidth, 30, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text('PATIENT SUMMARY', margin, 14);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text('MedWard Pro', margin, 21);
+    
+    // Date/Time on right
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { 
+      day: '2-digit', 
+      month: 'short', 
+      year: 'numeric' 
+    });
+    const timeStr = now.toLocaleTimeString('en-GB', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+    doc.text(dateStr + ' | ' + timeStr, pageWidth - margin, 14, { align: 'right' });
+    
+    const fromDr = AUTH.user ? 'Dr. ' + AUTH.user.toUpperCase() : '';
+    if (fromDr) {
+      doc.text('Prepared by: ' + fromDr, pageWidth - margin, 21, { align: 'right' });
+    }
+    
+    y = 40;
+    
+    // ─────────────────────────────────────────────────────────────
+    // PATIENT IDENTIFICATION BOX
+    // ─────────────────────────────────────────────────────────────
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(...lightGray);
+    doc.roundedRect(margin, y, contentWidth, 25, 3, 3, 'FD');
+    
+    doc.setTextColor(...darkColor);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.text(pt.name || 'Unknown Patient', margin + 5, y + 9);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...grayColor);
+    
+    const patientMeta = [];
+    if (pt.age) patientMeta.push('Age: ' + pt.age);
+    if (pt.gender) patientMeta.push('Gender: ' + pt.gender);
+    if (pt.mrn || pt.id) patientMeta.push('MRN: ' + (pt.mrn || pt.id));
+    if (pt.ward) patientMeta.push('Ward: ' + pt.ward);
+    if (pt.bed) patientMeta.push('Bed: ' + pt.bed);
+    
+    doc.text(patientMeta.join('  |  '), margin + 5, y + 17);
+    
+    if (pt.admissionDate || pt.dateAdmitted) {
+      doc.text('Admitted: ' + (pt.admissionDate || pt.dateAdmitted), margin + 5, y + 22);
+    }
+    
+    y += 32;
+    
+    // ─────────────────────────────────────────────────────────────
+    // HELPER: Section with content
+    // ─────────────────────────────────────────────────────────────
+    function addSection(title, content) {
+      if (content === null || content === undefined) return;
+      
+      let textContent;
+      if (typeof content === 'object') {
+        if (Array.isArray(content)) {
+          textContent = content.join(', ');
+        } else {
+          textContent = JSON.stringify(content);
+        }
+      } else {
+        textContent = String(content);
+      }
+      
+      if (!textContent || textContent.trim() === '' || textContent === 'N/A' || textContent === '-') {
+        return;
+      }
+      
+      if (y > pageHeight - 50) {
+        doc.addPage();
+        y = margin;
+      }
+      
+      doc.setFillColor(...primaryColor);
+      doc.rect(margin, y, 3, 7, 'F');
+      
+      doc.setTextColor(...darkColor);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text(title.toUpperCase(), margin + 6, y + 5);
+      
+      y += 10;
+      
+      doc.setTextColor(...grayColor);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      
+      const lines = doc.splitTextToSize(textContent, contentWidth - 5);
+      
+      for (let i = 0; i < lines.length; i++) {
+        if (y > pageHeight - 20) {
+          doc.addPage();
+          y = margin;
+        }
+        doc.text(lines[i], margin + 6, y);
+        y += 4.5;
+      }
+      
+      y += 4;
+    }
+    
+    // ─────────────────────────────────────────────────────────────
+    // CLINICAL SECTIONS
+    // ─────────────────────────────────────────────────────────────
+    addSection('Diagnosis', pt.diagnosis || pt.primaryDiagnosis || pt.chiefComplaint);
+    addSection('Presenting Complaint', pt.presentingComplaint || pt.chiefComplaint);
+    addSection('History of Presenting Illness', pt.hopi || pt.hpi || pt.history || pt.historyOfPresentingIllness);
+    addSection('Past Medical History', pt.pmh || pt.pastMedicalHistory || pt.medicalHistory);
+    addSection('Past Surgical History', pt.psh || pt.pastSurgicalHistory || pt.surgicalHistory);
+    addSection('Current Medications', pt.medications || pt.currentMedications || pt.meds);
+    addSection('Allergies', pt.allergies || pt.allergy);
+    addSection('Social History', pt.socialHistory || pt.shx);
+    addSection('Family History', pt.familyHistory || pt.fhx);
+    addSection('Examination Findings', pt.examination || pt.physicalExam || pt.exam || pt.findings);
+    
+    // Vitals
+    let vitalsText = '';
+    if (pt.vitals) {
+      if (typeof pt.vitals === 'object') {
+        const v = pt.vitals;
+        const vitalsArr = [];
+        if (v.bp || v.bloodPressure) vitalsArr.push('BP: ' + (v.bp || v.bloodPressure));
+        if (v.hr || v.heartRate || v.pulse) vitalsArr.push('HR: ' + (v.hr || v.heartRate || v.pulse));
+        if (v.temp || v.temperature) vitalsArr.push('Temp: ' + (v.temp || v.temperature));
+        if (v.rr || v.respiratoryRate) vitalsArr.push('RR: ' + (v.rr || v.respiratoryRate));
+        if (v.spo2 || v.o2sat) vitalsArr.push('SpO2: ' + (v.spo2 || v.o2sat));
+        vitalsText = vitalsArr.join('  |  ');
+      } else {
+        vitalsText = pt.vitals;
+      }
+    }
+    addSection('Vitals', vitalsText);
+    
+    addSection('Investigations', pt.investigations || pt.labs || pt.labResults || pt.results);
+    addSection('Imaging', pt.imaging || pt.radiology || pt.scans);
+    addSection('Assessment', pt.assessment || pt.impression);
+    addSection('Management Plan', pt.plan || pt.managementPlan || pt.treatment || pt.management);
+    addSection('Outstanding Tasks', pt.tasks || pt.todos || pt.outstanding || pt.pendingTasks);
+    addSection('Consultations', pt.consults || pt.consultations);
+    addSection('Code Status', pt.codeStatus || pt.resuscitationStatus);
+    addSection('Special Notes', pt.notes || pt.specialInstructions || pt.additionalNotes);
+    
+    // ─────────────────────────────────────────────────────────────
+    // FOOTER
+    // ─────────────────────────────────────────────────────────────
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setDrawColor(...lightGray);
+      doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
+      doc.setTextColor(...grayColor);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Generated by MedWard Pro | Confidential Medical Document', margin, pageHeight - 10);
+      doc.text('Page ' + i + ' of ' + totalPages, pageWidth - margin, pageHeight - 10, { align: 'right' });
+    }
+    
+    // ─────────────────────────────────────────────────────────────
+    // SAVE PDF
+    // ─────────────────────────────────────────────────────────────
+    const safePatientName = (pt.name || 'patient').replace(/[^a-zA-Z0-9]/g, '_');
+    const filename = 'Patient_' + safePatientName + '_' + now.toISOString().slice(0,10) + '.pdf';
+    
+    doc.save(filename);
+    
+    hideLoad();
+    toast('PDF downloaded');
+    
+  } catch (e) {
+    hideLoad();
+    console.error('PDF generation error:', e);
+    toast('PDF error: ' + e.message);
+  }
 }
 
 function generateBadge() {
@@ -1115,7 +1439,7 @@ function esc(t) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// PDF HANDOVER GENERATION - Professional Medical Document
+// PDF HANDOVER GENERATION - Uses the common PDF generator
 // ═══════════════════════════════════════════════════════════════════
 
 function generateHandoverPDF() {
@@ -1130,251 +1454,8 @@ function generateHandoverPDF() {
     return;
   }
   
-  showLoad('Generating PDF...');
-  
-  try {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
-    });
-    
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 20;
-    const contentWidth = pageWidth - (margin * 2);
-    let y = margin;
-    
-    // Colors
-    const primaryColor = [0, 94, 184];      // #005eb8
-    const darkColor = [15, 23, 42];         // #0f172a
-    const grayColor = [71, 85, 105];        // #475569
-    const lightGray = [226, 232, 240];      // #e2e8f0
-    
-    // ─────────────────────────────────────────────────────────────
-    // HEADER
-    // ─────────────────────────────────────────────────────────────
-    doc.setFillColor(...primaryColor);
-    doc.rect(0, 0, pageWidth, 35, 'F');
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18);
-    doc.text('PATIENT HANDOVER', margin, 15);
-    
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text('MedWard Pro', margin, 23);
-    
-    // Date/Time on right
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('en-GB', { 
-      day: '2-digit', 
-      month: 'short', 
-      year: 'numeric' 
-    });
-    const timeStr = now.toLocaleTimeString('en-GB', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-    doc.text(dateStr + ' | ' + timeStr, pageWidth - margin, 15, { align: 'right' });
-    
-    // Handover participants
-    const fromDr = AUTH.user ? 'Dr. ' + AUTH.user.toUpperCase() : 'Unknown';
-    const toDr = recipient ? 'Dr. ' + recipient.toUpperCase() : 'Unknown';
-    doc.setFontSize(9);
-    doc.text('From: ' + fromDr + '  →  To: ' + toDr, pageWidth - margin, 23, { align: 'right' });
-    
-    y = 45;
-    
-    // ─────────────────────────────────────────────────────────────
-    // PATIENT IDENTIFICATION BOX
-    // ─────────────────────────────────────────────────────────────
-    doc.setFillColor(248, 250, 252);
-    doc.setDrawColor(...lightGray);
-    doc.roundedRect(margin, y, contentWidth, 28, 3, 3, 'FD');
-    
-    doc.setTextColor(...darkColor);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.text(pt.name || 'Unknown Patient', margin + 5, y + 10);
-    
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...grayColor);
-    
-    const patientMeta = [];
-    if (pt.age) patientMeta.push('Age: ' + pt.age);
-    if (pt.gender) patientMeta.push('Gender: ' + pt.gender);
-    if (pt.mrn || pt.id) patientMeta.push('MRN: ' + (pt.mrn || pt.id));
-    if (pt.ward) patientMeta.push('Ward: ' + pt.ward);
-    if (pt.bed) patientMeta.push('Bed: ' + pt.bed);
-    
-    doc.text(patientMeta.join('  |  '), margin + 5, y + 18);
-    
-    // Admission date if available
-    if (pt.admissionDate || pt.dateAdmitted) {
-      doc.text('Admitted: ' + (pt.admissionDate || pt.dateAdmitted), margin + 5, y + 24);
-    }
-    
-    y += 35;
-    
-    // ─────────────────────────────────────────────────────────────
-    // HELPER: Section with content (Professional - no emojis)
-    // ─────────────────────────────────────────────────────────────
-    function addSection(title, content) {
-      if (!content || content.trim() === '' || content === 'N/A' || content === '-') {
-        return;
-      }
-      
-      // Check if we need a new page
-      if (y > pageHeight - 50) {
-        doc.addPage();
-        y = margin;
-      }
-      
-      // Section header with blue accent bar
-      doc.setFillColor(...primaryColor);
-      doc.rect(margin, y, 3, 7, 'F');
-      
-      doc.setTextColor(...darkColor);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.text(title.toUpperCase(), margin + 6, y + 5);
-      
-      y += 10;
-      
-      // Section content
-      doc.setTextColor(...grayColor);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      
-      const lines = doc.splitTextToSize(content, contentWidth - 5);
-      
-      for (let i = 0; i < lines.length; i++) {
-        if (y > pageHeight - 20) {
-          doc.addPage();
-          y = margin;
-        }
-        doc.text(lines[i], margin + 6, y);
-        y += 4.5;
-      }
-      
-      y += 4;
-    }
-    
-    // ─────────────────────────────────────────────────────────────
-    // CLINICAL SECTIONS
-    // ─────────────────────────────────────────────────────────────
-    
-    // Primary Diagnosis / Chief Complaint
-    addSection('Diagnosis', pt.diagnosis || pt.primaryDiagnosis || pt.chiefComplaint);
-    
-    // Presenting Complaint
-    addSection('Presenting Complaint', pt.presentingComplaint || pt.chiefComplaint);
-    
-    // History of Presenting Illness
-    addSection('History of Presenting Illness', pt.hopi || pt.hpi || pt.history || pt.historyOfPresentingIllness);
-    
-    // Past Medical History
-    addSection('Past Medical History', pt.pmh || pt.pastMedicalHistory || pt.medicalHistory);
-    
-    // Past Surgical History
-    addSection('Past Surgical History', pt.psh || pt.pastSurgicalHistory || pt.surgicalHistory);
-    
-    // Medications
-    addSection('Current Medications', pt.medications || pt.currentMedications || pt.meds);
-    
-    // Allergies
-    addSection('Allergies', pt.allergies || pt.allergy);
-    
-    // Social History
-    addSection('Social History', pt.socialHistory || pt.shx);
-    
-    // Family History
-    addSection('Family History', pt.familyHistory || pt.fhx);
-    
-    // Examination Findings
-    addSection('Examination Findings', pt.examination || pt.physicalExam || pt.exam || pt.findings);
-    
-    // Vitals
-    let vitalsText = '';
-    if (pt.vitals) {
-      if (typeof pt.vitals === 'object') {
-        const v = pt.vitals;
-        const vitalsArr = [];
-        if (v.bp || v.bloodPressure) vitalsArr.push('BP: ' + (v.bp || v.bloodPressure));
-        if (v.hr || v.heartRate || v.pulse) vitalsArr.push('HR: ' + (v.hr || v.heartRate || v.pulse));
-        if (v.temp || v.temperature) vitalsArr.push('Temp: ' + (v.temp || v.temperature));
-        if (v.rr || v.respiratoryRate) vitalsArr.push('RR: ' + (v.rr || v.respiratoryRate));
-        if (v.spo2 || v.o2sat) vitalsArr.push('SpO2: ' + (v.spo2 || v.o2sat));
-        vitalsText = vitalsArr.join('  |  ');
-      } else {
-        vitalsText = pt.vitals;
-      }
-    }
-    addSection('Vitals', vitalsText);
-    
-    // Investigations / Labs
-    addSection('Investigations', pt.investigations || pt.labs || pt.labResults || pt.results);
-    
-    // Imaging
-    addSection('Imaging', pt.imaging || pt.radiology || pt.scans);
-    
-    // Assessment
-    addSection('Assessment', pt.assessment || pt.impression);
-    
-    // Current Plan / Management
-    addSection('Management Plan', pt.plan || pt.managementPlan || pt.treatment || pt.management);
-    
-    // Outstanding Tasks / To-Do
-    addSection('Outstanding Tasks', pt.tasks || pt.todos || pt.outstanding || pt.pendingTasks);
-    
-    // Consults
-    addSection('Consultations', pt.consults || pt.consultations);
-    
-    // Code Status
-    addSection('Code Status', pt.codeStatus || pt.resuscitationStatus);
-    
-    // Special Instructions / Notes
-    addSection('Special Notes', pt.notes || pt.specialInstructions || pt.additionalNotes);
-    
-    // ─────────────────────────────────────────────────────────────
-    // FOOTER
-    // ─────────────────────────────────────────────────────────────
-    const totalPages = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      
-      // Footer line
-      doc.setDrawColor(...lightGray);
-      doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
-      
-      // Footer text
-      doc.setTextColor(...grayColor);
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Generated by MedWard Pro | Confidential Medical Document', margin, pageHeight - 10);
-      doc.text('Page ' + i + ' of ' + totalPages, pageWidth - margin, pageHeight - 10, { align: 'right' });
-    }
-    
-    // ─────────────────────────────────────────────────────────────
-    // SAVE PDF
-    // ─────────────────────────────────────────────────────────────
-    const safePatientName = (pt.name || 'patient').replace(/[^a-zA-Z0-9]/g, '_');
-    const filename = 'Handover_' + safePatientName + '_' + now.toISOString().slice(0,10) + '.pdf';
-    
-    doc.save(filename);
-    
-    hideLoad();
-    toast('PDF downloaded: ' + filename);
-    
-  } catch (e) {
-    hideLoad();
-    console.error('PDF generation error:', e);
-    toast('PDF error: ' + e.message);
-  }
+  // Use the common PDF generator
+  generatePatientPDF(pt);
 }
 </script>
 </body>
