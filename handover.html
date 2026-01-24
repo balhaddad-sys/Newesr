@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root {
   --primary: #005eb8;
@@ -282,7 +283,7 @@ body {
   color: var(--text-muted);
 }
 
-.inbox-empty-icon { font-size: 2.5rem; margin-bottom: 8px; }
+.inbox-empty-icon { margin-bottom: 12px; opacity: 0.5; }
 
 .inbox-item {
   display: flex;
@@ -450,8 +451,33 @@ body {
   border-top: 1px solid var(--border);
 }
 
+.modal-footer-btns {
+  display: flex;
+  gap: 10px;
+}
+
+.pdf-btn {
+  flex: 1;
+  padding: 14px;
+  background: var(--bg-elevated);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pdf-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.pdf-btn:not(:disabled):hover { background: var(--primary-light); border-color: var(--primary); }
+
 .send-btn {
-  width: 100%;
+  flex: 1.5;
   padding: 14px;
   background: var(--primary);
   color: #fff;
@@ -594,7 +620,7 @@ body {
   <div class="panel" id="panelSend">
     <div class="scanner-card">
       <div class="scanner-top">
-        <div class="scanner-icon">📷</div>
+        <div class="scanner-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
         <div class="scanner-info">
           <h3>Scan Recipient Badge</h3>
           <p>Point camera at colleague's QR</p>
@@ -603,7 +629,7 @@ body {
       <div class="scanner-view">
         <div id="qr-reader"></div>
       </div>
-      <div class="scanner-status scanning" id="scanStatus">🔍 Scanning...</div>
+      <div class="scanner-status scanning" id="scanStatus">Scanning...</div>
     </div>
   </div>
 
@@ -611,12 +637,12 @@ body {
   <div class="panel" id="panelInbox">
     <div class="inbox-card">
       <div class="inbox-header">
-        <div class="inbox-title">📥 Incoming <span class="inbox-badge" id="inboxBadge" style="display:none">0</span></div>
-        <button class="inbox-refresh" onclick="loadInbox()">🔄 Refresh</button>
+        <div class="inbox-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="margin-right:6px;vertical-align:middle"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>Incoming <span class="inbox-badge" id="inboxBadge" style="display:none">0</span></div>
+        <button class="inbox-refresh" onclick="loadInbox()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="margin-right:4px;vertical-align:middle"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Refresh</button>
       </div>
       <div class="inbox-list" id="inboxList">
         <div class="inbox-empty">
-          <div class="inbox-empty-icon">📭</div>
+          <div class="inbox-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></div>
           <div>No incoming patients</div>
         </div>
       </div>
@@ -640,9 +666,16 @@ body {
     </div>
     <div class="patient-list" id="patientList"></div>
     <div class="modal-footer">
-      <button class="send-btn" id="sendBtn" disabled onclick="sendPatient()">
-        📤 Send Patient
-      </button>
+      <div class="modal-footer-btns">
+        <button class="pdf-btn" id="pdfBtn" disabled onclick="generateHandoverPDF()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Export PDF
+        </button>
+        <button class="send-btn" id="sendBtn" disabled onclick="sendPatient()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Send Patient
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -759,7 +792,7 @@ async function loadPatients() {
       }
       
       if (patients.length > 0) {
-        toast('✅ ' + patients.length + ' patient(s) ready');
+        toast(patients.length + ' patient(s) ready');
       }
     } else {
       console.log('❌ No cache found');
@@ -767,7 +800,7 @@ async function loadPatients() {
     }
   } catch (e) { 
     console.error('Load error:', e);
-    toast('❌ Error: ' + e.message);
+    toast('Error: ' + e.message);
   }
 }
 
@@ -837,6 +870,7 @@ function openSelect(rec) {
   
   selectedId = null;
   document.getElementById('sendBtn').disabled = true;
+  document.getElementById('pdfBtn').disabled = true;
   document.getElementById('selectModal').classList.add('active');
 }
 
@@ -858,6 +892,7 @@ function selectPtByIdx(idx) {
       el.classList.toggle('selected', i === idx);
     });
     document.getElementById('sendBtn').disabled = false;
+    document.getElementById('pdfBtn').disabled = false;
   }
 }
 
@@ -868,11 +903,12 @@ function selectPt(id) {
     el.classList.toggle('selected', el.dataset.id === selectedId);
   });
   document.getElementById('sendBtn').disabled = false;
+  document.getElementById('pdfBtn').disabled = false;
 }
 
 async function sendPatient() {
   if (!selectedId || !recipient) {
-    toast('❌ Please select a patient and recipient');
+    toast('Please select a patient and recipient');
     return;
   }
   
@@ -881,7 +917,7 @@ async function sendPatient() {
   // Find patient - handle both string and number IDs
   const pt = patients.find(p => String(p.id) === String(selectedId));
   if (!pt) {
-    toast('❌ Patient not found (ID: ' + selectedId + ')');
+    toast('Patient not found (ID: ' + selectedId + ')');
     console.error('Patient not found. Available IDs:', patients.map(p => p.id));
     return;
   }
@@ -896,14 +932,14 @@ async function sendPatient() {
     
     if (res.success) {
       closeSelect();
-      toast('✅ Patient sent to Dr. ' + recipient);
+      toast('Patient sent to Dr. ' + recipient);
     } else {
-      toast('❌ ' + (res.error || 'Failed to send'));
+      toast((res.error || 'Failed to send'));
       console.error('Send failed:', res.error);
     }
   } catch (e) {
     hideLoad();
-    toast('❌ Network error: ' + e.message);
+    toast('Network error: ' + e.message);
     console.error('Send error:', e);
   }
 }
@@ -930,12 +966,12 @@ async function loadInbox() {
       `).join('');
     } else {
       badge.style.display = 'none';
-      list.innerHTML = '<div class="inbox-empty"><div class="inbox-empty-icon">📭</div><div>No incoming</div></div>';
+      list.innerHTML = '<div class="inbox-empty"><div class="inbox-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></div><div>No incoming patients</div></div>';
     }
   } catch (e) { console.error(e); }
 }
 
-// ⚡ ATOMIC INBOX ACCEPT - Single server call instead of 4 roundtrips
+// ⚡ ATOMIC INBOX ACCEPT - Save to local storage and remove from inbox
 async function acceptPt(id) {
   showLoad('Accepting...');
   
@@ -947,19 +983,61 @@ async function acceptPt(id) {
       throw new Error(result.error || 'Accept failed');
     }
     
-    // Update local state
+    // Update local state and save to local storage
     if (result.patient) {
-      patients.push(result.patient);
+      const newPatient = result.patient;
+      
+      // Add to in-memory patients array
+      patients.push(newPatient);
+      
+      // ═══════════════════════════════════════════════════════════════════
+      // SAVE TO LOCAL STORAGE - Add patient to the ward cache
+      // ═══════════════════════════════════════════════════════════════════
+      try {
+        const cacheKey = localStorage.getItem('medward_pro_v12') ? 'medward_pro_v12' : 'MEDWARD_CACHE';
+        const cached = localStorage.getItem(cacheKey);
+        
+        if (cached) {
+          const data = JSON.parse(cached);
+          
+          // Get current unit ID
+          const currentUnitId = sessionStorage.getItem('MW_UNIT');
+          
+          // Add unit ID to patient if we have one
+          if (currentUnitId) {
+            newPatient.unitId = currentUnitId;
+          }
+          
+          // Add patient to the list if not already present
+          const existingIdx = (data.patients || []).findIndex(p => String(p.id) === String(newPatient.id));
+          if (existingIdx === -1) {
+            data.patients = data.patients || [];
+            data.patients.push(newPatient);
+          } else {
+            // Update existing patient
+            data.patients[existingIdx] = { ...data.patients[existingIdx], ...newPatient };
+          }
+          
+          // Save back to storage
+          localStorage.setItem(cacheKey, JSON.stringify(data));
+          console.log('✅ Patient saved to local storage:', newPatient.name);
+        }
+      } catch (storageErr) {
+        console.error('Storage save error:', storageErr);
+        // Continue anyway - patient is in server
+      }
     }
     
     hideLoad();
-    toast('✅ Patient accepted');
-    loadInbox(); // Refresh inbox count
+    toast('✓ Patient accepted and saved');
+    
+    // Refresh inbox to remove accepted patient
+    await loadInbox();
     
   } catch (e) {
     hideLoad();
     console.error('Accept error:', e);
-    toast('❌ ' + (e.message || 'Failed'));
+    toast('✗ ' + (e.message || 'Failed'));
   }
 }
 
@@ -977,7 +1055,7 @@ async function callAPI(action, extra = {}) {
     });
   } catch (e) {
     console.error('📡 Network error:', e);
-    toast('❌ Network error');
+    toast('Network error');
     return { success: false, error: 'Network error: ' + e.message };
   }
 
@@ -985,7 +1063,7 @@ async function callAPI(action, extra = {}) {
 
   if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
     console.error('📡 Got HTML instead of JSON');
-    toast('❌ Server error');
+    toast('Server error');
     return { success: false, error: 'Server returned HTML' };
   }
 
@@ -1034,6 +1112,269 @@ function esc(t) {
   const d = document.createElement('div');
   d.textContent = t;
   return d.innerHTML;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PDF HANDOVER GENERATION - Professional Medical Document
+// ═══════════════════════════════════════════════════════════════════
+
+function generateHandoverPDF() {
+  if (!selectedId) {
+    toast('Please select a patient first');
+    return;
+  }
+  
+  const pt = patients.find(p => String(p.id) === String(selectedId));
+  if (!pt) {
+    toast('Patient not found');
+    return;
+  }
+  
+  showLoad('Generating PDF...');
+  
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+    
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    const contentWidth = pageWidth - (margin * 2);
+    let y = margin;
+    
+    // Colors
+    const primaryColor = [0, 94, 184];      // #005eb8
+    const darkColor = [15, 23, 42];         // #0f172a
+    const grayColor = [71, 85, 105];        // #475569
+    const lightGray = [226, 232, 240];      // #e2e8f0
+    
+    // ─────────────────────────────────────────────────────────────
+    // HEADER
+    // ─────────────────────────────────────────────────────────────
+    doc.setFillColor(...primaryColor);
+    doc.rect(0, 0, pageWidth, 35, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.text('PATIENT HANDOVER', margin, 15);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text('MedWard Pro', margin, 23);
+    
+    // Date/Time on right
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { 
+      day: '2-digit', 
+      month: 'short', 
+      year: 'numeric' 
+    });
+    const timeStr = now.toLocaleTimeString('en-GB', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+    doc.text(dateStr + ' | ' + timeStr, pageWidth - margin, 15, { align: 'right' });
+    
+    // Handover participants
+    const fromDr = AUTH.user ? 'Dr. ' + AUTH.user.toUpperCase() : 'Unknown';
+    const toDr = recipient ? 'Dr. ' + recipient.toUpperCase() : 'Unknown';
+    doc.setFontSize(9);
+    doc.text('From: ' + fromDr + '  →  To: ' + toDr, pageWidth - margin, 23, { align: 'right' });
+    
+    y = 45;
+    
+    // ─────────────────────────────────────────────────────────────
+    // PATIENT IDENTIFICATION BOX
+    // ─────────────────────────────────────────────────────────────
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(...lightGray);
+    doc.roundedRect(margin, y, contentWidth, 28, 3, 3, 'FD');
+    
+    doc.setTextColor(...darkColor);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text(pt.name || 'Unknown Patient', margin + 5, y + 10);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...grayColor);
+    
+    const patientMeta = [];
+    if (pt.age) patientMeta.push('Age: ' + pt.age);
+    if (pt.gender) patientMeta.push('Gender: ' + pt.gender);
+    if (pt.mrn || pt.id) patientMeta.push('MRN: ' + (pt.mrn || pt.id));
+    if (pt.ward) patientMeta.push('Ward: ' + pt.ward);
+    if (pt.bed) patientMeta.push('Bed: ' + pt.bed);
+    
+    doc.text(patientMeta.join('  |  '), margin + 5, y + 18);
+    
+    // Admission date if available
+    if (pt.admissionDate || pt.dateAdmitted) {
+      doc.text('Admitted: ' + (pt.admissionDate || pt.dateAdmitted), margin + 5, y + 24);
+    }
+    
+    y += 35;
+    
+    // ─────────────────────────────────────────────────────────────
+    // HELPER: Section with content (Professional - no emojis)
+    // ─────────────────────────────────────────────────────────────
+    function addSection(title, content) {
+      if (!content || content.trim() === '' || content === 'N/A' || content === '-') {
+        return;
+      }
+      
+      // Check if we need a new page
+      if (y > pageHeight - 50) {
+        doc.addPage();
+        y = margin;
+      }
+      
+      // Section header with blue accent bar
+      doc.setFillColor(...primaryColor);
+      doc.rect(margin, y, 3, 7, 'F');
+      
+      doc.setTextColor(...darkColor);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text(title.toUpperCase(), margin + 6, y + 5);
+      
+      y += 10;
+      
+      // Section content
+      doc.setTextColor(...grayColor);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      
+      const lines = doc.splitTextToSize(content, contentWidth - 5);
+      
+      for (let i = 0; i < lines.length; i++) {
+        if (y > pageHeight - 20) {
+          doc.addPage();
+          y = margin;
+        }
+        doc.text(lines[i], margin + 6, y);
+        y += 4.5;
+      }
+      
+      y += 4;
+    }
+    
+    // ─────────────────────────────────────────────────────────────
+    // CLINICAL SECTIONS
+    // ─────────────────────────────────────────────────────────────
+    
+    // Primary Diagnosis / Chief Complaint
+    addSection('Diagnosis', pt.diagnosis || pt.primaryDiagnosis || pt.chiefComplaint);
+    
+    // Presenting Complaint
+    addSection('Presenting Complaint', pt.presentingComplaint || pt.chiefComplaint);
+    
+    // History of Presenting Illness
+    addSection('History of Presenting Illness', pt.hopi || pt.hpi || pt.history || pt.historyOfPresentingIllness);
+    
+    // Past Medical History
+    addSection('Past Medical History', pt.pmh || pt.pastMedicalHistory || pt.medicalHistory);
+    
+    // Past Surgical History
+    addSection('Past Surgical History', pt.psh || pt.pastSurgicalHistory || pt.surgicalHistory);
+    
+    // Medications
+    addSection('Current Medications', pt.medications || pt.currentMedications || pt.meds);
+    
+    // Allergies
+    addSection('Allergies', pt.allergies || pt.allergy);
+    
+    // Social History
+    addSection('Social History', pt.socialHistory || pt.shx);
+    
+    // Family History
+    addSection('Family History', pt.familyHistory || pt.fhx);
+    
+    // Examination Findings
+    addSection('Examination Findings', pt.examination || pt.physicalExam || pt.exam || pt.findings);
+    
+    // Vitals
+    let vitalsText = '';
+    if (pt.vitals) {
+      if (typeof pt.vitals === 'object') {
+        const v = pt.vitals;
+        const vitalsArr = [];
+        if (v.bp || v.bloodPressure) vitalsArr.push('BP: ' + (v.bp || v.bloodPressure));
+        if (v.hr || v.heartRate || v.pulse) vitalsArr.push('HR: ' + (v.hr || v.heartRate || v.pulse));
+        if (v.temp || v.temperature) vitalsArr.push('Temp: ' + (v.temp || v.temperature));
+        if (v.rr || v.respiratoryRate) vitalsArr.push('RR: ' + (v.rr || v.respiratoryRate));
+        if (v.spo2 || v.o2sat) vitalsArr.push('SpO2: ' + (v.spo2 || v.o2sat));
+        vitalsText = vitalsArr.join('  |  ');
+      } else {
+        vitalsText = pt.vitals;
+      }
+    }
+    addSection('Vitals', vitalsText);
+    
+    // Investigations / Labs
+    addSection('Investigations', pt.investigations || pt.labs || pt.labResults || pt.results);
+    
+    // Imaging
+    addSection('Imaging', pt.imaging || pt.radiology || pt.scans);
+    
+    // Assessment
+    addSection('Assessment', pt.assessment || pt.impression);
+    
+    // Current Plan / Management
+    addSection('Management Plan', pt.plan || pt.managementPlan || pt.treatment || pt.management);
+    
+    // Outstanding Tasks / To-Do
+    addSection('Outstanding Tasks', pt.tasks || pt.todos || pt.outstanding || pt.pendingTasks);
+    
+    // Consults
+    addSection('Consultations', pt.consults || pt.consultations);
+    
+    // Code Status
+    addSection('Code Status', pt.codeStatus || pt.resuscitationStatus);
+    
+    // Special Instructions / Notes
+    addSection('Special Notes', pt.notes || pt.specialInstructions || pt.additionalNotes);
+    
+    // ─────────────────────────────────────────────────────────────
+    // FOOTER
+    // ─────────────────────────────────────────────────────────────
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      
+      // Footer line
+      doc.setDrawColor(...lightGray);
+      doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
+      
+      // Footer text
+      doc.setTextColor(...grayColor);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Generated by MedWard Pro | Confidential Medical Document', margin, pageHeight - 10);
+      doc.text('Page ' + i + ' of ' + totalPages, pageWidth - margin, pageHeight - 10, { align: 'right' });
+    }
+    
+    // ─────────────────────────────────────────────────────────────
+    // SAVE PDF
+    // ─────────────────────────────────────────────────────────────
+    const safePatientName = (pt.name || 'patient').replace(/[^a-zA-Z0-9]/g, '_');
+    const filename = 'Handover_' + safePatientName + '_' + now.toISOString().slice(0,10) + '.pdf';
+    
+    doc.save(filename);
+    
+    hideLoad();
+    toast('PDF downloaded: ' + filename);
+    
+  } catch (e) {
+    hideLoad();
+    console.error('PDF generation error:', e);
+    toast('PDF error: ' + e.message);
+  }
 }
 </script>
 </body>
