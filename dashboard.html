@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="theme-color" content="#005eb8">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<!-- ═══════════════════════════════════════════════════════════════════
+     CACHE CONTROL - Prevent browser from serving stale versions
+     ═══════════════════════════════════════════════════════════════════ -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>MedWard Pro v17.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -4431,7 +4437,8 @@ const CONFIG = {
   // APP METADATA
   // ═══════════════════════════════════════════════════════════════════
   VERSION: '17.0.0',
-  BUILD_DATE: '2026-01-23',
+  BUILD_DATE: '2026-01-24',
+  BUILD_ID: '2026-01-24.2',  // ★ BUMP ON EVERY DEPLOY - triggers cache purge
   APP_NAME: 'MedWard Pro',
   
   // ═══════════════════════════════════════════════════════════════════
@@ -4486,6 +4493,103 @@ const CONFIG = {
   // ═══════════════════════════════════════════════════════════════════
   REQUIRED_ELEMENTS: ['dashboard', 'patientsList']
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 🚨 BOOT MIGRATION SYSTEM - Purges stale cache on new builds
+// ═══════════════════════════════════════════════════════════════════════════
+// This runs SYNCHRONOUSLY before anything else to ensure fresh state
+
+(async function bootMigration() {
+  const BUILD_ID = CONFIG.BUILD_ID;
+  const prevBuild = localStorage.getItem('MW_BUILD_ID');
+  
+  // ═══════════════════════════════════════════════════════════════════
+  // HANDLE ?fresh=1 - User-triggered cache purge (safe mode boot)
+  // ═══════════════════════════════════════════════════════════════════
+  const url = new URL(location.href);
+  if (url.searchParams.get('fresh') === '1') {
+    console.log('🔄 Fresh start requested - purging all caches...');
+    
+    await purgeServiceWorkerAndCaches();
+    
+    // Clear local state (but NOT credentials)
+    localStorage.removeItem(CONFIG.STORAGE_KEY);
+    localStorage.removeItem(CONFIG.CACHE_KEY);
+    localStorage.removeItem('MW_REV');
+    localStorage.removeItem('MW_BUILD_ID');
+    localStorage.removeItem('MW_DIRTY');
+    
+    // Remove ?fresh=1 and reload
+    url.searchParams.delete('fresh');
+    location.replace(url.toString());
+    return; // Stop execution - page will reload
+  }
+  
+  // ═══════════════════════════════════════════════════════════════════
+  // BUILD MISMATCH - Purge caches and reload with new build
+  // ═══════════════════════════════════════════════════════════════════
+  if (prevBuild && prevBuild !== BUILD_ID) {
+    console.log('🔄 Build mismatch detected:', prevBuild, '→', BUILD_ID);
+    console.log('   Purging Service Worker and Cache Storage...');
+    
+    await purgeServiceWorkerAndCaches();
+    
+    // Clear derived state (NOT patient data - that's in cloud)
+    localStorage.removeItem('MW_REV');
+    localStorage.removeItem('MW_DIRTY');
+    // Keep STORAGE_KEY and CACHE_KEY - they have patient data
+    // But mark them as potentially stale
+    localStorage.setItem('MW_CACHE_STALE', '1');
+    
+    // Mark new build
+    localStorage.setItem('MW_BUILD_ID', BUILD_ID);
+    
+    // Force reload with cache-bust
+    url.searchParams.set('v', BUILD_ID);
+    location.replace(url.toString());
+    return; // Stop execution - page will reload
+  }
+  
+  // First time or same build - just mark it
+  if (!prevBuild) {
+    localStorage.setItem('MW_BUILD_ID', BUILD_ID);
+    console.log('📱 First boot - Build ID:', BUILD_ID);
+  } else {
+    console.log('✅ Build ID matches:', BUILD_ID);
+  }
+})();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SERVICE WORKER & CACHE PURGE - Nuclear option for stale assets
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function purgeServiceWorkerAndCaches() {
+  // Unregister ALL service workers
+  if ('serviceWorker' in navigator) {
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const registration of registrations) {
+        await registration.unregister();
+        console.log('   ✅ Unregistered SW:', registration.scope);
+      }
+    } catch (e) {
+      console.warn('   ⚠️ SW unregister failed:', e);
+    }
+  }
+  
+  // Clear ALL Cache Storage
+  if (window.caches?.keys) {
+    try {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map(name => {
+        console.log('   ✅ Deleted cache:', name);
+        return caches.delete(name);
+      }));
+    } catch (e) {
+      console.warn('   ⚠️ Cache clear failed:', e);
+    }
+  }
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // BOOT DIAGNOSTICS - Validates app configuration and DOM before initialization
@@ -14119,7 +14223,7 @@ function initDebugPanel() {
 // Old diagnostics functions removed - now using Diagnostics object in CONFIG section
 
 async function init() {
-  console.log('🚀 MedWard Pro v17.0 - Luxury Standard');
+  console.log('🚀 MedWard Pro v17.0 - Build:', CONFIG.BUILD_ID);
   console.log('🔒 Starting in READ-ONLY mode until cloud sync completes');
   
   // Run boot diagnostics
@@ -14132,20 +14236,19 @@ async function init() {
   Diagnostics.showDebugPanel();
   
   // ═══════════════════════════════════════════════════════════════════
-  // LOCAL-FIRST: Load from phone memory IMMEDIATELY (0ms latency)
+  // CHECK STALE CACHE FLAG - Build migration marked cache as potentially stale
   // ═══════════════════════════════════════════════════════════════════
-  const localCache = localStorage.getItem(CONFIG.CACHE_KEY);
-  if (localCache) {
-    try {
-      const cached = JSON.parse(localCache);
-      state.patients = cached.patients || [];
-      state.units = cached.units || [];
-      state.trash = cached.trash || { patients: [], units: [] };
-      console.log('⚡ Loaded from local cache:', state.patients.length, 'patients');
-    } catch (e) {
-      console.warn('⚠️ Cache parse error, loading fresh');
-    }
+  const isCacheStale = localStorage.getItem('MW_CACHE_STALE') === '1';
+  if (isCacheStale) {
+    console.warn('⚠️ Cache marked as STALE from build migration - will trust cloud');
+    showSyncStatusBar('🔄 Verifying data with cloud...', 'orange');
   }
+  
+  // ═══════════════════════════════════════════════════════════════════
+  // LOCAL-FIRST: Load from phone memory for INSTANT display (0ms latency)
+  // NOTE: This is just for instant UI - cloud will overwrite if different
+  // ═══════════════════════════════════════════════════════════════════
+  const localPatientCount = loadLocalCacheForDisplay();
   
   // Also load from legacy storage
   loadLocal();
@@ -14211,34 +14314,26 @@ async function init() {
   $$('.modal').forEach(m => m.onclick = e => { if (e.target === m) m.classList.remove('active'); });
 
   // ═══════════════════════════════════════════════════════════════════
-  // BACKGROUND SYNC: Get cloud truth (quietly, non-blocking)
+  // CLOUD-FIRST RECONCILIATION: Cloud is the source of truth
   // ═══════════════════════════════════════════════════════════════════
   try {
-    const cloudData = await syncFromCloud();
+    await syncFromCloud();
     
-    // Only update if cloud has different data
-    if (cloudData && cloudData.patients) {
-      const cloudJson = JSON.stringify(cloudData.patients);
-      const localJson = JSON.stringify(state.patients);
-      
-      if (cloudJson !== localJson) {
-        state.patients = cloudData.patients;
-        state.units = cloudData.units || state.units;
-        state.trash = cloudData.trash || state.trash;
-        
-        // Update local cache
-        saveLocalCache();
-        
-        // Re-render with synced data
-        renderPatients();
-        console.log('☁️ Synced with cloud - UI updated');
-      } else {
-        console.log('☁️ Already in sync with cloud');
-      }
-    }
+    // ═══════════════════════════════════════════════════════════════════
+    // CRITICAL: If local was empty but cloud has data, we got it from syncFromCloud
+    // If local had data but cloud had MORE data, cloud wins (already applied)
+    // Clear stale flag since we've now reconciled
+    // ═══════════════════════════════════════════════════════════════════
+    localStorage.removeItem('MW_CACHE_STALE');
+    
+    // Re-render to show cloud data
+    renderPatients();
+    console.log('✅ Cloud reconciliation complete');
+    
   } catch (e) {
     // If offline, just keep using local data - no error popup needed
     console.log('📴 Offline mode - using local data');
+    // Keep stale flag - we couldn't verify with cloud
   }
   
   // Initialize debug panel if enabled
@@ -14298,6 +14393,27 @@ async function init() {
 // ═══════════════════════════════════════════════════════════════════════════
 // LOCAL-FIRST SAVE FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════
+
+// Load local cache ONLY for instant display - cloud will overwrite this
+// Returns the number of patients loaded (for logging)
+function loadLocalCacheForDisplay() {
+  const localCache = localStorage.getItem(CONFIG.CACHE_KEY);
+  if (localCache) {
+    try {
+      const cached = JSON.parse(localCache);
+      state.patients = cached.patients || [];
+      state.units = cached.units || [];
+      state.trash = cached.trash || { patients: [], units: [] };
+      console.log('⚡ Loaded from local cache (for instant display):', state.patients.length, 'patients');
+      console.log('   ⚠️ This is UNVERIFIED - cloud will be checked next');
+      return state.patients.length;
+    } catch (e) {
+      console.warn('⚠️ Cache parse error, starting fresh');
+      return 0;
+    }
+  }
+  return 0;
+}
 
 // Save to local cache immediately (optimistic UI)
 function saveLocalCache() {
