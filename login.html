@@ -504,7 +504,7 @@ async function handleLogin(e) {
       showMessage('Login successful! Redirecting...', false);
       
       setTimeout(() => {
-        window.location.href = 'index.html';
+        window.location.href = 'loading.html';
       }, 500);
     } else {
       showMessage(result.error || 'Invalid username or password');
