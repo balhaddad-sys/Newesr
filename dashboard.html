@@ -14288,210 +14288,108 @@ function initDebugPanel() {
 async function cloudFirstBoot() {
   boot.bootPhase = 'loading';
   
-  console.log('🚀 Cloud-first boot starting...');
+  console.log('🚀 Cache-first boot starting...');
   
   // ═══════════════════════════════════════════════════════════════════
-  // CHECK FOR LOGIN-WARMED CACHE - Skip cloud fetch if login just warmed cache
+  // CACHE-ONLY LOAD - loading.html already fetched from cloud
+  // This page only reads from the warmed cache
   // ═══════════════════════════════════════════════════════════════════
+  
   const cloudVerifiedAt = parseInt(localStorage.getItem('MW_CLOUD_VERIFIED') || '0', 10);
   const cacheAge = Date.now() - cloudVerifiedAt;
-  const CACHE_FRESH_THRESHOLD_MS = 30000; // 30 seconds
   
-  if (cloudVerifiedAt && cacheAge < CACHE_FRESH_THRESHOLD_MS) {
-    console.log('⚡ Login pre-warmed cache detected (', Math.round(cacheAge/1000), 's ago)');
-    console.log('   Skipping cloud fetch - using verified cache');
-    
-    // Trust the login-warmed cache
-    boot.allowLocalReads = true;
-    loadLocalCacheForDisplay();
-    loadLocal();
-    
-    // Mark boot complete immediately
-    boot.cloudLoaded = true;
-    boot.allowLocalWrites = true;
-    boot.bootPhase = 'ready';
-    syncState.isHydrated = true;
-    syncState.isReadOnly = false;
-    syncState.hasEverSyncedThisSession = true;
-    syncState.lastServerPatientCount = state.patients?.length || 0;
-    syncState.lastServerUnitCount = state.units?.length || 0;
-    
-    // Clear the verified flag (one-time use)
-    localStorage.removeItem('MW_CLOUD_VERIFIED');
-    
-    showSyncStatusBar('☁️ Cloud connected', 'green');
-    console.log('✅ Instant boot from login-warmed cache:', state.patients.length, 'patients');
-    return true;
-  }
+  // Allow reads from local cache
+  boot.allowLocalReads = true;
   
-  // ═══════════════════════════════════════════════════════════════════
-  // NORMAL CLOUD-FIRST BOOT - Fetch from cloud with timeout
-  // ═══════════════════════════════════════════════════════════════════
-  showSyncStatusBar('☁️ Loading from cloud...', 'orange');
-  showLoading('Loading your data...');
+  // Try to load from cache
+  const cached = localStorage.getItem('medward_pro_v12') || localStorage.getItem('MEDWARD_CACHE');
   
-  console.log('   Timeout:', CONFIG.CLOUD_BOOT_TIMEOUT_MS, 'ms');
-  console.log('   Cache warm delay:', CONFIG.CACHE_WARM_DELAY_MS, 'ms');
-  
-  // Ensure API URL is set before cloud call
-  state.settings.apiUrl = CONFIG.API_URL;
-  
-  // Try cloud load with timeout
-  let cloudSuccess = false;
-  
-  try {
-    // Race between cloud load and timeout
-    const cloudPromise = (async () => {
-      const res = await fetch(state.settings.apiUrl, {
-        method: 'POST',
-        cache: 'no-store',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ 
-          action: 'loadData',
-          username: AUTH.user,
-          password: AUTH.pass,
-          clientRev: syncState.clientRev
-        })
-      });
+  if (cached) {
+    try {
+      const data = JSON.parse(cached);
       
-      const text = await res.text();
-      
-      // Check for HTML response (wrong URL)
-      if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
-        throw new Error('Server returned HTML');
+      // Apply cached data to state
+      if (data.units?.length) {
+        state.units = data.units;
+      }
+      if (data.patients) {
+        state.patients = data.patients;
+      }
+      if (data.settings) {
+        const localApiUrl = state.settings.apiUrl;
+        state.settings = { ...state.settings, ...data.settings };
+        state.settings.apiUrl = localApiUrl;
+      }
+      if (data.unitRequests) {
+        state.unitRequests = data.unitRequests;
+      }
+      if (data.trash) {
+        state.trash = data.trash;
+      }
+      if (data.rev) {
+        syncState.clientRev = data.rev;
       }
       
-      return JSON.parse(text);
-    })();
-    
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Cloud timeout')), CONFIG.CLOUD_BOOT_TIMEOUT_MS)
-    );
-    
-    const data = await Promise.race([cloudPromise, timeoutPromise]);
-    
-    // ═══════════════════════════════════════════════════════════════════
-    // CLOUD SUCCESS - Apply cloud data as source of truth
-    // ═══════════════════════════════════════════════════════════════════
-    if (data.success && (data.data || data.unchanged)) {
-      if (data.unchanged) {
-        // Server says we're already in sync - allow local reads for this case
-        console.log('⚡ Already in sync (rev:', data.rev, ')');
-        boot.allowLocalReads = true;
-        loadLocal(); // Load local since we're in sync
-      } else if (data.data) {
-        // Apply cloud data directly
-        console.log('☁️ Applying cloud data...');
+      // Check if cache was verified by loading.html (within last 5 minutes)
+      const CACHE_VALID_MS = 5 * 60 * 1000; // 5 minutes
+      
+      if (cloudVerifiedAt && cacheAge < CACHE_VALID_MS) {
+        // Cache is fresh and verified - full access
+        boot.cloudLoaded = true;
+        boot.allowLocalWrites = true;
+        boot.bootPhase = 'ready';
+        syncState.isHydrated = true;
+        syncState.isReadOnly = false;
+        syncState.hasEverSyncedThisSession = true;
+        syncState.lastServerPatientCount = state.patients?.length || 0;
+        syncState.lastServerUnitCount = state.units?.length || 0;
         
-        if (data.rev) {
-          syncState.clientRev = data.rev;
-          localStorage.setItem('MW_REV', String(syncState.clientRev));
-        }
+        showSyncStatusBar('☁️ Cloud connected', 'green');
+        console.log('✅ Loaded from verified cache:', state.patients.length, 'patients');
         
-        if (data.data.units?.length) {
-          state.units = data.data.units;
-          console.log('   Units loaded:', state.units.length);
-        }
+        // Clear the verified flag (one-time use per session)
+        localStorage.removeItem('MW_CLOUD_VERIFIED');
         
-        if (data.data.settings) {
-          const localApiUrl = state.settings.apiUrl;
-          state.settings = { ...state.settings, ...data.data.settings };
-          state.settings.apiUrl = localApiUrl; // Keep local API URL
-        }
+        return true;
+      } else {
+        // Cache exists but is old/unverified - read-only mode
+        boot.cloudLoaded = false;
+        boot.allowLocalWrites = false;
+        boot.bootPhase = 'ready';
+        syncState.isHydrated = true;
+        syncState.isReadOnly = true;
+        syncState.lastServerPatientCount = state.patients?.length || 0;
+        syncState.lastServerUnitCount = state.units?.length || 0;
         
-        if (data.data.patients) {
-          state.patients = data.data.patients;
-          console.log('   Patients loaded:', state.patients.length);
-        }
+        showSyncStatusBar('📱 Offline - View Only', 'orange');
+        console.log('⚠️ Cache not verified - read-only mode:', state.patients.length, 'patients');
         
-        if (data.data.unitRequests?.length) {
-          state.unitRequests = data.data.unitRequests;
-        }
-        
-        if (data.data.trash) {
-          state.trash = data.data.trash;
-        }
-        
-        syncState.lastServerTimestamp = data.data.updatedAt || new Date().toISOString();
+        return false;
       }
       
-      // ✅ MARK CLOUD BOOT COMPLETE
-      boot.cloudLoaded = true;
-      syncState.isHydrated = true;
-      syncState.isReadOnly = false;
-      syncState.hasEverSyncedThisSession = true;
-      syncState.lastServerPatientCount = state.patients?.length || 0;
-      syncState.lastServerUnitCount = state.units?.length || 0;
-      
-      cloudSuccess = true;
-      console.log('✅ Cloud boot successful:', state.patients.length, 'patients');
-      showSyncStatusBar('☁️ Cloud connected', 'green');
-    } else {
-      throw new Error('Cloud returned no data');
-    }
-    
-  } catch (e) {
-    // ═══════════════════════════════════════════════════════════════════
-    // CLOUD FAILED - Fall back to local cache
-    // ═══════════════════════════════════════════════════════════════════
-    console.warn('⚠️ Cloud boot failed:', e.message);
-    console.log('📱 Falling back to local cache...');
-    
-    // Now allow local reads
-    boot.allowLocalReads = true;
-    
-    const localCount = loadLocalCacheForDisplay();
-    loadLocal();
-    
-    if (localCount > 0 || state.patients.length > 0) {
-      console.log('📱 Loaded from local cache:', state.patients.length, 'patients');
-      showSyncStatusBar('📱 Offline - View Only', 'orange');
-      
-      // Mark as hydrated but READ-ONLY (can view but not sync)
-      syncState.isHydrated = true;
-      syncState.lastServerPatientCount = state.patients.length;
-      syncState.lastServerUnitCount = state.units.length;
-      // isReadOnly stays TRUE - prevents zombie cache attack
-    } else {
-      console.warn('❌ No cloud and no cache');
-      showSyncStatusBar('⚠️ No data - Try refreshing', 'red');
+    } catch (e) {
+      console.error('❌ Failed to parse cache:', e);
     }
   }
   
-  hideLoading();
-  
-  // ═══════════════════════════════════════════════════════════════════
-  // ENSURE DEFAULT UNIT EXISTS - Critical for new users / empty state
-  // ═══════════════════════════════════════════════════════════════════
+  // No cache found - redirect to loading page
+  console.log('❌ No cache found - redirecting to loading page');
+  window.location.href = 'loading.html';
+  return false;
+}
+
+// Ensure default unit exists (called after boot)
+function ensureDefaultUnit() {
   if (!state.units.length) {
     state.units = [{ id: 'med-e', name: 'Medicine Unit E', icon: '🏥', desc: 'Internal Medicine', code: '1234', color: '#14b8a6' }];
     console.log('📋 Created default unit');
   }
   state.settings.adminPassword = state.settings.adminPassword || CONFIG.ADMIN_PASSWORD;
-  
-  // ═══════════════════════════════════════════════════════════════════
-  // DELAYED CACHE WARM - Write to local storage after stability window
-  // ═══════════════════════════════════════════════════════════════════
-  if (cloudSuccess) {
-    console.log('⏱️ Cache warm scheduled in', CONFIG.CACHE_WARM_DELAY_MS/1000, 'seconds');
-    setTimeout(() => {
-      boot.allowLocalWrites = true;
-      boot.bootPhase = 'ready';
-      console.log('🔓 Cache writes enabled - warming local cache');
-      saveLocalNow(); // One-time cache warm
-    }, CONFIG.CACHE_WARM_DELAY_MS);
-  } else {
-    // If cloud failed, allow writes immediately (we're using local anyway)
-    boot.allowLocalWrites = true;
-    boot.bootPhase = 'ready';
-  }
-  
-  return cloudSuccess;
 }
 
 async function init() {
   console.log('🚀 MedWard Pro v17.1 - Build:', CONFIG.BUILD_ID);
-  console.log('🔒 CLOUD-FIRST BOOT: Blocking local cache until cloud responds');
+  console.log('📦 CACHE-FIRST BOOT: Using cache warmed by loading.html');
   
   // Run boot diagnostics
   if (!Diagnostics.run()) {
@@ -14503,9 +14401,12 @@ async function init() {
   Diagnostics.showDebugPanel();
   
   // ═══════════════════════════════════════════════════════════════════
-  // CLOUD-FIRST BOOT: Don't read local until cloud responds or times out
+  // CACHE-FIRST BOOT: Read from warmed cache (loading.html fetched cloud)
   // ═══════════════════════════════════════════════════════════════════
   await cloudFirstBoot();
+  
+  // Ensure default unit exists
+  ensureDefaultUnit();
   
   // Clear any stale cache flags since we've now done proper boot
   localStorage.removeItem('MW_CACHE_STALE');
