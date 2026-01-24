@@ -728,40 +728,20 @@ async function verifyAdminAccess() {
   document.getElementById('adminBtnText').style.display = 'none';
   document.getElementById('adminSpinner').style.display = 'block';
   
-  try {
-    // Verify with backend
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        action: 'verifyAdmin',
-        adminKey: adminKey
-      })
-    });
+  // Local verification (works immediately)
+  const VALID_KEYS = ['66778380'];
+  
+  // Small delay for UX
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  if (VALID_KEYS.includes(adminKey)) {
+    // Store admin key in session
+    sessionStorage.setItem('MW_ADMIN_KEY', adminKey);
     
-    const result = await response.json();
-    
-    if (result.success) {
-      // Store admin key securely in session
-      sessionStorage.setItem('MW_ADMIN_KEY', adminKey);
-      
-      // Redirect to monitor
-      window.location.href = 'monitor.html';
-    } else {
-      alert('❌ Access Denied\n\n' + (result.error || 'Invalid admin key'));
-    }
-  } catch (error) {
-    // Fallback: Local verification for offline access
-    // This is a backup - primary verification should be server-side
-    const VALID_KEYS = ['MEDWARD_ADMIN_MASTER', 'SHIFU_GOD_MODE'];
-    
-    if (VALID_KEYS.includes(adminKey)) {
-      sessionStorage.setItem('MW_ADMIN_KEY', adminKey);
-      window.location.href = 'monitor.html';
-    } else {
-      alert('❌ Connection Error\n\nCould not verify credentials. Please check your connection.');
-    }
-  } finally {
+    // Redirect to monitor
+    window.location.href = 'monitor.html';
+  } else {
+    alert('❌ Access Denied\n\nInvalid admin key');
     document.getElementById('adminBtnText').style.display = 'inline';
     document.getElementById('adminSpinner').style.display = 'none';
   }
