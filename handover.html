@@ -657,7 +657,7 @@ body {
 </div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbzmWYRlBlhcXAvyB_l6F8oj3tbBm_YY2wwyR5hJNSxPs-QBP5OI4dZ8prQLindVcoKfHA/exec';
+const API = 'https://script.google.com/macros/s/AKfycbyewF_EjwJeundXYupFZcAjJF7jyMrd38FPDP7DB0zmjmHqAcXHig08Ycn07oW45l4w-A/exec';
 
 const AUTH = {
   user: sessionStorage.getItem('MW_USER') || localStorage.getItem('MW_USER'),
@@ -723,32 +723,47 @@ function generateBadge() {
 
 async function loadPatients() {
   try {
-    console.log('=== LOADING PATIENTS ===');
-    console.log('Auth user:', AUTH.user);
-    console.log('Auth pass:', AUTH.pass ? '✓ exists' : '✗ missing');
+    console.log('=== LOADING PATIENTS FROM CACHE ===');
     
-    if (!AUTH.user || !AUTH.pass) {
-      console.error('Missing credentials');
-      toast('❌ Not logged in');
-      return;
-    }
+    // ═══════════════════════════════════════════════════════════════════
+    // CACHE-ONLY LOAD - loading.html already fetched from cloud
+    // ═══════════════════════════════════════════════════════════════════
+    const cached = localStorage.getItem('medward_pro_v12') || localStorage.getItem('MEDWARD_CACHE');
     
-    const res = await callAPI('loadData');
-    
-    if (!res.success) {
-      console.error('Load failed:', res.error);
-      toast('❌ ' + (res.error || 'Failed to load'));
-      return;
-    }
-    
-    if (res.data) {
-      const d = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
-      patients = d.patients || [];
-      console.log('✅ Patients loaded:', patients.length);
+    if (cached) {
+      const d = JSON.parse(cached);
+      let allPatients = d.patients || [];
+      
+      console.log('📦 Total patients in cache:', allPatients.length);
+      
+      // Filter by current unit if one is selected
+      const currentUnitId = sessionStorage.getItem('MW_UNIT');
+      console.log('🏥 Current unit ID:', currentUnitId);
+      
+      if (currentUnitId && allPatients.length > 0) {
+        // Show unique unitIds for debugging
+        const unitIds = [...new Set(allPatients.map(p => p.unitId))];
+        console.log('📋 Unit IDs in patients:', unitIds);
+        
+        patients = allPatients.filter(p => p.unitId === currentUnitId);
+        console.log('✅ Patients in current unit:', patients.length);
+        
+        // If no patients match unit filter, show all patients
+        if (patients.length === 0 && allPatients.length > 0) {
+          console.log('⚠️ No patients match unit filter, showing all patients');
+          patients = allPatients;
+        }
+      } else {
+        patients = allPatients;
+        console.log('✅ All patients loaded:', patients.length);
+      }
       
       if (patients.length > 0) {
-        toast('✅ ' + patients.length + ' patient(s) loaded');
+        toast('✅ ' + patients.length + ' patient(s) ready');
       }
+    } else {
+      console.log('❌ No cache found');
+      toast('Please refresh the page');
     }
   } catch (e) { 
     console.error('Load error:', e);
@@ -934,16 +949,6 @@ async function acceptPt(id) {
     
     // Update local state
     if (result.patient) {
-      // Assign to current unit so patient shows in dashboard
-      const unitId = sessionStorage.getItem('MW_UNIT');
-      if (unitId) {
-        result.patient.unitId = unitId;
-        // Save unit assignment to server via patch
-        await callAPI('patch', { 
-          operation: 'updatePatient', 
-          payload: { id: result.patient.id, unitId: unitId } 
-        });
-      }
       patients.push(result.patient);
     }
     
