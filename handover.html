@@ -1100,78 +1100,45 @@ function generatePatientPDF(pt) {
     }
     
     // ═══════════════════════════════════════════════════════════════
-    // LABS TABLE - Handle multiple possible data structures
+    // LABS TABLE - Using labData.parameters structure from MedWard
     // ═══════════════════════════════════════════════════════════════
     
-    // Find labs data from various possible field names
-    let labsData = pt.labs || pt.labResults || pt.laboratory || pt.bloodTests || pt.bloodWork || pt.results;
+    // Labs are stored as pt.labData.parameters[]
+    // Each param has: name, unit, range, values: [{value, date, status}, ...]
     
-    console.log('Labs data found:', labsData);
+    const labParams = pt.labData?.parameters || [];
     
-    // Also check for nested structures
-    if (!labsData && pt.investigations) labsData = pt.investigations;
-    if (!labsData && pt.labData) labsData = pt.labData;
+    console.log('labData:', pt.labData);
+    console.log('labParams count:', labParams.length);
     
-    // Process labs if we found any
-    if (labsData) {
+    if (labParams.length > 0) {
       const labRows = [];
       
-      // Helper to extract lab from various object formats
-      function extractLab(lab, panelName) {
-        if (!lab || typeof lab !== 'object') return null;
+      labParams.forEach(param => {
+        if (!param || !param.name) return;
         
-        // Try all possible field names
-        const name = lab.name || lab.test || lab.label || lab.parameter || lab.testName || '';
-        const value = lab.value !== undefined ? lab.value : (lab.result !== undefined ? lab.result : (lab.reading || ''));
-        const unit = lab.unit || lab.units || lab.unitOfMeasure || '';
-        const ref = lab.range || lab.reference || lab.refRange || lab.normalRange || lab.referenceRange || '';
-        const flag = lab.flag || lab.status || lab.abnormal || lab.interpretation || '';
+        // Get the latest value (first in the values array, sorted newest first)
+        const latest = param.values?.[0];
+        if (!latest) return;
         
-        if (name && value !== '' && value !== null && value !== undefined) {
-          const flagStr = (flag && String(flag).toLowerCase() !== 'normal') ? String(flag).toUpperCase() : '';
-          return [clean(name), String(value), clean(unit), clean(ref), flagStr];
+        const name = param.name || '';
+        const value = latest.value !== undefined ? latest.value : '';
+        const unit = param.unit || '';
+        const range = param.range || '';
+        const status = latest.status || '';
+        
+        // Determine flag (H for high, L for low)
+        let flag = '';
+        if (status === 'high' || status === 'H') flag = 'H';
+        else if (status === 'low' || status === 'L') flag = 'L';
+        else if (status === 'critical') flag = '!';
+        
+        if (name && value !== '') {
+          labRows.push([clean(name), String(value), clean(unit), clean(range), flag]);
         }
-        return null;
-      }
+      });
       
-      // Process based on data structure
-      if (Array.isArray(labsData)) {
-        // Flat array of labs
-        labsData.forEach(lab => {
-          // Check if this is a panel with nested labs
-          if (lab.results && Array.isArray(lab.results)) {
-            // Panel header
-            if (lab.panelName || lab.name || lab.category) {
-              labRows.push([{ content: (lab.panelName || lab.name || lab.category).toUpperCase(), colSpan: 5, styles: { fontStyle: 'bold', fillColor: [230, 240, 250] } }]);
-            }
-            lab.results.forEach(l => {
-              const row = extractLab(l);
-              if (row) labRows.push(row);
-            });
-          } else {
-            const row = extractLab(lab);
-            if (row) labRows.push(row);
-          }
-        });
-      } else if (typeof labsData === 'object') {
-        // Object with panels as keys (e.g., { renalFunction: [...], electrolytes: [...] })
-        for (const [panelName, panelData] of Object.entries(labsData)) {
-          if (Array.isArray(panelData) && panelData.length > 0) {
-            // Add panel header
-            labRows.push([{ content: panelName.replace(/([A-Z])/g, ' $1').toUpperCase(), colSpan: 5, styles: { fontStyle: 'bold', fillColor: [230, 240, 250] } }]);
-            panelData.forEach(lab => {
-              const row = extractLab(lab);
-              if (row) labRows.push(row);
-            });
-          } else if (typeof panelData === 'object' && panelData !== null) {
-            // Single lab value
-            const row = extractLab(panelData);
-            if (row) labRows.push(row);
-          }
-        }
-      }
-      
-      console.log('Lab rows extracted:', labRows.length);
+      console.log('Lab rows:', labRows.length);
       
       if (labRows.length > 0) {
         if (y > pageHeight - 50) { doc.addPage(); y = margin; }
@@ -1192,18 +1159,22 @@ function generatePatientPDF(pt) {
           styles: { fontSize: 8, cellPadding: 2 },
           headStyles: { fillColor: primary, textColor: [255,255,255], fontStyle: 'bold' },
           columnStyles: { 
-            0: { fontStyle: 'bold', cellWidth: 40 },
-            1: { cellWidth: 22, halign: 'right' },
-            2: { cellWidth: 28 },
-            3: { cellWidth: 30 },
-            4: { cellWidth: 12, textColor: red }
+            0: { fontStyle: 'bold', cellWidth: 45 },
+            1: { cellWidth: 25, halign: 'right' },
+            2: { cellWidth: 30 },
+            3: { cellWidth: 35 },
+            4: { cellWidth: 15, halign: 'center' }
           },
           alternateRowStyles: { fillColor: [248, 250, 252] },
           didParseCell: function(data) {
-            if (data.section === 'body' && data.row.raw && Array.isArray(data.row.raw) && data.row.raw[4]) {
-              if (data.column.index === 1 || data.column.index === 4) {
-                data.cell.styles.textColor = red;
-                data.cell.styles.fontStyle = 'bold';
+            // Color abnormal flags and values red
+            if (data.section === 'body' && data.row.raw && Array.isArray(data.row.raw)) {
+              const flag = data.row.raw[4];
+              if (flag) {
+                if (data.column.index === 1 || data.column.index === 4) {
+                  data.cell.styles.textColor = red;
+                  data.cell.styles.fontStyle = 'bold';
+                }
               }
             }
           }
