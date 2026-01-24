@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#005eb8">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<!-- Cache Control -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>MedWard Pro</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -995,6 +999,59 @@ body {
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbzmWYRlBlhcXAvyB_l6F8oj3tbBm_YY2wwyR5hJNSxPs-QBP5OI4dZ8prQLindVcoKfHA/exec';
+const BUILD_ID = '2026-01-24.2';  // ★ MUST MATCH dashboard.html - bump on every deploy
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 🚨 BOOT MIGRATION - Purges stale cache on new builds
+// ═══════════════════════════════════════════════════════════════════════════
+(async function bootMigration() {
+  const prevBuild = localStorage.getItem('MW_BUILD_ID');
+  const url = new URL(location.href);
+  
+  // Handle ?fresh=1 - User-triggered cache purge
+  if (url.searchParams.get('fresh') === '1') {
+    console.log('🔄 Fresh start requested - purging all caches...');
+    await purgeServiceWorkerAndCaches();
+    localStorage.removeItem('MW_REV');
+    localStorage.removeItem('MW_BUILD_ID');
+    localStorage.removeItem('MW_DIRTY');
+    url.searchParams.delete('fresh');
+    location.replace(url.toString());
+    return;
+  }
+  
+  // Build mismatch - purge and reload
+  if (prevBuild && prevBuild !== BUILD_ID) {
+    console.log('🔄 Build mismatch:', prevBuild, '→', BUILD_ID);
+    await purgeServiceWorkerAndCaches();
+    localStorage.removeItem('MW_REV');
+    localStorage.removeItem('MW_DIRTY');
+    localStorage.setItem('MW_CACHE_STALE', '1');
+    localStorage.setItem('MW_BUILD_ID', BUILD_ID);
+    url.searchParams.set('v', BUILD_ID);
+    location.replace(url.toString());
+    return;
+  }
+  
+  if (!prevBuild) {
+    localStorage.setItem('MW_BUILD_ID', BUILD_ID);
+  }
+})();
+
+async function purgeServiceWorkerAndCaches() {
+  if ('serviceWorker' in navigator) {
+    try {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const r of regs) await r.unregister();
+    } catch (e) {}
+  }
+  if (window.caches?.keys) {
+    try {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    } catch (e) {}
+  }
+}
 
 // Auth state
 const AUTH = {
