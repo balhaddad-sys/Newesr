@@ -780,7 +780,7 @@ body {
 
 <h1 class="title">MedWard Pro</h1>
 <p class="subtitle">Ward Management & Decision Support</p>
-<p class="version">Lab Analysis • Drug Reference • Clinical Scoring • v17.0</p>
+<p class="version">Lab Analysis • Drug Reference • Clinical Scoring • v17.1</p>
 
 <!-- Disclaimer -->
 <div class="disclaimer">
@@ -1137,6 +1137,13 @@ async function loadData() {
       // ✅ UNLOCK - we're in sync
       state.isHydrated = true;
       state.isReadOnly = false;
+      
+      // ═══════════════════════════════════════════════════════════════════
+      // WARM CACHE: Mark as verified so dashboard trusts local cache
+      // ═══════════════════════════════════════════════════════════════════
+      localStorage.setItem('MW_CLOUD_VERIFIED', Date.now().toString());
+      console.log('✅ Cache verified - dashboard will use local cache');
+      
       renderUnits();
       hideLoading();
       return;
@@ -1161,6 +1168,28 @@ async function loadData() {
       state.isReadOnly = false;
       state.lastServerTimestamp = data.updatedAt || new Date().toISOString();
       console.log('✅ Data loaded, rev:', state.rev, 'isReadOnly:', state.isReadOnly);
+      
+      // ═══════════════════════════════════════════════════════════════════
+      // WARM CACHE: Write verified cloud data to localStorage
+      // Dashboard will read this and skip redundant cloud fetch
+      // ═══════════════════════════════════════════════════════════════════
+      const cachePayload = JSON.stringify({
+        units: state.units,
+        settings: state.settings,
+        patients: state.patients,
+        unitRequests: state.unitRequests,
+        trash: state.trash,
+        rev: state.rev,
+        lastUpdated: new Date().toISOString(),
+        _cloudVerified: true
+      });
+      
+      localStorage.setItem('medward_pro_v12', cachePayload);
+      localStorage.setItem('MEDWARD_CACHE', cachePayload);
+      localStorage.setItem('MW_CLOUD_VERIFIED', Date.now().toString());
+      
+      console.log('✅ Cache warmed:', state.patients.length, 'patients,', state.units.length, 'units');
+      console.log('   Dashboard will use this verified cache instantly');
     }
     
     renderUnits();
