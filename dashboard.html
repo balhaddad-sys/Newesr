@@ -11041,7 +11041,7 @@ RESPOND ONLY WITH VALID JSON. No markdown, no explanation.`;
 async function handleLabUpload(files) {
   // Guard: Check API URL
   if (!state.settings.apiUrl || state.settings.apiUrl === 'YOUR_API_URL_HERE') {
-    alert('DEBUG: API URL not configured!\n\nstate.settings.apiUrl = ' + state.settings.apiUrl + '\nCONFIG.API_URL = ' + CONFIG.API_URL);
+    console.error('API URL not configured:', state.settings.apiUrl);
     toast('API not configured. Go to Admin → Settings', true);
     return;
   }
@@ -14315,10 +14315,10 @@ async function cloudFirstBoot() {
         state.patients = data.patients;
       }
       if (data.settings) {
-        const localApiUrl = state.settings.apiUrl;
         state.settings = { ...state.settings, ...data.settings };
-        state.settings.apiUrl = localApiUrl;
       }
+      // Always ensure API URL is set from CONFIG
+      state.settings.apiUrl = CONFIG.API_URL;
       if (data.unitRequests) {
         state.unitRequests = data.unitRequests;
       }
