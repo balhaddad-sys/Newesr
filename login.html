@@ -402,7 +402,7 @@ body.dark-theme .message.success {
   </div>
 
   <div class="login-footer">
-    v16.1 • Multi-User Edition
+    v17.1 • Cloud-First Edition
   </div>
 </div>
 
@@ -473,6 +473,9 @@ async function handleLogin(e) {
   document.getElementById('loginBtn').disabled = true;
   
   try {
+    // ═══════════════════════════════════════════════════════════════════
+    // STEP 1: Authenticate with server
+    // ═══════════════════════════════════════════════════════════════════
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -495,11 +498,78 @@ async function handleLogin(e) {
         localStorage.setItem('MW_PASS', password);
       }
       
-      showMessage('Login successful! Redirecting...', false);
+      // ═══════════════════════════════════════════════════════════════════
+      // STEP 2: Fetch user's data from cloud and warm cache
+      // This is the key to cloud-first boot - cache is warmed HERE
+      // ═══════════════════════════════════════════════════════════════════
+      showMessage('Loading your data...', false);
+      
+      try {
+        const dataResponse = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'loadData',
+            username: username,
+            password: password,
+            clientRev: 0  // Force full load
+          })
+        });
+        
+        const dataResult = await dataResponse.json();
+        
+        if (dataResult.success && dataResult.data) {
+          // ═══════════════════════════════════════════════════════════════════
+          // STEP 3: Warm the local cache with verified cloud data
+          // Dashboard will read this instead of stale data
+          // ═══════════════════════════════════════════════════════════════════
+          const cachePayload = JSON.stringify({
+            units: dataResult.data.units || [],
+            settings: dataResult.data.settings || {},
+            patients: dataResult.data.patients || [],
+            unitRequests: dataResult.data.unitRequests || [],
+            trash: dataResult.data.trash || { patients: [], units: [] },
+            rev: dataResult.rev || 1,
+            lastUpdated: new Date().toISOString(),
+            _cloudVerified: true  // Mark as verified from cloud
+          });
+          
+          // Write to both storage keys
+          localStorage.setItem('medward_pro_v12', cachePayload);
+          localStorage.setItem('MEDWARD_CACHE', cachePayload);
+          localStorage.setItem('MW_REV', String(dataResult.rev || 1));
+          localStorage.setItem('MW_CLOUD_VERIFIED', Date.now().toString());
+          
+          console.log('✅ Cache warmed with cloud data:', 
+            dataResult.data.patients?.length || 0, 'patients');
+        } else {
+          console.log('📋 No existing data - new user');
+          // New user - create empty verified cache
+          const emptyCache = JSON.stringify({
+            units: [{ id: 'med-e', name: 'Medicine Unit E', icon: '🏥', desc: 'Internal Medicine', code: '1234', color: '#14b8a6' }],
+            settings: {},
+            patients: [],
+            unitRequests: [],
+            trash: { patients: [], units: [] },
+            rev: 1,
+            lastUpdated: new Date().toISOString(),
+            _cloudVerified: true
+          });
+          localStorage.setItem('medward_pro_v12', emptyCache);
+          localStorage.setItem('MEDWARD_CACHE', emptyCache);
+          localStorage.setItem('MW_REV', '1');
+          localStorage.setItem('MW_CLOUD_VERIFIED', Date.now().toString());
+        }
+      } catch (dataError) {
+        console.warn('⚠️ Could not pre-fetch data:', dataError);
+        // Continue anyway - dashboard will try cloud load
+      }
+      
+      showMessage('Welcome! Redirecting...', false);
       
       setTimeout(() => {
         window.location.href = 'index.html';
-      }, 500);
+      }, 300);
     } else {
       showMessage(result.error || 'Invalid username or password');
     }
