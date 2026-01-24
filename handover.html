@@ -373,17 +373,23 @@ body {
   cursor: pointer;
 }
 
-/* Patient Select Modal */
+/* Patient Select Modal - Hidden by default, only shows after QR scan */
 .modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.6);
-  display: none;
+  display: none !important;
   align-items: flex-end;
   z-index: 1000;
+  visibility: hidden;
+  opacity: 0;
 }
 
-.modal-overlay.active { display: flex; }
+.modal-overlay.active { 
+  display: flex !important; 
+  visibility: visible;
+  opacity: 1;
+}
 
 .modal-sheet {
   background: var(--bg-surface);
