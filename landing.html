@@ -5,52 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#005eb8">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<!-- Cache Control -->
+<!-- Cache Control - Always fetch fresh -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>MedWard Pro</title>
+<title>Loading | MedWard Pro</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
   --primary: #005eb8;
   --primary-dark: #003087;
-  --primary-light: #e6f0f9;
   --bg-app: #f8fafc;
   --bg-surface: #ffffff;
-  --bg-input: #f1f5f9;
-  --bg-elevated: #f9fafb;
   --text-main: #0f172a;
   --text-secondary: #475569;
   --text-muted: #94a3b8;
   --border: #e2e8f0;
   --success: #059669;
-  --success-bg: #d1fae5;
   --danger: #dc2626;
-  --danger-bg: #fee2e2;
-  --warning: #d97706;
-  --warning-bg: #fef3c7;
-  --warning-text: #92400e;
-  --radius: 16px;
-  --radius-sm: 10px;
 }
 
 body.dark-theme {
   --primary: #60a5fa;
   --primary-dark: #93c5fd;
-  --primary-light: #1e3a5f;
   --bg-app: #0f172a;
   --bg-surface: #1e293b;
-  --bg-input: #334155;
-  --bg-elevated: #334155;
   --text-main: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-muted: #64748b;
   --border: #334155;
-  --success-bg: #064e3b;
-  --danger-bg: #7f1d1d;
-  --warning-bg: #78350f;
-  --warning-text: #fcd34d;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -63,97 +46,35 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24px 16px 100px;
+  justify-content: center;
+  padding: 20px;
   transition: background-color 0.3s, color 0.3s;
 }
 
-/* Header */
-.header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  padding: 12px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 100;
-  background: var(--bg-app);
+.loading-container {
+  text-align: center;
+  max-width: 320px;
 }
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.user-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 100px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.user-avatar {
-  width: 28px;
-  height: 28px;
-  background: var(--primary);
-  color: #fff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: 700;
-}
-
-.header-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.icon-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--bg-surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 1.2rem;
-  transition: all 0.2s;
-}
-
-.icon-btn:hover {
-  border-color: var(--primary);
-}
-
-.icon-btn.danger:hover {
-  border-color: var(--danger);
-  color: var(--danger);
-}
-
-/* Logo */
-.logo {
+.loading-logo {
   width: 80px;
   height: 80px;
   background: var(--primary);
-  border-radius: 22px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 60px auto 20px;
+  margin: 0 auto 24px;
   box-shadow: 0 8px 24px rgba(0, 94, 184, 0.25);
+  animation: pulse 2s ease-in-out infinite;
 }
 
-.logo svg {
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+}
+
+.loading-logo svg {
   width: 44px;
   height: 44px;
   stroke: #fff;
@@ -161,578 +82,85 @@ body {
   fill: none;
 }
 
-.title {
-  font-size: 1.75rem;
-  font-weight: 800;
-  text-align: center;
-  margin-bottom: 6px;
-}
-
-.subtitle {
-  color: var(--text-secondary);
-  text-align: center;
-  font-size: 0.95rem;
-  margin-bottom: 6px;
-}
-
-.version {
-  color: var(--primary);
-  text-align: center;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-bottom: 20px;
-}
-
-/* Disclaimer */
-.disclaimer {
-  background: var(--warning-bg);
-  border: 1px solid var(--warning);
-  border-radius: var(--radius-sm);
-  padding: 12px 16px;
-  max-width: 400px;
-  margin-bottom: 24px;
-}
-
-.disclaimer-title {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--warning-text);
-  margin-bottom: 4px;
-}
-
-.disclaimer-text {
-  font-size: 0.75rem;
-  color: var(--warning-text);
-  line-height: 1.4;
-}
-
-/* Quick Links */
-.quick-links {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  max-width: 400px;
-  margin-bottom: 32px;
-}
-
-.quick-link {
-  display: flex;
-  align-items: center;
-  padding: 14px 18px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  text-decoration: none;
-  color: var(--text-main);
-  transition: all 0.2s;
-}
-
-.quick-link:hover {
-  border-color: var(--primary);
-  transform: translateX(4px);
-}
-
-.quick-link.purple { background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--border); }
-.quick-link.teal { background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--border); }
-.quick-link.blue { background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--border); }
-.quick-link.purple:hover, .quick-link.teal:hover, .quick-link.blue:hover { border-color: var(--primary); background: var(--bg-elevated); }
-
-.quick-link-icon {
-  font-size: 1.3rem;
-  margin-right: 12px;
-}
-
-.quick-link-text {
-  flex: 1;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.quick-link-arrow {
-  font-size: 1.1rem;
-  opacity: 0.7;
-}
-
-/* Units Section */
-.section-title {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 16px;
-  width: 100%;
-  max-width: 400px;
-}
-
-.units-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 12px;
-  width: 100%;
-  max-width: 400px;
-  margin-bottom: 24px;
-}
-
-.unit-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px 16px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-}
-
-.unit-card:hover {
-  border-color: var(--primary);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.unit-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--unit-color, var(--primary));
-  border-radius: var(--radius) var(--radius) 0 0;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.unit-card:hover::before {
-  opacity: 1;
-}
-
-.unit-icon {
-  font-size: 2rem;
-  margin-bottom: 8px;
-}
-
-.unit-name {
-  font-weight: 700;
-  font-size: 0.95rem;
-  margin-bottom: 4px;
-}
-
-.unit-desc {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.unit-actions {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  display: flex;
-  gap: 4px;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.unit-card:hover .unit-actions {
-  opacity: 1;
-}
-
-.unit-action-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  border: none;
-  background: var(--bg-elevated);
-  cursor: pointer;
-  font-size: 0.8rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-  max-width: 400px;
-}
-
-.action-btn {
-  flex: 1;
-  padding: 14px 16px;
-  border: 1px dashed var(--border);
-  border-radius: var(--radius);
-  background: transparent;
-  color: var(--text-secondary);
-  font-family: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.2s;
-}
-
-.action-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: var(--primary-light);
-}
-
-/* Unit Access Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-}
-
-.modal-overlay.active {
-  display: flex;
-}
-
-.modal {
-  background: var(--bg-surface);
-  border-radius: var(--radius);
-  width: 100%;
-  max-width: 360px;
-  overflow: hidden;
-  animation: modalIn 0.2s ease;
-}
-
-@keyframes modalIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.modal-header {
-  padding: 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.modal-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-
-.modal-close {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  background: var(--bg-elevated);
-  cursor: pointer;
-  font-size: 1.1rem;
-}
-
-.modal-body {
-  padding: 20px;
-}
-
-.modal-unit-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  background: var(--bg-elevated);
-  border-radius: var(--radius-sm);
-  margin-bottom: 20px;
-}
-
-.modal-unit-icon {
-  font-size: 2rem;
-}
-
-.modal-unit-name {
-  font-weight: 700;
-}
-
-.modal-unit-desc {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.form-group {
-  margin-bottom: 16px;
-}
-
-.form-label {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-bottom: 8px;
-}
-
-.form-input {
-  width: 100%;
-  padding: 14px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg-input);
-  color: var(--text-main);
-  font-family: inherit;
-  font-size: 1.1rem;
-  text-align: center;
-  letter-spacing: 8px;
-  font-weight: 700;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: var(--primary);
-}
-
-.form-hint {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  text-align: center;
-  margin-top: 8px;
-}
-
-.modal-footer {
-  padding: 16px 20px;
-  border-top: 1px solid var(--border);
-}
-
-.btn {
-  width: 100%;
-  padding: 14px;
-  border-radius: var(--radius-sm);
-  font-family: inherit;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-primary {
-  background: var(--primary);
-  color: #fff;
-  border: none;
-}
-
-.btn-primary:hover {
-  background: var(--primary-dark);
-}
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Add/Edit Unit Modal */
-.emoji-picker {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.emoji-option {
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg-elevated);
-  font-size: 1.3rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.emoji-option:hover,
-.emoji-option.selected {
-  border-color: var(--primary);
-  background: var(--primary-light);
-}
-
-.color-picker {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.color-option {
-  width: 36px;
-  height: 36px;
-  border: 2px solid transparent;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.color-option:hover {
-  transform: scale(1.1);
-}
-
-.color-option.selected {
-  border-color: var(--text-main);
-  box-shadow: 0 0 0 3px var(--bg-surface), 0 0 0 5px currentColor;
-}
-
-/* Trash Modal */
-.trash-list {
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.trash-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: var(--bg-elevated);
-  border-radius: var(--radius-sm);
-  margin-bottom: 8px;
-}
-
-.trash-item-icon {
+.loading-title {
   font-size: 1.5rem;
-}
-
-.trash-item-info {
-  flex: 1;
-}
-
-.trash-item-name {
-  font-weight: 600;
-}
-
-.trash-item-meta {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.trash-item-action {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 6px;
-  background: var(--success);
-  color: #fff;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.trash-empty {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--text-muted);
-}
-
-.trash-empty-icon {
-  font-size: 2.5rem;
+  font-weight: 700;
   margin-bottom: 8px;
 }
 
-/* Toast */
-.toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%) translateY(100px);
-  background: var(--text-main);
-  color: var(--bg-surface);
-  padding: 12px 24px;
-  border-radius: 100px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  opacity: 0;
-  transition: all 0.3s;
-  z-index: 2000;
+.loading-status {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 24px;
 }
 
-.toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-/* Loading */
-.loading-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: none;
+.loading-spinner-container {
+  display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 3000;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
-.loading-overlay.active {
-  display: flex;
-}
-
-.loading-box {
-  background: var(--bg-surface);
-  padding: 32px;
-  border-radius: var(--radius);
-  text-align: center;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
+.loading-spinner {
+  width: 24px;
+  height: 24px;
   border: 3px solid var(--border);
   border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-  margin: 0 auto 12px;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.loading-text {
-  color: var(--text-secondary);
-  font-weight: 500;
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-/* Sync Status */
-.sync-status {
-  position: fixed;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 100px;
-  font-size: 0.75rem;
+.loading-progress {
+  font-size: 0.85rem;
   color: var(--text-muted);
-  z-index: 50;
 }
 
-.sync-dot {
-  width: 8px;
-  height: 8px;
-  background: var(--success);
-  border-radius: 50%;
+.loading-error {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 20px;
+  display: none;
 }
 
-.sync-status.syncing .sync-dot {
-  background: var(--warning);
-  animation: pulse 1s infinite;
+body.dark-theme .loading-error {
+  background: #7f1d1d;
+  border-color: #991b1b;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+.loading-error.show {
+  display: block;
+}
+
+.retry-btn {
+  margin-top: 12px;
+  padding: 10px 20px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.retry-btn:hover {
+  background: var(--primary-dark);
+}
+
+.loading-footer {
+  position: fixed;
+  bottom: 20px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
 }
 </style>
 </head>
@@ -747,888 +175,187 @@ body {
 })();
 </script>
 
-<!-- Header -->
-<header class="header">
-  <div class="header-left">
-    <div class="user-badge">
-      <div class="user-avatar" id="userAvatar">DR</div>
-      <span id="userName">Doctor</span>
-    </div>
+<div class="loading-container">
+  <div class="loading-logo">
+    <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
   </div>
-  <div class="header-actions">
-    <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
-    <button class="icon-btn danger" onclick="doLogout()" title="Logout">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-        <polyline points="16 17 21 12 16 7"/>
-        <line x1="21" y1="12" x2="9" y2="12"/>
-      </svg>
-    </button>
+  
+  <h1 class="loading-title">MedWard Pro</h1>
+  <p class="loading-status" id="loadingStatus">Connecting to cloud...</p>
+  
+  <div class="loading-spinner-container">
+    <div class="loading-spinner" id="spinner"></div>
+    <span class="loading-progress" id="loadingProgress">Please wait</span>
   </div>
-</header>
-
-<!-- Sync Status -->
-<div class="sync-status" id="syncStatus">
-  <div class="sync-dot"></div>
-  <span id="syncText">Synced</span>
-</div>
-
-<!-- Logo -->
-<div class="logo">
-  <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-</div>
-
-<h1 class="title">MedWard Pro</h1>
-<p class="subtitle">Ward Management & Decision Support</p>
-<p class="version">Lab Analysis • Drug Reference • Clinical Scoring • v17.1</p>
-
-<!-- Disclaimer -->
-<div class="disclaimer">
-  <div class="disclaimer-title">⚕️ Clinical Decision Support Only</div>
-  <div class="disclaimer-text">Verify all outputs with local protocols. Not a substitute for clinical judgment. If unstable: activate emergency pathway.</div>
-</div>
-
-<!-- Quick Links -->
-<div class="quick-links">
-  <a href="oncall_assistant.html" class="quick-link purple">
-    <span class="quick-link-icon">⚡</span>
-    <span class="quick-link-text">OnCall Assistant</span>
-    <span class="quick-link-arrow">→</span>
-  </a>
-  <a href="ai_assistant.html" class="quick-link teal">
-    <span class="quick-link-icon">🤖</span>
-    <span class="quick-link-text">AI Assistant</span>
-    <span class="quick-link-arrow">→</span>
-  </a>
-  <a href="antibiotic_guide.html" class="quick-link blue">
-    <span class="quick-link-icon">🛡️</span>
-    <span class="quick-link-text">Antibiotic Guide</span>
-    <span class="quick-link-arrow">→</span>
-  </a>
-</div>
-
-<!-- Units Section -->
-<div class="section-title">Your Units</div>
-<div class="units-grid" id="unitsGrid">
-  <!-- Units will be rendered here -->
-</div>
-
-<!-- Action Buttons -->
-<div class="action-buttons">
-  <button class="action-btn" onclick="openAddUnitModal()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 5v14M5 12h14"/></svg>
-    Add Unit
-  </button>
-  <button class="action-btn" onclick="openSettingsModal()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-    Settings
-  </button>
-</div>
-
-<!-- Unit Access Modal -->
-<div class="modal-overlay" id="accessModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Enter Unit</div>
-      <button class="modal-close" onclick="closeModal('accessModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-unit-info">
-        <div class="modal-unit-icon" id="accessUnitIcon" style="display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40" style="color:var(--primary)"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg></div>
-        <div>
-          <div class="modal-unit-name" id="accessUnitName">Unit Name</div>
-          <div class="modal-unit-desc" id="accessUnitDesc">Description</div>
-        </div>
-      </div>
-      <p style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin-top:8px">Tap Enter to access this unit</p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('accessModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="enterUnit()" id="accessBtn">Enter Unit</button>
-    </div>
+  
+  <div class="loading-error" id="errorBox">
+    <div id="errorMessage">Failed to load data</div>
+    <button class="retry-btn" onclick="loadCloudData()">Try Again</button>
   </div>
 </div>
 
-<!-- Add/Edit Unit Modal -->
-<div class="modal-overlay" id="unitModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="unitModalTitle">Add Unit</div>
-      <button class="modal-close" onclick="closeModal('unitModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">Unit Name</label>
-        <input type="text" class="form-input" id="unitName" placeholder="e.g., Cardiology" style="text-align:left;letter-spacing:normal;">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Description (optional)</label>
-        <input type="text" class="form-input" id="unitDesc" placeholder="e.g., Ward 14" style="text-align:left;letter-spacing:normal;">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Color</label>
-        <div class="color-picker" id="colorPicker">
-          <button type="button" class="color-option selected" data-color="#005eb8" style="background:#005eb8"></button>
-          <button type="button" class="color-option" data-color="#059669" style="background:#059669"></button>
-          <button type="button" class="color-option" data-color="#7c3aed" style="background:#7c3aed"></button>
-          <button type="button" class="color-option" data-color="#dc2626" style="background:#dc2626"></button>
-          <button type="button" class="color-option" data-color="#d97706" style="background:#d97706"></button>
-          <button type="button" class="color-option" data-color="#0891b2" style="background:#0891b2"></button>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-primary" onclick="saveUnit()">Save Unit</button>
-    </div>
-  </div>
-</div>
-
-<!-- Settings Modal (Contains Trash & Preferences) -->
-<div class="modal-overlay" id="settingsModal">
-  <div class="modal" style="max-width:450px">
-    <div class="modal-header">
-      <div class="modal-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20" style="margin-right:8px"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-        Settings
-      </div>
-      <button class="modal-close" onclick="closeModal('settingsModal')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="modal-body" style="padding:0">
-      <!-- Data Management Section -->
-      <div style="padding:16px 20px;border-bottom:1px solid var(--border)">
-        <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px">Data & Storage</div>
-        
-        <!-- Recycle Bin -->
-        <div class="settings-row" onclick="toggleTrashView()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--bg-input);border-radius:12px;margin-bottom:10px">
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:40px;height:40px;background:var(--bg-surface);border-radius:10px;display:flex;align-items:center;justify-content:center">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-            </div>
-            <div>
-              <div style="font-weight:600;color:var(--text-main)">Recycle Bin</div>
-              <div style="font-size:0.75rem;color:var(--text-muted)">Recover deleted units</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;color:var(--text-secondary)">
-            <span id="trashCountBadge" style="font-size:0.75rem;background:var(--bg-surface);padding:4px 10px;border-radius:20px">0 items</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-        </div>
-        
-        <!-- Force Sync -->
-        <div class="settings-row" onclick="forceCloudSync()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--bg-input);border-radius:12px">
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:40px;height:40px;background:var(--bg-surface);border-radius:10px;display:flex;align-items:center;justify-content:center">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-            </div>
-            <div>
-              <div style="font-weight:600;color:var(--text-main)">Force Cloud Sync</div>
-              <div style="font-size:0.75rem;color:var(--text-muted)">Ensure all data is saved</div>
-            </div>
-          </div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="color:var(--text-secondary)"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
-      </div>
-      
-      <!-- Trash View (hidden by default) -->
-      <div id="trashViewSection" style="display:none;padding:16px 20px;border-bottom:1px solid var(--border)">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <button onclick="toggleTrashView()" style="background:none;border:none;color:var(--primary);font-size:0.85rem;cursor:pointer;display:flex;align-items:center;gap:4px">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
-            Back
-          </button>
-          <span style="font-weight:600;color:var(--text-main)">Recycle Bin</span>
-          <div style="width:50px"></div>
-        </div>
-        <div class="trash-list" id="trashList">
-          <div class="trash-empty">
-            <div class="trash-empty-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-            </div>
-            <div>Trash is empty</div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- App Info -->
-      <div style="padding:16px 20px;text-align:center">
-        <div style="font-size:0.75rem;color:var(--text-muted)">MedWard Pro v17.0</div>
-        <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px">Clinical Ward Management</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Trash Modal (Legacy - redirect to settings) -->
-<div class="modal-overlay" id="trashModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20" style="margin-right:8px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-        Trash
-      </div>
-      <button class="modal-close" onclick="closeModal('trashModal')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="modal-body">
-      <div class="trash-list" id="trashListLegacy">
-        <div class="trash-empty">
-          <div class="trash-empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-          </div>
-          <div>Trash is empty</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Toast -->
-<div class="toast" id="toast"></div>
-
-<!-- Loading -->
-<div class="loading-overlay" id="loading">
-  <div class="loading-box">
-    <div class="spinner"></div>
-    <div class="loading-text" id="loadingText">Loading...</div>
-  </div>
+<div class="loading-footer">
+  v17.1 • Cloud-First Edition
 </div>
 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbzmWYRlBlhcXAvyB_l6F8oj3tbBm_YY2wwyR5hJNSxPs-QBP5OI4dZ8prQLindVcoKfHA/exec';
-const BUILD_ID = '2026-01-24.2';  // ★ MUST MATCH dashboard.html - bump on every deploy
 
-// ═══════════════════════════════════════════════════════════════════════════
-// 🚨 BOOT MIGRATION - Purges stale cache on new builds
-// ═══════════════════════════════════════════════════════════════════════════
-(async function bootMigration() {
-  const prevBuild = localStorage.getItem('MW_BUILD_ID');
-  const url = new URL(location.href);
-  
-  // Handle ?fresh=1 - User-triggered cache purge
-  if (url.searchParams.get('fresh') === '1') {
-    console.log('🔄 Fresh start requested - purging all caches...');
-    await purgeServiceWorkerAndCaches();
-    localStorage.removeItem('MW_REV');
-    localStorage.removeItem('MW_BUILD_ID');
-    localStorage.removeItem('MW_DIRTY');
-    url.searchParams.delete('fresh');
-    location.replace(url.toString());
-    return;
-  }
-  
-  // Build mismatch - purge and reload
-  if (prevBuild && prevBuild !== BUILD_ID) {
-    console.log('🔄 Build mismatch:', prevBuild, '→', BUILD_ID);
-    await purgeServiceWorkerAndCaches();
-    localStorage.removeItem('MW_REV');
-    localStorage.removeItem('MW_DIRTY');
-    localStorage.setItem('MW_CACHE_STALE', '1');
-    localStorage.setItem('MW_BUILD_ID', BUILD_ID);
-    url.searchParams.set('v', BUILD_ID);
-    location.replace(url.toString());
-    return;
-  }
-  
-  if (!prevBuild) {
-    localStorage.setItem('MW_BUILD_ID', BUILD_ID);
-  }
-})();
-
-async function purgeServiceWorkerAndCaches() {
-  if ('serviceWorker' in navigator) {
-    try {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      for (const r of regs) await r.unregister();
-    } catch (e) {}
-  }
-  if (window.caches?.keys) {
-    try {
-      const keys = await caches.keys();
-      await Promise.all(keys.map(k => caches.delete(k)));
-    } catch (e) {}
-  }
-}
-
-// Auth state
+// Get credentials
 const AUTH = {
   user: sessionStorage.getItem('MW_USER') || localStorage.getItem('MW_USER'),
   pass: sessionStorage.getItem('MW_PASS') || localStorage.getItem('MW_PASS')
 };
 
-// App state with revision tracking
-let state = {
-  rev: parseInt(localStorage.getItem('MW_REV') || '0', 10),
-  units: [],
-  patients: [],
-  trash: { units: [], patients: [] },
-  settings: {},
-  unitRequests: [],
-  // ═══════════════════════════════════════════════════════════════════
-  // HYDRATION GATE - Prevents zombie cache from overwriting cloud
-  // ═══════════════════════════════════════════════════════════════════
-  isHydrated: false,
-  isReadOnly: true,  // Start in read-only until cloud loads
-  lastServerTimestamp: null
-};
-
-// Patch queue for delta sync
-let patchQueue = [];
-
-let editingUnitId = null;
-let selectedUnitId = null;
-let selectedIcon = '🏥';
-
-// Check auth on load
-(function() {
-  if (!AUTH.user || !AUTH.pass) {
-    window.location.href = 'login.html';
-    return;
-  }
-})();
-
-// Initialize
-document.addEventListener('DOMContentLoaded', async () => {
-  updateThemeIcon();
-  updateUserDisplay();
-  
-  // Load data from cloud
-  await loadData();
-  
-  // Setup emoji picker
-  document.querySelectorAll('.emoji-option').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.emoji-option').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      selectedIcon = btn.dataset.emoji;
-    });
-  });
-  
-  // Auto-verify on code input
-  document.getElementById('accessCode').addEventListener('input', function() {
-    if (this.value.length === 4) {
-      verifyAccess();
-    }
-  });
-  
-  // Select first emoji by default
-  document.querySelector('.emoji-option').classList.add('selected');
-});
-
-function updateUserDisplay() {
-  const avatar = AUTH.user ? AUTH.user.substring(0, 2).toUpperCase() : 'DR';
-  document.getElementById('userAvatar').textContent = avatar;
-  document.getElementById('userName').textContent = AUTH.user || 'Doctor';
-}
-
-async function loadData() {
-  showLoading('Loading your data...');
-  
-  try {
-    // Send clientRev for conditional load (server returns "unchanged" if we have latest)
-    const res = await callAPI('loadData', { clientRev: state.rev });
-    
-    // Handle conditional load - already in sync
-    if (res.success && res.unchanged) {
-      console.log('⚡ Already in sync (rev:', res.rev, ')');
-      // ✅ UNLOCK - we're in sync
-      state.isHydrated = true;
-      state.isReadOnly = false;
-      
-      // ═══════════════════════════════════════════════════════════════════
-      // WARM CACHE: Mark as verified so dashboard trusts local cache
-      // ═══════════════════════════════════════════════════════════════════
-      localStorage.setItem('MW_CLOUD_VERIFIED', Date.now().toString());
-      console.log('✅ Cache verified - dashboard will use local cache');
-      
-      renderUnits();
-      hideLoading();
-      return;
-    }
-    
-    if (res.success && res.data) {
-      const data = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
-      state.units = data.units || [];
-      state.patients = data.patients || [];
-      state.trash = data.trash || { units: [], patients: [] };
-      state.settings = data.settings || {};
-      state.unitRequests = data.unitRequests || [];
-      
-      // Update revision tracking
-      state.rev = data.rev || res.rev || state.rev;
-      localStorage.setItem('MW_REV', String(state.rev));
-      
-      // ═══════════════════════════════════════════════════════════════════
-      // ✅ UNLOCK - Successfully loaded from cloud
-      // ═══════════════════════════════════════════════════════════════════
-      state.isHydrated = true;
-      state.isReadOnly = false;
-      state.lastServerTimestamp = data.updatedAt || new Date().toISOString();
-      console.log('✅ Data loaded, rev:', state.rev, 'isReadOnly:', state.isReadOnly);
-      
-      // ═══════════════════════════════════════════════════════════════════
-      // WARM CACHE: Write verified cloud data to localStorage
-      // Dashboard will read this and skip redundant cloud fetch
-      // ═══════════════════════════════════════════════════════════════════
-      const cachePayload = JSON.stringify({
-        units: state.units,
-        settings: state.settings,
-        patients: state.patients,
-        unitRequests: state.unitRequests,
-        trash: state.trash,
-        rev: state.rev,
-        lastUpdated: new Date().toISOString(),
-        _cloudVerified: true
-      });
-      
-      localStorage.setItem('medward_pro_v12', cachePayload);
-      localStorage.setItem('MEDWARD_CACHE', cachePayload);
-      localStorage.setItem('MW_CLOUD_VERIFIED', Date.now().toString());
-      
-      console.log('✅ Cache warmed:', state.patients.length, 'patients,', state.units.length, 'units');
-      console.log('   Dashboard will use this verified cache instantly');
-    }
-    
-    renderUnits();
-    hideLoading();
-  } catch (e) {
-    hideLoading();
-    toast('Failed to load data');
-    console.error(e);
-    // Stay in read-only mode on failure
-    console.warn('⚠️ Load failed - staying in read-only mode');
-  }
-}
-
-// Enqueue a patch for delta sync
-function enqueuePatch(operation, payload) {
-  patchQueue.push({ operation, payload });
-}
-
-async function saveData() {
-  // ═══════════════════════════════════════════════════════════════════
-  // CRITICAL GUARD: Block saves until cloud load completes
-  // ═══════════════════════════════════════════════════════════════════
-  if (state.isReadOnly) {
-    console.warn('⛔ saveData blocked: App is in read-only mode (not yet hydrated)');
-    toast('Cannot save - still loading from cloud');
-    return;
-  }
-  
-  try {
-    // ═══════════════════════════════════════════════════════════════════
-    // SAFEGUARD: Don't overwrite cloud with empty units if we have none locally
-    // but cloud might have data (prevents accidental data loss on code updates)
-    // ═══════════════════════════════════════════════════════════════════
-    const hasLocalData = state.units.length > 0 || state.patients.length > 0;
-    
-    let res;
-    
-    // Use delta sync if we have patches queued
-    if (patchQueue.length > 0) {
-      console.log('⚡ Delta sync:', patchQueue.length, 'patches');
-      res = await callAPI('patches', { patches: patchQueue });
-      
-      if (res.success) {
-        patchQueue = []; // Clear queue on success
-        state.rev = res.rev || state.rev;
-        state.lastServerTimestamp = res.timestamp || new Date().toISOString();
-        localStorage.setItem('MW_REV', String(state.rev));
-      } else {
-        // Fall back to snapshot only if we have data
-        console.warn('⚠️ Patch failed, using snapshot');
-        if (!hasLocalData) {
-          console.warn('⚠️ SAFEGUARD: Refusing to save empty state to cloud');
-          updateSyncStatus('error');
-          return;
-        }
-        res = await callAPI('saveData', {
-          payload: {
-            units: state.units,
-            patients: state.patients,
-            trash: state.trash,
-            settings: state.settings,
-            unitRequests: state.unitRequests,
-            updatedAt: state.lastServerTimestamp  // Timestamp for conflict detection
-          }
-        });
-      }
-    } else if (hasLocalData) {
-      // Full snapshot save - only if we have data
-      res = await callAPI('saveData', {
-        payload: {
-          units: state.units,
-          patients: state.patients,
-          trash: state.trash,
-          settings: state.settings,
-          unitRequests: state.unitRequests,
-          updatedAt: state.lastServerTimestamp  // Timestamp for conflict detection
-        }
-      });
-    } else {
-      console.log('ℹ️ No local data to save, skipping sync');
-      updateSyncStatus('synced');
-      return;
-    }
-    
-    if (res.success) {
-      if (res.rev) {
-        state.rev = res.rev;
-        localStorage.setItem('MW_REV', String(state.rev));
-        patchQueue = []; // Clear queue after successful snapshot
-      }
-      updateSyncStatus('synced');
-    } else {
-      throw new Error(res.error || 'Save failed');
-    }
-  } catch (e) {
-    updateSyncStatus('error');
-    console.error(e);
-  }
-}
-
-function renderUnits() {
-  const grid = document.getElementById('unitsGrid');
-  
-  // SVG icon for hospital/unit
-  const unitSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32" style="color:var(--primary)"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>`;
-  
-  if (state.units.length === 0) {
-    grid.innerHTML = `
-      <div style="grid-column: 1/-1; text-align: center; padding: 40px 20px; color: var(--text-muted);">
-        <div style="margin-bottom: 8px;">${unitSvg}</div>
-        <div>No units yet. Add your first unit!</div>
-      </div>
-    `;
-    return;
-  }
-  
-  grid.innerHTML = state.units.map(u => `
-    <div class="unit-card" style="--unit-color: ${u.color || '#005eb8'}" onclick="openAccessModal('${u.id}')">
-      <div class="unit-actions">
-        <button class="unit-action-btn" onclick="event.stopPropagation(); editUnit('${u.id}')" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-        <button class="unit-action-btn" onclick="event.stopPropagation(); deleteUnit('${u.id}')" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-      </div>
-      <div class="unit-icon">${unitSvg}</div>
-      <div class="unit-name">${escapeHtml(u.name)}</div>
-      <div class="unit-desc">${escapeHtml(u.desc || '')}</div>
-    </div>
-  `).join('');
-}
-
-function openAccessModal(unitId) {
-  const unit = state.units.find(u => u.id === unitId);
-  if (!unit) return;
-  
-  // Direct access - no modal needed
-  sessionStorage.setItem('MW_UNIT', unitId);
-  sessionStorage.setItem('MW_UNIT_NAME', unit.name);
-  window.location.href = 'dashboard.html';
-}
-
-function openAddUnitModal() {
-  editingUnitId = null;
-  document.getElementById('unitModalTitle').textContent = 'Add Unit';
-  document.getElementById('unitName').value = '';
-  document.getElementById('unitDesc').value = '';
-  
-  // Reset color picker
-  document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
-  document.querySelector('.color-option[data-color="#005eb8"]')?.classList.add('selected');
-  
-  // Add click handlers to color options
-  document.querySelectorAll('.color-option').forEach(btn => {
-    btn.onclick = () => {
-      document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-    };
-  });
-  
-  openModal('unitModal');
-}
-
-function editUnit(unitId) {
-  const unit = state.units.find(u => u.id === unitId);
-  if (!unit) return;
-  
-  editingUnitId = unitId;
-  document.getElementById('unitModalTitle').textContent = 'Edit Unit';
-  document.getElementById('unitName').value = unit.name;
-  document.getElementById('unitDesc').value = unit.desc || '';
-  
-  // Set color picker
-  document.querySelectorAll('.color-option').forEach(b => {
-    b.classList.toggle('selected', b.dataset.color === unit.color);
-  });
-  
-  // Add click handlers
-  document.querySelectorAll('.color-option').forEach(btn => {
-    btn.onclick = () => {
-      document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-    };
-  });
-  
-  openModal('unitModal');
-}
-
-async function saveUnit() {
-  const name = document.getElementById('unitName').value.trim();
-  const desc = document.getElementById('unitDesc').value.trim();
-  const selectedColorEl = document.querySelector('.color-option.selected');
-  const color = selectedColorEl ? selectedColorEl.dataset.color : '#005eb8';
-  
-  if (!name) {
-    toast('Please enter a unit name');
-    return;
-  }
-  
-  if (editingUnitId) {
-    const idx = state.units.findIndex(u => u.id === editingUnitId);
-    if (idx !== -1) {
-      const updatedUnit = { ...state.units[idx], name, desc, color };
-      state.units[idx] = updatedUnit;
-      // DELTA SYNC: Queue update patch
-      enqueuePatch('updateUnit', updatedUnit);
-    }
-  } else {
-    const newUnit = {
-      id: 'u' + Date.now(),
-      name,
-      desc,
-      color
-    };
-    state.units.push(newUnit);
-    // DELTA SYNC: Queue add patch
-    enqueuePatch('addUnit', newUnit);
-  }
-  
-  closeModal('unitModal');
-  renderUnits();
-  
-  updateSyncStatus('syncing');
-  await saveData();
-  toast(editingUnitId ? 'Unit updated' : 'Unit added');
-}
-
-async function deleteUnit(unitId) {
-  if (!confirm('Move this unit to trash?')) return;
-  
-  const idx = state.units.findIndex(u => u.id === unitId);
-  if (idx === -1) return;
-  
-  const unit = state.units.splice(idx, 1)[0];
-  state.trash.units = state.trash.units || [];
-  state.trash.units.push({ ...unit, deletedAt: new Date().toISOString() });
-  
-  // DELTA SYNC: Queue delete patch
-  enqueuePatch('deleteUnit', { id: unitId });
-  
-  renderUnits();
-  updateSyncStatus('syncing');
-  await saveData();
-  toast('Unit moved to trash');
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// SETTINGS MODAL FUNCTIONS
-// ═══════════════════════════════════════════════════════════════════
-
-function openSettingsModal() {
-  updateTrashCount();
-  openModal('settingsModal');
-}
-
-function updateTrashCount() {
-  const items = [...(state.trash.units || []), ...(state.trash.patients || [])];
-  const badge = document.getElementById('trashCountBadge');
-  if (badge) {
-    badge.textContent = items.length === 0 ? 'Empty' : `${items.length} item${items.length > 1 ? 's' : ''}`;
-  }
-}
-
-function toggleTrashView() {
-  const section = document.getElementById('trashViewSection');
-  if (section) {
-    const isHidden = section.style.display === 'none';
-    section.style.display = isHidden ? 'block' : 'none';
-    if (isHidden) {
-      renderTrash();
-    }
-  }
-}
-
-async function forceCloudSync() {
-  toast('Syncing with cloud...');
-  try {
-    await saveData();
-    toast('Sync complete');
-  } catch (e) {
-    toast('Sync failed');
-  }
-}
-
-function openTrashModal() {
-  renderTrash();
-  openModal('trashModal');
-}
-
-function renderTrash() {
-  // Update both trash list locations
-  ['trashList', 'trashListLegacy'].forEach(listId => {
-    const list = document.getElementById(listId);
-    if (!list) return;
-    
-    const items = [...(state.trash.units || []), ...(state.trash.patients || [])];
-    
-    if (items.length === 0) {
-      list.innerHTML = `
-        <div class="trash-empty">
-          <div class="trash-empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-          </div>
-          <div>Trash is empty</div>
-        </div>
-      `;
-      return;
-    }
-    
-    list.innerHTML = items.map(item => {
-      const isUnit = item.code !== undefined;
-      return `
-        <div class="trash-item">
-          <div class="trash-item-icon">${isUnit ? (item.icon || '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg>') : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'}</div>
-          <div class="trash-item-info">
-            <div class="trash-item-name">${escapeHtml(item.name)}</div>
-            <div class="trash-item-meta">${isUnit ? 'Unit' : 'Patient'}</div>
-          </div>
-          <button class="trash-item-action" onclick="restoreItem('${item.id}', ${isUnit})">Restore</button>
-        </div>
-      `;
-    }).join('');
-  });
-  
-  updateTrashCount();
-}
-
-async function restoreItem(id, isUnit) {
-  if (isUnit) {
-    const idx = state.trash.units.findIndex(u => u.id === id);
-    if (idx !== -1) {
-      const unit = state.trash.units.splice(idx, 1)[0];
-      delete unit.deletedAt;
-      state.units.push(unit);
-    }
-  } else {
-    const idx = state.trash.patients.findIndex(p => p.id === id);
-    if (idx !== -1) {
-      const patient = state.trash.patients.splice(idx, 1)[0];
-      delete patient.deletedAt;
-      state.patients.push(patient);
-    }
-  }
-  
-  renderUnits();
-  renderTrash();
-  updateTrashCount();
-  updateSyncStatus('syncing');
-  await saveData();
-  toast('Item restored');
-}
-
-// Modal helpers
-function openModal(id) {
-  document.getElementById(id).classList.add('active');
-}
-
-function closeModal(id) {
-  document.getElementById(id).classList.remove('active');
-}
-
-// API helper
-async function callAPI(action, extra = {}) {
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action, username: AUTH.user, password: AUTH.pass, ...extra })
-  });
-  return res.json();
-}
-
-// UI helpers
-function showLoading(text = 'Loading...') {
-  document.getElementById('loadingText').textContent = text;
-  document.getElementById('loading').classList.add('active');
-}
-
-function hideLoading() {
-  document.getElementById('loading').classList.remove('active');
-}
-
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-function updateSyncStatus(status) {
-  const el = document.getElementById('syncStatus');
-  const text = document.getElementById('syncText');
-  
-  el.classList.remove('syncing');
-  
-  if (status === 'syncing') {
-    el.classList.add('syncing');
-    text.textContent = 'Syncing...';
-  } else if (status === 'synced') {
-    text.textContent = 'Synced';
-  } else {
-    text.textContent = 'Offline';
-  }
-}
-
-function toggleTheme() {
-  const isDark = document.body.classList.toggle('dark-theme');
-  localStorage.setItem('MEDWARD_THEME', isDark ? 'dark' : 'light');
-  updateThemeIcon();
-}
-
-function updateThemeIcon() {
-  document.getElementById('themeBtn').textContent = document.body.classList.contains('dark-theme') ? '☀️' : '🌙';
-}
-
-function doLogout() {
-  if (!confirm('Log out of MedWard Pro?')) return;
-  
-  localStorage.removeItem('MW_USER');
-  localStorage.removeItem('MW_PASS');
-  sessionStorage.removeItem('MW_USER');
-  sessionStorage.removeItem('MW_PASS');
-  sessionStorage.removeItem('MW_UNIT');
-  sessionStorage.removeItem('MW_UNIT_NAME');
-  
+// Check if logged in
+if (!AUTH.user || !AUTH.pass) {
   window.location.href = 'login.html';
 }
 
-function escapeHtml(text) {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+// Update status display
+function setStatus(status, progress) {
+  document.getElementById('loadingStatus').textContent = status;
+  document.getElementById('loadingProgress').textContent = progress;
 }
 
-// Close modals on overlay click
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) {
-      overlay.classList.remove('active');
+function showError(message) {
+  document.getElementById('spinner').style.display = 'none';
+  document.getElementById('errorMessage').textContent = message;
+  document.getElementById('errorBox').classList.add('show');
+}
+
+function hideError() {
+  document.getElementById('spinner').style.display = 'block';
+  document.getElementById('errorBox').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MAIN: Fetch cloud data and warm cache
+// ═══════════════════════════════════════════════════════════════════
+async function loadCloudData() {
+  hideError();
+  setStatus('Connecting to cloud...', 'Please wait');
+  
+  try {
+    // ═══════════════════════════════════════════════════════════════════
+    // STEP 1: Fetch data from cloud
+    // ═══════════════════════════════════════════════════════════════════
+    setStatus('Loading your data...', 'Fetching from server');
+    
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      cache: 'no-store',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'loadData',
+        username: AUTH.user,
+        password: AUTH.pass,
+        clientRev: 0  // Force full load - we want fresh data
+      })
+    });
+    
+    const text = await response.text();
+    
+    // Check for HTML response (wrong URL or error)
+    if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+      throw new Error('Server returned invalid response');
     }
-  });
-});
+    
+    const result = JSON.parse(text);
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to load data');
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════
+    // STEP 2: Process the data
+    // ═══════════════════════════════════════════════════════════════════
+    setStatus('Processing data...', 'Almost ready');
+    
+    let data = result.data;
+    if (typeof data === 'string') {
+      data = JSON.parse(data);
+    }
+    
+    // Handle empty/new user
+    if (!data) {
+      data = {
+        units: [{ id: 'med-e', name: 'Medicine Unit E', icon: '🏥', desc: 'Internal Medicine', code: '1234', color: '#14b8a6' }],
+        settings: {},
+        patients: [],
+        unitRequests: [],
+        trash: { patients: [], units: [] }
+      };
+    }
+    
+    const patientCount = data.patients?.length || 0;
+    const unitCount = data.units?.length || 0;
+    
+    console.log('☁️ Cloud data received:', patientCount, 'patients,', unitCount, 'units');
+    
+    // ═══════════════════════════════════════════════════════════════════
+    // STEP 3: Warm the local cache
+    // This is the critical step - overwrites any stale local data
+    // ═══════════════════════════════════════════════════════════════════
+    setStatus('Syncing local cache...', patientCount + ' patients, ' + unitCount + ' units');
+    
+    const cachePayload = JSON.stringify({
+      units: data.units || [],
+      settings: data.settings || {},
+      patients: data.patients || [],
+      unitRequests: data.unitRequests || [],
+      trash: data.trash || { patients: [], units: [] },
+      rev: result.rev || 1,
+      lastUpdated: new Date().toISOString(),
+      _cloudVerified: true  // Mark as verified from cloud
+    });
+    
+    // Write to ALL cache keys to ensure consistency
+    localStorage.setItem('medward_pro_v12', cachePayload);
+    localStorage.setItem('MEDWARD_CACHE', cachePayload);
+    localStorage.setItem('MW_REV', String(result.rev || 1));
+    
+    // Set verification timestamp - dashboard will check this
+    localStorage.setItem('MW_CLOUD_VERIFIED', Date.now().toString());
+    
+    console.log('✅ Cache warmed successfully');
+    console.log('   MW_CLOUD_VERIFIED:', Date.now());
+    console.log('   Dashboard will use this verified cache');
+    
+    // ═══════════════════════════════════════════════════════════════════
+    // STEP 4: Redirect to landing page
+    // ═══════════════════════════════════════════════════════════════════
+    setStatus('Ready!', 'Redirecting...');
+    
+    // Small delay so user sees "Ready!" message
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 300);
+    
+  } catch (error) {
+    console.error('❌ Cloud load failed:', error);
+    
+    // Check if we have local cache to fall back to
+    const localCache = localStorage.getItem('medward_pro_v12') || localStorage.getItem('MEDWARD_CACHE');
+    
+    if (localCache) {
+      // We have local data - let user continue in offline mode
+      setStatus('Offline mode', 'Using cached data');
+      
+      // Don't set MW_CLOUD_VERIFIED - dashboard will know it's not fresh
+      // But let user proceed after a moment
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 1500);
+    } else {
+      // No local cache - show error
+      showError('Could not connect to server. Please check your internet connection.');
+    }
+  }
+}
+
+// Start loading immediately
+loadCloudData();
 </script>
 </body>
 </html>
