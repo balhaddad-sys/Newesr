@@ -14287,10 +14287,49 @@ function initDebugPanel() {
 
 async function cloudFirstBoot() {
   boot.bootPhase = 'loading';
+  
+  console.log('🚀 Cloud-first boot starting...');
+  
+  // ═══════════════════════════════════════════════════════════════════
+  // CHECK FOR LOGIN-WARMED CACHE - Skip cloud fetch if login just warmed cache
+  // ═══════════════════════════════════════════════════════════════════
+  const cloudVerifiedAt = parseInt(localStorage.getItem('MW_CLOUD_VERIFIED') || '0', 10);
+  const cacheAge = Date.now() - cloudVerifiedAt;
+  const CACHE_FRESH_THRESHOLD_MS = 30000; // 30 seconds
+  
+  if (cloudVerifiedAt && cacheAge < CACHE_FRESH_THRESHOLD_MS) {
+    console.log('⚡ Login pre-warmed cache detected (', Math.round(cacheAge/1000), 's ago)');
+    console.log('   Skipping cloud fetch - using verified cache');
+    
+    // Trust the login-warmed cache
+    boot.allowLocalReads = true;
+    loadLocalCacheForDisplay();
+    loadLocal();
+    
+    // Mark boot complete immediately
+    boot.cloudLoaded = true;
+    boot.allowLocalWrites = true;
+    boot.bootPhase = 'ready';
+    syncState.isHydrated = true;
+    syncState.isReadOnly = false;
+    syncState.hasEverSyncedThisSession = true;
+    syncState.lastServerPatientCount = state.patients?.length || 0;
+    syncState.lastServerUnitCount = state.units?.length || 0;
+    
+    // Clear the verified flag (one-time use)
+    localStorage.removeItem('MW_CLOUD_VERIFIED');
+    
+    showSyncStatusBar('☁️ Cloud connected', 'green');
+    console.log('✅ Instant boot from login-warmed cache:', state.patients.length, 'patients');
+    return true;
+  }
+  
+  // ═══════════════════════════════════════════════════════════════════
+  // NORMAL CLOUD-FIRST BOOT - Fetch from cloud with timeout
+  // ═══════════════════════════════════════════════════════════════════
   showSyncStatusBar('☁️ Loading from cloud...', 'orange');
   showLoading('Loading your data...');
   
-  console.log('🚀 Cloud-first boot starting...');
   console.log('   Timeout:', CONFIG.CLOUD_BOOT_TIMEOUT_MS, 'ms');
   console.log('   Cache warm delay:', CONFIG.CACHE_WARM_DELAY_MS, 'ms');
   
