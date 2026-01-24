@@ -8,6 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <style>
 :root {
   --primary: #005eb8;
@@ -841,6 +842,17 @@ function exportPatientPDF(idx) {
 function generatePatientPDF(pt) {
   showLoad('Generating PDF...');
   
+  // Debug: Log patient data structure
+  console.log('=== PDF GENERATION DEBUG ===');
+  console.log('Patient object keys:', Object.keys(pt));
+  console.log('Patient data:', JSON.stringify(pt, (key, value) => {
+    // Truncate long strings for logging
+    if (typeof value === 'string' && value.length > 200) {
+      return value.substring(0, 200) + '... [truncated]';
+    }
+    return value;
+  }, 2));
+  
   try {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({
@@ -1342,11 +1354,383 @@ function generatePatientPDF(pt) {
     }
     
     // ─────────────────────────────────────────────────────────────
-    // CLINICAL SECTIONS - Standard fields
+    // HELPER: Parse unified summary to extract structured data
     // ─────────────────────────────────────────────────────────────
-    addSection('Diagnosis', pt.diagnosis || pt.primaryDiagnosis || pt.chiefComplaint || pt.dx);
-    addSection('Presenting Complaint', pt.presentingComplaint || pt.chiefComplaint || pt.pc || pt.cc);
+    function parseUnifiedSummary(summary) {
+      if (!summary || typeof summary !== 'string') return null;
+      
+      const parsed = {};
+      
+      // Extract patient demographics
+      const demoMatch = summary.match(/(\d+)[- ]?(?:year[- ]?old|yo|y\/o)\s+(\w+)?\s*(\w+)?/i);
+      if (demoMatch) {
+        parsed.age = demoMatch[1];
+        parsed.demographics = demoMatch[0];
+      }
+      
+      // Extract risk factors (common patterns)
+      const riskFactors = [];
+      const riskPatterns = [
+        /(?:heavy |chronic )?smoking(?:\s+history)?/gi,
+        /(?:type\s*[12]\s*)?diabetes(?:\s+mellitus)?/gi,
+        /hypertension|HTN/gi,
+        /(?:ischemic |coronary )?heart disease|IHD|CAD/gi,
+        /hyperlipidemia|dyslipidemia/gi,
+        /obesity/gi,
+        /CKD|chronic kidney disease/gi,
+        /COPD|chronic obstructive/gi,
+        /atrial fibrillation|AF|AFib/gi,
+        /previous (?:MI|stroke|CVA|TIA)/gi
+      ];
+      riskPatterns.forEach(pattern => {
+        const matches = summary.match(pattern);
+        if (matches) {
+          matches.forEach(m => {
+            const cleaned = m.trim();
+            if (!riskFactors.includes(cleaned)) riskFactors.push(cleaned);
+          });
+        }
+      });
+      if (riskFactors.length > 0) parsed.riskFactors = riskFactors;
+      
+      // Extract presenting complaint
+      const pcMatch = summary.match(/presenting\s+(?:with|complaint[s]?:?)\s+([^,.]+(?:[,.][^,.]+)?)/i);
+      if (pcMatch) parsed.presentingComplaint = pcMatch[1].trim();
+      
+      // Extract duration
+      const durationMatch = summary.match(/(?:over|for|x|×)\s*(\d+)\s*(days?|weeks?|months?|hours?)/i);
+      if (durationMatch) parsed.duration = durationMatch[0];
+      
+      // Extract EF/cardiac function
+      const efMatch = summary.match(/(?:EF|ejection fraction)[:\s]+(\d+[-–]\d+|\d+)%?/i);
+      if (efMatch) parsed.ejectionFraction = efMatch[1] + '%';
+      
+      // Extract key findings
+      const findings = [];
+      const findingPatterns = [
+        /pulmonary (?:edema|oedema)/gi,
+        /(?:bilateral |b\/l )?crepitations/gi,
+        /peripheral (?:edema|oedema)/gi,
+        /JVP (?:raised|elevated)/gi,
+        /AKI|acute kidney injury/gi,
+        /heart failure|HF/gi,
+        /decompensated/gi
+      ];
+      findingPatterns.forEach(pattern => {
+        const matches = summary.match(pattern);
+        if (matches) {
+          matches.forEach(m => {
+            const cleaned = m.trim();
+            if (!findings.includes(cleaned)) findings.push(cleaned);
+          });
+        }
+      });
+      if (findings.length > 0) parsed.keyFindings = findings;
+      
+      // Extract current vitals from summary
+      const vitalsFromSummary = {};
+      const spo2Match = summary.match(/SpO2[:\s]+(\d+)%?/i);
+      if (spo2Match) vitalsFromSummary.spo2 = spo2Match[1] + '%';
+      const bpMatch = summary.match(/BP[:\s]+(\d+\/\d+)/i);
+      if (bpMatch) vitalsFromSummary.bp = bpMatch[1];
+      const hrMatch = summary.match(/HR[:\s]+(\d+)/i);
+      if (hrMatch) vitalsFromSummary.hr = hrMatch[1];
+      const gcsMatch = summary.match(/GCS[:\s]+(\d+\/\d+)/i);
+      if (gcsMatch) vitalsFromSummary.gcs = gcsMatch[1];
+      if (Object.keys(vitalsFromSummary).length > 0) parsed.vitalsFromSummary = vitalsFromSummary;
+      
+      return parsed;
+    }
+    
+    // ─────────────────────────────────────────────────────────────
+    // HELPER: Add a table for vitals
+    // ─────────────────────────────────────────────────────────────
+    function addVitalsTable(vitals) {
+      if (!vitals || typeof vitals !== 'object') return;
+      
+      const rows = [];
+      const v = vitals;
+      
+      if (v.hr || v.heartRate || v.pulse) rows.push(['Heart Rate', (v.hr || v.heartRate || v.pulse) + ' bpm']);
+      if (v.bp || v.bloodPressure) rows.push(['Blood Pressure', v.bp || v.bloodPressure]);
+      if (v.temp || v.temperature) rows.push(['Temperature', (v.temp || v.temperature) + '°C']);
+      if (v.rr || v.respiratoryRate) rows.push(['Respiratory Rate', (v.rr || v.respiratoryRate) + '/min']);
+      if (v.spo2 || v.o2sat || v.saturation) rows.push(['SpO2', (v.spo2 || v.o2sat || v.saturation) + '%']);
+      if (v.weight) rows.push(['Weight', v.weight + ' kg']);
+      if (v.gcs) rows.push(['GCS', v.gcs]);
+      
+      if (rows.length === 0) return;
+      
+      // Add section header
+      if (y > pageHeight - 60) {
+        doc.addPage();
+        y = margin;
+      }
+      
+      doc.setFillColor(...primaryColor);
+      doc.rect(margin, y, 3, 7, 'F');
+      doc.setTextColor(...darkColor);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text('VITALS', margin + 6, y + 5);
+      y += 12;
+      
+      doc.autoTable({
+        startY: y,
+        head: [['Parameter', 'Value']],
+        body: rows,
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 9, cellPadding: 3 },
+        headStyles: { fillColor: primaryColor, textColor: [255, 255, 255] },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
+      });
+      
+      y = doc.lastAutoTable.finalY + 8;
+    }
+    
+    // ─────────────────────────────────────────────────────────────
+    // HELPER: Add a table for labs
+    // ─────────────────────────────────────────────────────────────
+    function addLabsTable(labs) {
+      if (!labs || (Array.isArray(labs) && labs.length === 0)) return;
+      
+      const rows = [];
+      let currentPanel = '';
+      
+      // Helper to add a lab row
+      function addLabRow(lab, panelName) {
+        if (typeof lab !== 'object') return;
+        
+        const testName = lab.test || lab.name || lab.testName || lab.parameter || lab.label || '';
+        const result = lab.result || lab.value || lab.reading || '';
+        const unit = lab.unit || lab.units || '';
+        const ref = lab.reference || lab.refRange || lab.normalRange || lab.range || '';
+        const flag = lab.flag || lab.status || lab.abnormal || '';
+        
+        if (testName && result !== '' && !isBase64OrGarbage(String(testName)) && !isBase64OrGarbage(String(result))) {
+          // Add panel header row if panel changed
+          if (panelName && panelName !== currentPanel) {
+            currentPanel = panelName;
+            rows.push([{ content: panelName.toUpperCase(), colSpan: 5, styles: { fontStyle: 'bold', fillColor: [226, 232, 240], textColor: [30, 41, 59] } }]);
+          }
+          
+          const flagStr = (flag && flag !== 'normal' && flag !== 'Normal') ? flag.toUpperCase() : '';
+          rows.push([
+            cleanText(String(testName)),
+            String(result),
+            cleanText(String(unit)),
+            cleanText(String(ref)),
+            flagStr
+          ]);
+        }
+      }
+      
+      // Process labs array
+      if (Array.isArray(labs)) {
+        // Check if labs have panel/category grouping
+        const grouped = {};
+        let hasGroups = false;
+        
+        labs.forEach(lab => {
+          if (typeof lab !== 'object') return;
+          const panel = lab.panel || lab.category || lab.group || lab.panelName || 'Results';
+          if (panel !== 'Results') hasGroups = true;
+          if (!grouped[panel]) grouped[panel] = [];
+          grouped[panel].push(lab);
+        });
+        
+        if (hasGroups) {
+          // Process by group
+          for (const [panelName, panelLabs] of Object.entries(grouped)) {
+            panelLabs.forEach(lab => addLabRow(lab, panelName));
+          }
+        } else {
+          // Process flat array
+          labs.forEach(lab => addLabRow(lab, ''));
+        }
+      }
+      
+      // Process labs object with panels (e.g., { renalFunction: [...], electrolytes: [...] })
+      else if (typeof labs === 'object') {
+        for (const [panelName, panelData] of Object.entries(labs)) {
+          if (Array.isArray(panelData)) {
+            panelData.forEach(lab => addLabRow(lab, panelName));
+          } else if (typeof panelData === 'object' && panelData !== null) {
+            // Single value object like { test: 'eGFR', value: 34, ... }
+            addLabRow(panelData, panelName);
+          }
+        }
+      }
+      
+      if (rows.length === 0) return;
+      
+      // Add section header
+      if (y > pageHeight - 60) {
+        doc.addPage();
+        y = margin;
+      }
+      
+      doc.setFillColor(...primaryColor);
+      doc.rect(margin, y, 3, 7, 'F');
+      doc.setTextColor(...darkColor);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text('LABORATORY RESULTS', margin + 6, y + 5);
+      y += 12;
+      
+      doc.autoTable({
+        startY: y,
+        head: [['Test', 'Result', 'Unit', 'Reference', 'Flag']],
+        body: rows,
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 8, cellPadding: 2 },
+        headStyles: { fillColor: primaryColor, textColor: [255, 255, 255] },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        columnStyles: { 
+          0: { fontStyle: 'bold', cellWidth: 45 },
+          1: { cellWidth: 25, halign: 'right' },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 35 },
+          4: { cellWidth: 15, halign: 'center' }
+        },
+        didParseCell: function(data) {
+          // Highlight abnormal values in red
+          if (data.column.index === 4 && data.cell.raw && typeof data.cell.raw === 'string' && data.cell.raw.length > 0) {
+            data.cell.styles.textColor = [220, 38, 38];
+            data.cell.styles.fontStyle = 'bold';
+          }
+          // Also highlight the result value if flagged
+          if (data.column.index === 1 && data.row.raw && Array.isArray(data.row.raw) && data.row.raw[4]) {
+            data.cell.styles.textColor = [220, 38, 38];
+            data.cell.styles.fontStyle = 'bold';
+          }
+        }
+      });
+      
+      y = doc.lastAutoTable.finalY + 8;
+    }
+    
+    // ─────────────────────────────────────────────────────────────
+    // HELPER: Add pending tasks table
+    // ─────────────────────────────────────────────────────────────
+    function addTasksTable(tasks) {
+      if (!tasks || !Array.isArray(tasks) || tasks.length === 0) return;
+      
+      const rows = [];
+      tasks.forEach(task => {
+        if (typeof task === 'string') {
+          if (!isBase64OrGarbage(task)) rows.push([cleanText(task), '', '']);
+        } else if (typeof task === 'object') {
+          const title = task.title || task.name || task.task || task.description || task.text || '';
+          const priority = task.priority || task.urgency || '';
+          const category = task.category || task.type || '';
+          const status = task.status || task.state || '';
+          
+          if (title && !isBase64OrGarbage(String(title))) {
+            // Only show pending/incomplete tasks
+            if (!status || status === 'pending' || status === 'incomplete' || status === 'new') {
+              rows.push([
+                cleanText(String(title)),
+                cleanText(String(category)),
+                cleanText(String(priority))
+              ]);
+            }
+          }
+        }
+      });
+      
+      if (rows.length === 0) return;
+      
+      // Add section header
+      if (y > pageHeight - 60) {
+        doc.addPage();
+        y = margin;
+      }
+      
+      doc.setFillColor(...primaryColor);
+      doc.rect(margin, y, 3, 7, 'F');
+      doc.setTextColor(...darkColor);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text('PENDING TASKS', margin + 6, y + 5);
+      y += 12;
+      
+      doc.autoTable({
+        startY: y,
+        head: [['Task', 'Category', 'Priority']],
+        body: rows,
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 9, cellPadding: 3 },
+        headStyles: { fillColor: primaryColor, textColor: [255, 255, 255] },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        columnStyles: { 
+          0: { cellWidth: 90 },
+          1: { cellWidth: 35 },
+          2: { cellWidth: 25 }
+        },
+        didParseCell: function(data) {
+          if (data.column.index === 2) {
+            const val = String(data.cell.raw).toLowerCase();
+            if (val === 'high' || val === 'urgent') {
+              data.cell.styles.textColor = [220, 38, 38];
+              data.cell.styles.fontStyle = 'bold';
+            } else if (val === 'med' || val === 'medium') {
+              data.cell.styles.textColor = [234, 179, 8];
+            }
+          }
+        }
+      });
+      
+      y = doc.lastAutoTable.finalY + 8;
+    }
+    
+    // ─────────────────────────────────────────────────────────────
+    // CLINICAL SECTIONS - Start with unified summary parsing
+    // ─────────────────────────────────────────────────────────────
+    const unifiedSummary = pt.unifiedSummary || pt.summary || pt.clinicalSummary || pt.aiSummary;
+    let parsedSummary = null;
+    if (unifiedSummary && !isBase64OrGarbage(String(unifiedSummary))) {
+      parsedSummary = parseUnifiedSummary(String(unifiedSummary));
+    }
+    
+    // Demographics & Risk Factors from parsed summary
+    if (parsedSummary) {
+      if (parsedSummary.demographics) {
+        addSection('Patient', parsedSummary.demographics);
+      }
+      if (parsedSummary.riskFactors && parsedSummary.riskFactors.length > 0) {
+        addSection('Risk Factors', parsedSummary.riskFactors.join(', '));
+      }
+    }
+    
+    // Diagnosis
+    addSection('Diagnosis', pt.diagnosis || pt.primaryDiagnosis || pt.dx);
+    
+    // Presenting Complaint - from parsed summary or direct field
+    const pc = pt.presentingComplaint || pt.chiefComplaint || pt.pc || pt.cc || 
+               (parsedSummary ? parsedSummary.presentingComplaint : null);
+    addSection('Presenting Complaint', pc);
+    
+    // Duration
+    if (parsedSummary && parsedSummary.duration) {
+      addSection('Duration', parsedSummary.duration);
+    }
+    
+    // History of Presenting Illness
     addSection('History of Presenting Illness', pt.hopi || pt.hpi || pt.history || pt.historyOfPresentingIllness);
+    
+    // Key Findings from parsed summary
+    if (parsedSummary && parsedSummary.keyFindings && parsedSummary.keyFindings.length > 0) {
+      addSection('Key Clinical Findings', parsedSummary.keyFindings.join(', '));
+    }
+    
+    // Cardiac function
+    if (parsedSummary && parsedSummary.ejectionFraction) {
+      addSection('Ejection Fraction', parsedSummary.ejectionFraction);
+    }
+    
+    // Standard history sections
     addSection('Past Medical History', pt.pmh || pt.pastMedicalHistory || pt.medicalHistory);
     addSection('Past Surgical History', pt.psh || pt.pastSurgicalHistory || pt.surgicalHistory);
     addSection('Drug History', pt.drugHistory || pt.dh);
@@ -1354,103 +1738,58 @@ function generatePatientPDF(pt) {
     addSection('Allergies', pt.allergies || pt.allergy);
     addSection('Social History', pt.socialHistory || pt.shx || pt.sh);
     addSection('Family History', pt.familyHistory || pt.fhx || pt.fh);
-    addSection('Review of Systems', pt.ros || pt.reviewOfSystems || pt.systemsReview);
     
-    // Examination
-    addSection('General Examination', pt.generalExam || pt.general);
+    // Examination sections
     addSection('Examination Findings', pt.examination || pt.physicalExam || pt.exam || pt.findings || pt.oe);
-    addSection('Cardiovascular', pt.cvs || pt.cardiovascular || pt.cardiac);
-    addSection('Respiratory', pt.respiratory || pt.chest || pt.lungs);
-    addSection('Abdominal', pt.abdominal || pt.abdomen || pt.gi);
-    addSection('Neurological', pt.neuro || pt.neurological || pt.cns);
-    addSection('Musculoskeletal', pt.msk || pt.musculoskeletal);
     
-    // Vitals
-    let vitalsText = '';
-    if (pt.vitals) {
-      if (typeof pt.vitals === 'object' && !Array.isArray(pt.vitals)) {
-        const v = pt.vitals;
-        const vitalsArr = [];
-        if (v.bp || v.bloodPressure) vitalsArr.push('BP: ' + (v.bp || v.bloodPressure));
-        if (v.hr || v.heartRate || v.pulse) vitalsArr.push('HR: ' + (v.hr || v.heartRate || v.pulse));
-        if (v.temp || v.temperature) vitalsArr.push('Temp: ' + (v.temp || v.temperature));
-        if (v.rr || v.respiratoryRate) vitalsArr.push('RR: ' + (v.rr || v.respiratoryRate));
-        if (v.spo2 || v.o2sat || v.saturation) vitalsArr.push('SpO2: ' + (v.spo2 || v.o2sat || v.saturation));
-        if (v.weight) vitalsArr.push('Weight: ' + v.weight);
-        if (v.height) vitalsArr.push('Height: ' + v.height);
-        if (v.bmi) vitalsArr.push('BMI: ' + v.bmi);
-        if (v.pain) vitalsArr.push('Pain: ' + v.pain + '/10');
-        vitalsText = vitalsArr.join('  |  ');
-      } else {
-        vitalsText = formatDatedEntries(pt.vitals);
-      }
+    // ─────────────────────────────────────────────────────────────
+    // VITALS TABLE
+    // ─────────────────────────────────────────────────────────────
+    if (pt.vitals && typeof pt.vitals === 'object' && !Array.isArray(pt.vitals)) {
+      addVitalsTable(pt.vitals);
+    } else if (parsedSummary && parsedSummary.vitalsFromSummary) {
+      addVitalsTable(parsedSummary.vitalsFromSummary);
     }
-    addSection('Vitals', vitalsText);
     
-    // Labs - with special formatting
+    // ─────────────────────────────────────────────────────────────
+    // LABS TABLE
+    // ─────────────────────────────────────────────────────────────
     const labData = pt.labs || pt.labResults || pt.laboratory || pt.bloodTests || pt.bloodWork;
     if (labData) {
-      const formattedLabs = formatLabs(labData);
-      if (formattedLabs) {
-        addSection('Laboratory Results', formattedLabs);
-      }
+      addLabsTable(labData);
     }
     
-    // Specific lab panels
-    addSection('CBC / FBC', formatLabs(pt.cbc || pt.fbc || pt.fullBloodCount || pt.completeBloodCount));
-    addSection('Metabolic Panel', formatLabs(pt.bmp || pt.cmp || pt.metabolicPanel || pt.uAndE || pt.electrolytes));
-    addSection('Liver Function', formatLabs(pt.lft || pt.liverFunction || pt.hepatic));
-    addSection('Renal Function', formatLabs(pt.rft || pt.renalFunction || pt.kidney || pt.urea || pt.creatinine));
-    addSection('Coagulation', formatLabs(pt.coags || pt.coagulation || pt.clotting || pt.inr || pt.pt || pt.aptt));
-    addSection('Cardiac Markers', formatLabs(pt.cardiacMarkers || pt.troponin || pt.bnp));
-    addSection('Thyroid Function', formatLabs(pt.tft || pt.thyroid));
-    addSection('Lipid Panel', formatLabs(pt.lipids || pt.lipidPanel || pt.cholesterol));
-    addSection('HbA1c / Glucose', formatLabs(pt.hba1c || pt.glucose || pt.diabetic));
-    addSection('Urinalysis', formatLabs(pt.urinalysis || pt.urine || pt.ua));
-    addSection('Blood Gas', formatLabs(pt.abg || pt.vbg || pt.bloodGas || pt.arterialBloodGas));
-    addSection('Microbiology', formatLabs(pt.microbiology || pt.cultures || pt.micro));
+    // ─────────────────────────────────────────────────────────────
+    // PENDING TASKS TABLE
+    // ─────────────────────────────────────────────────────────────
+    const tasksData = pt.tasks || pt.todos || pt.plans || pt.pendingTasks || pt.jobs || pt.outstanding;
+    if (tasksData) {
+      addTasksTable(tasksData);
+    }
     
     // Other investigations
-    addSection('Investigations', pt.investigations || pt.results);
     addSection('ECG', pt.ecg || pt.ekg || pt.electrocardiogram);
     addSection('Imaging', pt.imaging || pt.radiology || pt.scans);
-    addSection('X-Ray', pt.xray || pt.cxr || pt.chestXray);
-    addSection('CT Scan', pt.ct || pt.ctScan);
-    addSection('MRI', pt.mri);
-    addSection('Ultrasound', pt.ultrasound || pt.us || pt.uss);
     addSection('Echo', pt.echo || pt.echocardiogram);
     
     // Assessment & Plan
     addSection('Assessment', pt.assessment || pt.impression || pt.clinicalImpression);
     addSection('Differential Diagnosis', pt.differentials || pt.differentialDiagnosis || pt.ddx);
     addSection('Management Plan', pt.plan || pt.managementPlan || pt.treatment || pt.management || pt.rx);
-    addSection('Medications Prescribed', pt.prescriptions || pt.prescribed || pt.newMeds);
-    addSection('IV Fluids', pt.ivFluids || pt.fluids || pt.ivf);
-    addSection('Diet', pt.diet || pt.nutrition);
-    addSection('Activity', pt.activity || pt.mobility);
     
-    // Tasks & Follow-up
-    addSection('Outstanding Tasks', pt.tasks || pt.todos || pt.outstanding || pt.pendingTasks || pt.jobs);
-    addSection('Pending Results', pt.pendingResults || pt.awaitingResults || pt.pending);
+    // Follow-up
     addSection('Consultations', pt.consults || pt.consultations || pt.referrals);
     addSection('Follow-up', pt.followUp || pt.followup || pt.fup);
     
-    // Progress Notes / Clinical Notes
-    const progressData = pt.progressNotes || pt.clinicalNotes || pt.notes || pt.progress || pt.entries || pt.dailyNotes;
-    if (progressData && (Array.isArray(progressData) || typeof progressData === 'object')) {
-      const formattedNotes = formatProgressNotes(progressData);
-      if (formattedNotes && formattedNotes.length > 10 && !isBase64OrGarbage(formattedNotes)) {
-        addSection('Progress Notes', formattedNotes);
-      }
+    // Clinical Summary (the full AI summary at the end)
+    if (unifiedSummary && !isBase64OrGarbage(String(unifiedSummary))) {
+      addSection('Clinical Summary', cleanText(String(unifiedSummary)));
     }
     
-    // Other important fields
+    // Code status and other important fields
     addSection('Code Status', pt.codeStatus || pt.resuscitationStatus || pt.dnar || pt.dnr || pt.ceiling);
-    addSection('Infection Control', pt.infectionControl || pt.isolation || pt.precautions);
-    addSection('VTE Prophylaxis', pt.vte || pt.dvtProphylaxis || pt.anticoagulation);
-    addSection('Discharge Planning', pt.discharge || pt.dischargePlan || pt.dischargePlanning);
-    addSection('Social Issues', pt.socialIssues || pt.socialConcerns || pt.barriers);
-    addSection('Special Notes', pt.specialInstructions || pt.additionalNotes || pt.comments || pt.remarks);
+    addSection('Doctor', pt.doctor || pt.consultant || pt.attendingPhysician);
+    addSection('Status', pt.status);
     
     // ─────────────────────────────────────────────────────────────
     // CATCH-ALL: Any remaining fields not already covered
@@ -1469,36 +1808,24 @@ function generatePatientPDF(pt) {
       'cvs', 'cardiovascular', 'cardiac', 'respiratory', 'chest', 'lungs',
       'abdominal', 'abdomen', 'gi', 'neuro', 'neurological', 'cns', 'msk', 'musculoskeletal',
       'vitals', 'labs', 'labResults', 'laboratory', 'bloodTests', 'bloodWork',
-      'cbc', 'fbc', 'fullBloodCount', 'completeBloodCount',
-      'bmp', 'cmp', 'metabolicPanel', 'uAndE', 'electrolytes',
-      'lft', 'liverFunction', 'hepatic', 'rft', 'renalFunction', 'kidney', 'urea', 'creatinine',
-      'coags', 'coagulation', 'clotting', 'inr', 'pt', 'aptt',
-      'cardiacMarkers', 'troponin', 'bnp', 'tft', 'thyroid',
-      'lipids', 'lipidPanel', 'cholesterol', 'hba1c', 'glucose', 'diabetic',
-      'urinalysis', 'urine', 'ua', 'abg', 'vbg', 'bloodGas', 'arterialBloodGas',
-      'microbiology', 'cultures', 'micro', 'investigations', 'results',
       'ecg', 'ekg', 'electrocardiogram', 'imaging', 'radiology', 'scans',
-      'xray', 'cxr', 'chestXray', 'ct', 'ctScan', 'mri', 'ultrasound', 'us', 'uss',
       'echo', 'echocardiogram', 'assessment', 'impression', 'clinicalImpression',
       'differentials', 'differentialDiagnosis', 'ddx',
-      'plan', 'managementPlan', 'treatment', 'management', 'rx',
-      'prescriptions', 'prescribed', 'newMeds', 'ivFluids', 'fluids', 'ivf',
-      'diet', 'nutrition', 'activity', 'mobility',
+      'plan', 'managementPlan', 'treatment', 'management', 'rx', 'plans',
       'tasks', 'todos', 'outstanding', 'pendingTasks', 'jobs',
-      'pendingResults', 'awaitingResults', 'pending',
       'consults', 'consultations', 'referrals', 'followUp', 'followup', 'fup',
-      'progressNotes', 'notes', 'progress', 'entries', 'dailyNotes', 'clinicalNotes',
       'codeStatus', 'resuscitationStatus', 'dnar', 'dnr', 'ceiling',
-      'infectionControl', 'isolation', 'precautions',
-      'vte', 'dvtProphylaxis', 'anticoagulation',
-      'discharge', 'dischargePlan', 'dischargePlanning',
-      'socialIssues', 'socialConcerns', 'barriers',
-      'specialInstructions', 'additionalNotes', 'comments', 'remarks',
-      'sharedBy', 'sharedAt', 'createdAt', 'updatedAt', 'lastUpdated',
+      'doctor', 'consultant', 'attendingPhysician', 'status',
+      // Unified summary already handled
+      'unifiedSummary', 'summary', 'clinicalSummary', 'aiSummary',
+      // Skip progress notes - often contain garbage
+      'progressNotes', 'notes', 'progress', 'entries', 'dailyNotes', 'clinicalNotes',
+      // Skip timestamps and metadata
+      'sharedBy', 'sharedAt', 'createdAt', 'updatedAt', 'lastUpdated', 'timestamp',
       // Skip image/attachment fields
       'image', 'images', 'photo', 'photos', 'attachment', 'attachments',
       'base64', 'thumbnail', 'avatar', 'picture', 'file', 'files',
-      'document', 'documents', 'scan', 'signature'
+      'document', 'documents', 'scan', 'signature', 'data'
     ]);
     
     // Add any fields that weren't covered (skip images/base64)
